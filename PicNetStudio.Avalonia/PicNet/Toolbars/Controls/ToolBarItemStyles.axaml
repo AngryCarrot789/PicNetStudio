@@ -1,0 +1,108 @@
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:tb="clr-namespace:PicNetStudio.Avalonia.PicNet.Toolbars.Controls">
+
+
+    <ControlTheme x:Key="{x:Type tb:ToolBarItemListBox}" TargetType="{x:Type tb:ToolBarItemListBox}">
+        <Setter Property="Background" Value="{DynamicResource ListBox.Static.Background}"/>
+        <Setter Property="BorderBrush" Value="Transparent"/>
+        <Setter Property="Foreground" Value="Transparent"/>
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto"/>
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
+        <Setter Property="ScrollViewer.IsScrollChainingEnabled" Value="True"/>
+        <Setter Property="ItemsPanel">
+            <Setter.Value>
+                <ItemsPanelTemplate>
+                    <StackPanel Spacing="5"/>
+                </ItemsPanelTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Template">
+            <ControlTemplate TargetType="{x:Type tb:ToolBarItemListBox}">
+                <Border x:Name="PART_Border" BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        Background="{TemplateBinding Background}">
+                    <ScrollViewer x:Name="PART_ScrollViewer"
+                                  Focusable="False"
+                                  Padding="{TemplateBinding Padding}"
+                                  AllowAutoHide="{TemplateBinding (ScrollViewer.AllowAutoHide)}"
+                                  BringIntoViewOnFocusChange="{TemplateBinding (ScrollViewer.BringIntoViewOnFocusChange)}"
+                                  Background="{TemplateBinding Background}"
+                                  HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
+                                  IsScrollChainingEnabled="{TemplateBinding (ScrollViewer.IsScrollChainingEnabled)}"
+                                  IsDeferredScrollingEnabled="{TemplateBinding (ScrollViewer.IsDeferredScrollingEnabled)}"
+                                  VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}"
+                                  VerticalSnapPointsType="{TemplateBinding (ScrollViewer.VerticalSnapPointsType)}"
+                                  HorizontalSnapPointsType="{TemplateBinding (ScrollViewer.HorizontalSnapPointsType)}">
+                        <ItemsPresenter x:Name="PART_ItemsPresenter"
+                                        Margin="{TemplateBinding Padding}"
+                                        ItemsPanel="{TemplateBinding ItemsPanel}"/>
+                    </ScrollViewer>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+        <Style Selector="^:disabled /template/ Border#PART_Border">
+            <Setter Property="Background" Value="{DynamicResource ListBox.Disabled.Background}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource ListBox.Disabled.Border}"/>
+        </Style>
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type tb:ToolBarItemControl}" TargetType="{x:Type tb:ToolBarItemControl}">
+        <Setter Property="Background" Value="{DynamicResource Button.Static.Background}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource Button.Static.Border}"/>
+        <Setter Property="Foreground" Value="{DynamicResource Button.Static.Foreground}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+        <Setter Property="Padding" Value="1"/>
+        <Setter Property="Template">
+            <ControlTemplate TargetType="{x:Type tb:ToolBarItemControl}">
+                <ContentPresenter x:Name="PART_ContentPresenter"
+                                  Padding="{TemplateBinding Padding}"
+                                  HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                  VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                  Background="{TemplateBinding Background}"
+                                  BorderBrush="{TemplateBinding BorderBrush}"
+                                  BorderThickness="{TemplateBinding BorderThickness}"
+                                  Content="{TemplateBinding Content}"
+                                  ContentTemplate="{TemplateBinding ContentTemplate}"
+                                  CornerRadius="{TemplateBinding CornerRadius}"
+                                  RecognizesAccessKey="True" Height="40" Width="40"
+                                  TextElement.Foreground="{TemplateBinding Foreground}"/>
+            </ControlTemplate>
+        </Setter>
+        <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource Button.MouseOver.Background}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource Button.MouseOver.Border}"/>
+        </Style>
+        <Style Selector="^[IsActive=true] /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource Button.Pressed.Background}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource Button.Pressed.Border}"/>
+        </Style>
+        <Style Selector="^:disabled /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource Button.Disabled.Background}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource Button.Disabled.Border}"/>
+        </Style>
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type tb:ToolBarItemControlContent}" TargetType="{x:Type tb:ToolBarItemControlContent}">
+        
+    </ControlTheme>
+    
+    <ControlTheme x:Key="{x:Type tb:ToolBarItemControlContentSingleTool}" 
+                  TargetType="{x:Type tb:ToolBarItemControlContentSingleTool}" 
+                  BasedOn="{StaticResource {x:Type tb:ToolBarItemControlContent}}">
+    </ControlTheme>
+    
+    <ControlTheme x:Key="{x:Type tb:ToolBarItemControlContent_BrushTool}" 
+                  TargetType="{x:Type tb:ToolBarItemControlContent_BrushTool}" 
+                  BasedOn="{StaticResource {x:Type tb:ToolBarItemControlContentSingleTool}}">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <TextBlock Text="BRUHSH" FontSize="9"/>
+            </ControlTemplate>
+        </Setter>
+    </ControlTheme>
+</ResourceDictionary>

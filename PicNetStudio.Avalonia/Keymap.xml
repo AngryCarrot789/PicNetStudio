@@ -1,0 +1,23 @@
+﻿<?xml version="1.0"?>
+
+<KeyMap Version="1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="Keymap.xsd">
+    <Group Name="Application">
+        <Group Name="EditorWindow">
+            <Shortcut Name="CloseDocument1" CommandId="CloseDocument">
+                <KeyStroke Mods="CTRL" Key="W"/>
+            </Shortcut>
+            <Shortcut Name="CloseDocument2" CommandId="CloseDocument">
+                <MouseStroke Button="Middle"/>
+            </Shortcut>
+
+            <Group Name="Canvas">
+                <Shortcut Name="IncreaseBrushSize" CommandId="command.tool.BrushTool.IncreaseBrushSize">
+                    <KeyStroke Key="OemCloseBrackets"/>
+                </Shortcut>
+                <Shortcut Name="DecreaseBrushSize" CommandId="command.tool.BrushTool.DecreaseBrushSize">
+                    <KeyStroke Key="OemOpenBrackets"/>
+                </Shortcut>
+            </Group>
+        </Group>
+    </Group>
+</KeyMap>

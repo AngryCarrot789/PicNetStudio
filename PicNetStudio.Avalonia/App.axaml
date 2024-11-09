@@ -1,0 +1,64 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:pns="clr-namespace:PicNetStudio"
+             xmlns:avalonia="clr-namespace:PicNetStudio.Avalonia"
+             xmlns:c="clr-namespace:PicNetStudio.Avalonia.PicNet.Controls"
+             x:Class="PicNetStudio.Avalonia.App"
+             RequestedThemeVariant="Default">
+    <Application.Styles>
+        <SimpleTheme/>
+        <StyleInclude Source="Themes/Controls.axaml"/>
+    </Application.Styles>
+
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <MergeResourceInclude Source="Themes/Colours/SoftDark.axaml"/>
+                <MergeResourceInclude Source="Themes/ControlColours.axaml"/>
+                <MergeResourceInclude Source="PicNet/Controls/ControlStyles.axaml"/>
+                
+                <MergeResourceInclude Source="/PicNet/Toolbars/Controls/ToolBarItemStyles.axaml"/>
+            </ResourceDictionary.MergedDictionaries>
+
+            <ControlTheme x:Key="{x:Type c:CanvasControl}" TargetType="{x:Type c:CanvasControl}">
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource Button.Static.Border}"/>
+                <Setter Property="Foreground" Value="{DynamicResource Button.Static.Foreground}"/>
+                <Setter Property="UseLayoutRounding" Value="False"/>
+                <Setter Property="Template">
+                    <ControlTemplate TargetType="{x:Type c:CanvasControl}">
+                        <Grid>
+                            <c:FreeMoveViewPortV2 x:Name="PART_FreeMoveViewPort"
+                                                         UseLayoutRounding="False"
+                                                         PanToCursorOnUserZoom="True"
+                                                         ZoomScale="{TemplateBinding ZoomScale}"
+                                                         HorizontalAlignment="Stretch"
+                                                         VerticalAlignment="Stretch"
+                                                         Margin="{TemplateBinding BorderThickness}">
+                                <avalonia:TransformationContainer UseLayoutRounding="False">
+                                    <c:SKAsyncViewPort x:Name="PART_SkiaViewPort" UseLayoutRounding="False"/>
+                                </avalonia:TransformationContainer>
+                            </c:FreeMoveViewPortV2>
+                            <!-- Setting background to null should disable hit-testing but I set the property just to be double sure -->
+                            <Border Background="{x:Null}" IsHitTestVisible="False"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"/>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter>
+                <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+                    <Setter Property="Background" Value="{DynamicResource Button.MouseOver.Background}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource Button.MouseOver.Border}"/>
+                </Style>
+                <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
+                    <Setter Property="Background" Value="{DynamicResource Button.Pressed.Background}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource Button.Pressed.Border}"/>
+                </Style>
+                <Style Selector="^:disabled /template/ ContentPresenter#PART_ContentPresenter">
+                    <Setter Property="Background" Value="{DynamicResource Button.Disabled.Background}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource Button.Disabled.Border}"/>
+                </Style>
+            </ControlTheme>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>
