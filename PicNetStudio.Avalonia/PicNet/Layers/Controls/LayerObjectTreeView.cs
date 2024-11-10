@@ -44,7 +44,6 @@ public class LayerObjectTreeView : TreeView {
         this.controlToModel = new Dictionary<LayerObjectTreeViewItem, BaseLayerTreeObject>();
         this.modelToControl = new Dictionary<BaseLayerTreeObject, LayerObjectTreeViewItem>();
         this.itemCache = new Stack<LayerObjectTreeViewItem>();
-
         this.SelectionChanged += OnSelectionChanged;
     }
 

@@ -51,7 +51,7 @@ public class DataParameterLongPropertyEditorSlot : DataParameterPropertyEditorSl
         this.StepProfile = stepProfile;
     }
 
-    public DataParameterLongPropertyEditorSlot(DataParameterLong parameter, Parameter<bool> isEditableParameter, bool invertIsEditable, Type applicableType, string displayName, DragStepProfile stepProfile) : base(parameter, applicableType, displayName) {
+    public DataParameterLongPropertyEditorSlot(DataParameterLong parameter, DataParameter<bool> isEditableParameter, bool invertIsEditable, Type applicableType, string displayName, DragStepProfile stepProfile) : base(parameter, applicableType, displayName) {
         this.StepProfile = stepProfile;
         this.IsEditableDataParameter = isEditableParameter;
         this.InvertIsEditableForParameter = invertIsEditable;

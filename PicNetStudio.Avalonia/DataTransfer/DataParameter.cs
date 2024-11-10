@@ -32,7 +32,7 @@ public delegate void DataParameterValueChangedEventHandler(DataParameter paramet
 /// value cannot be automated. The purpose of this is to simplify the data transfer between objects and things
 /// like slots, as parameters do
 /// <para>
-/// This class should typically not be overridden directly, instead, use <see cref="Parameter{T}"/>,
+/// This class should typically not be overridden directly, instead, use <see cref="DataParameter{T}"/>,
 /// which provides mechanisms to Get/Set the value
 /// </para>
 /// </summary>
@@ -286,7 +286,7 @@ public abstract class DataParameter : IEquatable<DataParameter>, IComparable<Dat
     }
 
     /// <summary>
-    /// A helper method that either calls <see cref="Parameter{T}.SetValue"/> if the value is not currently
+    /// A helper method that either calls <see cref="DataParameter{T}.SetValue"/> if the value is not currently
     /// changing, or sets the given ref to the given value if the value is changing. This is to prevent the value
     /// being set while it is already being set, which would result in a <see cref="StackOverflowException"/>
     /// </summary>
@@ -295,7 +295,7 @@ public abstract class DataParameter : IEquatable<DataParameter>, IComparable<Dat
     /// <param name="field">A ref to the backing value field</param>
     /// <param name="newValue">The new value to set the property or field to</param>
     /// <typeparam name="T">The type of value</typeparam>
-    public static void SetValueHelper<T>(ITransferableData owner, Parameter<T> parameter, ref T field, T newValue) {
+    public static void SetValueHelper<T>(ITransferableData owner, DataParameter<T> parameter, ref T field, T newValue) {
         if (parameter.IsValueChanging(owner)) {
             field = newValue;
         }
@@ -312,22 +312,22 @@ public abstract class DataParameter : IEquatable<DataParameter>, IComparable<Dat
 /// </para>
 /// </summary>
 /// <typeparam name="T">The type of value this data parameter deals with</typeparam>
-public class Parameter<T> : DataParameter {
-    public delegate void DataParameterValueChangedEventHandler(Parameter<T> parameter, ITransferableData owner);
+public class DataParameter<T> : DataParameter {
+    public delegate void DataParameterValueChangedEventHandler(DataParameter<T> parameter, ITransferableData owner);
 
     private readonly ValueAccessor<T> accessor;
     protected readonly bool isObjectAccessPreferred;
 
     public T DefaultValue { get; }
 
-    public Parameter(Type ownerType, string key, ValueAccessor<T> accessor, DataParameterFlags flags = DataParameterFlags.None) : base(ownerType, key, flags) {
+    public DataParameter(Type ownerType, string key, ValueAccessor<T> accessor, DataParameterFlags flags = DataParameterFlags.None) : base(ownerType, key, flags) {
         if (accessor == null)
             throw new ArgumentNullException(nameof(accessor));
         this.accessor = accessor;
         this.isObjectAccessPreferred = accessor.IsObjectPreferred;
     }
 
-    public Parameter(Type ownerType, string key, T defaultValue, ValueAccessor<T> accessor, DataParameterFlags flags = DataParameterFlags.None) : this(ownerType, key, accessor, flags) {
+    public DataParameter(Type ownerType, string key, T defaultValue, ValueAccessor<T> accessor, DataParameterFlags flags = DataParameterFlags.None) : this(ownerType, key, accessor, flags) {
         this.DefaultValue = defaultValue;
     }
 

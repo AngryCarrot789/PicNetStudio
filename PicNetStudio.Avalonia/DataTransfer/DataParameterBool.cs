@@ -25,7 +25,7 @@ namespace PicNetStudio.Avalonia.DataTransfer;
 
 public delegate void DataParameterBoolValueChangedEventHandler(DataParameterBool parameter, ITransferableData owner);
 
-public sealed class DataParameterBool : Parameter<bool> {
+public sealed class DataParameterBool : DataParameter<bool> {
     public DataParameterBool(Type ownerType, string key, ValueAccessor<bool> accessor, DataParameterFlags flags = DataParameterFlags.None) : this(ownerType, key, false, accessor, flags) {
     }
 

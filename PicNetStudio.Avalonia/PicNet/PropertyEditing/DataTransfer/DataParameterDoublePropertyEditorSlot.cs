@@ -51,7 +51,7 @@ public class DataParameterDoublePropertyEditorSlot : DataParameterPropertyEditor
         this.StepProfile = stepProfile;
     }
 
-    public DataParameterDoublePropertyEditorSlot(DataParameterDouble parameter, Parameter<bool> isEditableParameter, bool invertIsEditable, Type applicableType, string displayName, DragStepProfile stepProfile) : base(parameter, applicableType, displayName) {
+    public DataParameterDoublePropertyEditorSlot(DataParameterDouble parameter, DataParameter<bool> isEditableParameter, bool invertIsEditable, Type applicableType, string displayName, DragStepProfile stepProfile) : base(parameter, applicableType, displayName) {
         this.StepProfile = stepProfile;
         this.IsEditableDataParameter = isEditableParameter;
         this.InvertIsEditableForParameter = invertIsEditable;

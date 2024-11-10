@@ -47,17 +47,37 @@ public partial class EditorWindow : WindowEx {
         document.Canvas.Size = new PixelSize(800, 400);
 
 
-        void MakeLayer(SKColor fill, string name) {
+        void MakeLayer(SKColor fill, string name, CompositeLayer? parent = null) {
             RasterLayer layer = new RasterLayer() {
                 DisplayName = name
             };
             layer.Bitmap.InitialiseBitmap(document.Canvas.Size);
             layer.Bitmap.Canvas!.Clear(fill);
-            document.Canvas.AddLayer(layer);
+
+            if (parent != null) {
+                parent.AddLayer(layer);
+            }
+            else {
+                document.Canvas.AddLayer(layer);
+            }
         }
 
+        CompositeLayer MakeCompLayer(string name) {
+            CompositeLayer layer = new CompositeLayer() {
+                DisplayName = name
+            };
+            document.Canvas.AddLayer(layer);
+            return layer;
+        }
+        
         MakeLayer(SKColors.Transparent, "Layer 1");
         MakeLayer(SKColors.Transparent, "Layer 2");
+        
+        CompositeLayer comp = MakeCompLayer("A composition layer");
+        MakeLayer(SKColors.Transparent, "Layer 1 in comp", comp);
+        MakeLayer(SKColors.Transparent, "Layer 2 in comp", comp);
+        
+        MakeLayer(SKColors.Transparent, "Layer 4");
         MakeLayer(SKColors.White, "Background Base Layer");
 
         this.Editor.AddDocument(document);

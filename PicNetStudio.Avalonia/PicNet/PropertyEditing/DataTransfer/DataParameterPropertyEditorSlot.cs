@@ -49,7 +49,7 @@ public abstract class DataParameterPropertyEditorSlot : PropertyEditorSlot {
             if (this.isEditable == value)
                 return;
             this.isEditable = value;
-            Parameter<bool>? p = this.IsEditableDataParameter;
+            DataParameter<bool>? p = this.IsEditableDataParameter;
 
             if (p != null) {
                 for (int i = 0, c = this.Handlers.Count; i < c; i++) {
@@ -67,7 +67,7 @@ public abstract class DataParameterPropertyEditorSlot : PropertyEditorSlot {
     /// Gets or sets the parameter which determines if the value can be modified in the UI. This should
     /// only be set during the construction phase of the object and not during its lifetime
     /// </summary>
-    public Parameter<bool>? IsEditableDataParameter { get; set; }
+    public DataParameter<bool>? IsEditableDataParameter { get; set; }
 
     /// <summary>
     /// Gets or sets if the parameter's value is inverted between the parameter and checkbox in the UI.
@@ -89,7 +89,7 @@ public abstract class DataParameterPropertyEditorSlot : PropertyEditorSlot {
         if (this.IsSingleHandler)
             this.Parameter.AddValueChangedHandler(this.SingleHandler, this.OnValueForSingleHandlerChanged);
         this.QueryValueFromHandlers();
-        Parameter<bool>? p = this.IsEditableDataParameter;
+        DataParameter<bool>? p = this.IsEditableDataParameter;
         this.IsEditable = p == null || (!GetEqualValue(this.Handlers, h => p.GetValue((ITransferableData) h), out bool v) || v);
         this.OnValueChanged();
     }

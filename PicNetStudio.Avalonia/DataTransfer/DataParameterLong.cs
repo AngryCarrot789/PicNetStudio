@@ -25,7 +25,7 @@ namespace PicNetStudio.Avalonia.DataTransfer;
 
 public delegate void DataParameterLongValueChangedEventHandler(DataParameterLong parameter, ITransferableData owner);
 
-public sealed class DataParameterLong : Parameter<long> {
+public sealed class DataParameterLong : DataParameter<long> {
     /// <summary>
     /// The minimum value of the parameter. The final effective value may not drop below this
     /// </summary>

@@ -22,13 +22,28 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
+using PicNetStudio.Avalonia.PicNet;
+using PicNetStudio.Avalonia.PicNet.Layers;
+using Canvas = PicNetStudio.Avalonia.PicNet.Canvas;
 
 namespace PicNetStudio.Avalonia;
 
 public partial class App : Application {
+    public static Canvas DummyCanvas { get; } = new Canvas(new Document());
+
+    static App() {
+        DummyCanvas.Size = new PixelSize(300, 150);
+        DummyCanvas.AddLayer(new RasterLayer() {DisplayName = "Raster 1"});
+        DummyCanvas.AddLayer(new CompositeLayer() {DisplayName = "Composite 1"});
+        // (DummyCanvas.Layers[0] as RasterLayer).Bitmap.InitialiseBitmap(DummyCanvas.Size);
+
+        ((CompositeLayer) DummyCanvas.Layers[1]).AddLayer(new RasterLayer() {DisplayName = "Raster 2 in composite"});
+    }
+    
     public App() {
     }
 

@@ -352,6 +352,6 @@
     </ControlTheme>
 
 	<Design.PreviewWith>
-		<l:PropertyEditorGroupControl Width="200" Height="100"/>
+		<l:PropertyEditorGroupControl Width="250" Height="100"/>
 	</Design.PreviewWith>
 </ResourceDictionary>

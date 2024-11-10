@@ -52,7 +52,7 @@ public abstract class BaseDataParameterPropertyEditorControl : BasePropEditContr
     }
 
     protected virtual void OnDisplayNameCheckChanged(object? sender, RoutedEventArgs e) {
-        if (!this.isUpdatingCheckBoxControl && this.SlotModel != null) {
+        if (this.IsCheckBoxToggleable && !this.isUpdatingCheckBoxControl && this.SlotModel != null) {
             bool value = this.displayNameCheckBox.IsChecked ?? false;
             this.SlotModel.IsEditable = this.SlotModel.InvertIsEditableForParameter ? !value : value;
         }

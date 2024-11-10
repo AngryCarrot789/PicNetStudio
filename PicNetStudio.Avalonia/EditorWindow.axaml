@@ -18,7 +18,7 @@
              BorderBrush="{DynamicResource ABrush.Tone1.Border.Static}" BorderThickness="1"
              FontFamily="{StaticResource FontOxanium}">
     <Grid RowDefinitions="Auto,1,*">
-        <Grid Grid.Row="2" ColumnDefinitions="50,*,0,250" RowDefinitions="30,*">
+        <Grid Grid.Row="2" ColumnDefinitions="50,*,0,300" RowDefinitions="30,*">
             <controls:CanvasControl x:Name="PART_Canvas" Grid.Column="1" Grid.Row="1"
                                     HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                                     Background="Transparent" BorderBrush="{DynamicResource ABrush.Tone1.Border.Static}"
@@ -39,18 +39,19 @@
             <Border Grid.Column="3" Grid.Row="1" Background="{DynamicResource PanelBackground3}">
                 <Grid RowDefinitions="*,1,*">
 					<DockPanel Grid.Row="0">
-						<Border DockPanel.Dock="Top" Background="{DynamicResource ABrush.Tone5.Background.Static}" BorderBrush="{DynamicResource ABrush.Tone1.Border.Static}" BorderThickness="0,1,0,1">
-							<TextBlock Text="Layers" Padding="5,4" HorizontalAlignment="Center"/>
+						<Border DockPanel.Dock="Top" Background="{DynamicResource ABrush.Tone5.Background.Static}" BorderBrush="{DynamicResource ABrush.Tone1.Border.Static}" BorderThickness="0,1,0,1"
+                                ToolTip.Tip="These are the layers that are drawn. They are drawn bottom to top">
+                            <TextBlock Text="Layers" Padding="8,4" HorizontalAlignment="Left"/>
 						</Border>
-                        <c2:LayerObjectTreeView x:Name="PART_LayerTreeControl"
-                                                Background="Transparent"
-                                                BorderBrush="Transparent"
-                                                BorderThickness="0"/>
+                        <c2:LayerTreeControl x:Name="PART_LayerTreeControl"
+                                             BorderBrush="Transparent"
+                                             BorderThickness="0"/>
 					</DockPanel>
 
 					<DockPanel Grid.Row="2">
-						<Border DockPanel.Dock="Top" Background="{DynamicResource ABrush.Tone5.Background.Static}" BorderBrush="{DynamicResource ABrush.Tone1.Border.Static}" BorderThickness="0,1,0,0">
-							<TextBlock Text="Property Editor" Padding="5,4" HorizontalAlignment="Center"/>
+						<Border DockPanel.Dock="Top" Background="{DynamicResource ABrush.Tone5.Background.Static}" BorderBrush="{DynamicResource ABrush.Tone1.Border.Static}" BorderThickness="0,1,0,0"
+                                ToolTip.Tip="This is the property editor, it lets you make specific changes to selected layers, active brush, etc.">
+							<TextBlock Text="Property Editor" Padding="8,4" HorizontalAlignment="Left"/>
 						</Border>
 						<Border Background="{DynamicResource PanelBackground3}"
                                 BorderBrush="{DynamicResource PanelBorderBrush}"

@@ -26,9 +26,9 @@ namespace PicNetStudio.Avalonia.DataTransfer;
 public delegate void DataParameterStringValueChangedEventHandler(DataParameterString parameter, ITransferableData owner);
 
 /// <summary>
-/// A <see cref="Parameter{T}"/> that manages a string value, and provides a character limit (both upper and lower limits)
+/// A <see cref="DataParameter{T}"/> that manages a string value, and provides a character limit (both upper and lower limits)
 /// </summary>
-public sealed class DataParameterString : Parameter<string> {
+public sealed class DataParameterString : DataParameter<string> {
     private readonly bool hasCharLimit;
 
     /// <summary>

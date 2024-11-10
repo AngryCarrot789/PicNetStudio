@@ -28,19 +28,35 @@ namespace PicNetStudio.Avalonia.PicNet.Layers;
 /// </summary>
 public abstract class BaseVisualLayer : BaseLayerTreeObject {
     public static readonly DataParameterFloat OpacityParameter = DataParameter.Register(new DataParameterFloat(typeof(BaseVisualLayer), nameof(Opacity), 1.0f, 0.0f, 1.0f, ValueAccessors.Reflective<float>(typeof(BaseVisualLayer), nameof(opacity))));
-    public static readonly DataParameterBool IsVisibleParameter = DataParameter.Register(new DataParameterBool(typeof(BaseVisualLayer), nameof(IsVisible), true, ValueAccessors.Reflective<bool>(typeof(BaseVisualLayer), nameof(isVisible))));
+    public static readonly DataParameterBool IsRenderVisibleParameter =DataParameter.Register(new DataParameterBool(typeof(BaseVisualLayer), nameof(IsVisible), true, ValueAccessors.Reflective<bool>(typeof(BaseVisualLayer), nameof(isVisible))));
+    public static readonly DataParameterBool IsExportVisibleParameter =DataParameter.Register(new DataParameterBool(typeof(BaseVisualLayer), nameof(IsExportVisible), true, ValueAccessors.Reflective<bool>(typeof(BaseVisualLayer), nameof(isExportVisible))));
 
     private float opacity = OpacityParameter.DefaultValue;
-    private bool isVisible = IsVisibleParameter.DefaultValue;
-
+    private bool isVisible = IsRenderVisibleParameter.DefaultValue;
+    private bool isExportVisible = IsExportVisibleParameter.DefaultValue;
+    
+    /// <summary>
+    /// Gets or sets the opacity of this layer
+    /// </summary>
     public float Opacity {
         get => this.opacity;
         set => DataParameter.SetValueHelper(this, OpacityParameter, ref this.opacity, value);
     }
     
+    /// <summary>
+    /// Gets or sets if this layer is visible when rendering in the editor
+    /// </summary>
     public bool IsVisible {
         get => this.isVisible;
-        set => DataParameter.SetValueHelper(this, IsVisibleParameter, ref this.isVisible, value);
+        set => DataParameter.SetValueHelper(this, IsRenderVisibleParameter, ref this.isVisible, value);
+    }
+
+    /// <summary>
+    /// Gets or sets if this layer is visible when exporting the file
+    /// </summary>
+    public bool IsExportVisible {
+        get => this.isExportVisible;
+        set => DataParameter.SetValueHelper(this, IsExportVisibleParameter, ref this.isExportVisible, value);
     }
 
     /// <summary>
@@ -53,7 +69,7 @@ public abstract class BaseVisualLayer : BaseLayerTreeObject {
     }
 
     static BaseVisualLayer() {
-        DataParameter.AddMultipleHandlers(OnDataParameterChangedToInvalidateVisual, OpacityParameter, IsVisibleParameter);
+        DataParameter.AddMultipleHandlers(OnDataParameterChangedToInvalidateVisual, OpacityParameter, IsRenderVisibleParameter);
     }
 
     protected static void OnDataParameterChangedToInvalidateVisual(DataParameter parameter, ITransferableData owner) {

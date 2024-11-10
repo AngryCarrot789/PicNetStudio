@@ -22,6 +22,7 @@
 
                 <MergeResourceInclude Source="/PicNet/Toolbars/Controls/ToolBarItemStyles.axaml"/>
                 <MergeResourceInclude Source="/PicNet/Layers/Controls/LayerControlStyles.axaml"/>
+                <MergeResourceInclude Source="/PicNet/Layers/StateMods/Controls/LayerStateModifierControlStyles.axaml"/>
 
                 <MergeResourceInclude Source="/PicNet/Controls/Dragger/NumberDraggerStyles.axaml"/>
                 <MergeResourceInclude Source="/PicNet/PropertyEditing/Controls/PropertyEditorStyles.axaml"/>

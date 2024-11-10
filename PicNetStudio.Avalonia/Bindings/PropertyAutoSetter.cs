@@ -40,10 +40,15 @@ public class PropertyAutoSetter<TModel, TControl> where TModel : class where TCo
         this.Model = model;
     }
 
-    public void SetModel(TModel model) {
+    public void SetModel(TModel? model) {
         this.Model = model;
         if (this.TargetControl != null) {
-            this.TargetControl.SetValue(this.Property, model);
+            if (model != null) {
+                this.TargetControl.SetValue(this.Property, model);
+            }
+            else {
+                this.TargetControl.ClearValue(this.Property);
+            }
         }
     }
 

@@ -19,9 +19,12 @@
 
 using System;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using PicNetStudio.Avalonia.Bindings;
 using PicNetStudio.Avalonia.Interactivity.Contexts;
+using PicNetStudio.Avalonia.PicNet.Layers.StateMods.Controls;
+using PicNetStudio.Avalonia.Utils;
 using PicNetStudio.Avalonia.Utils.Collections.Observable;
 
 namespace PicNetStudio.Avalonia.PicNet.Layers.Controls;
@@ -30,15 +33,23 @@ namespace PicNetStudio.Avalonia.PicNet.Layers.Controls;
 /// A tree view item for all layer objects
 /// </summary>
 public class LayerObjectTreeViewItem : TreeViewItem {
-    public LayerObjectTreeView LayerTree { get; private set; }
-    public LayerObjectTreeViewItem ParentNode { get; private set; }
-    public BaseLayerTreeObject LayerObject { get; private set; }
+    public LayerObjectTreeView? LayerTree { get; private set; }
+    public LayerObjectTreeViewItem? ParentNode { get; private set; }
+    public BaseLayerTreeObject? LayerObject { get; private set; }
 
     private ObservableItemProcessorIndexing<BaseLayerTreeObject>? compositeListener;
 
     private readonly IBinder<BaseLayerTreeObject> displayNameBinder = new GetSetAutoUpdateAndEventPropertyBinder<BaseLayerTreeObject>(HeaderProperty, nameof(BaseLayerTreeObject.DisplayNameChanged), b => b.Model.DisplayName, (b, v) => b.Model.DisplayName = (string) v);
+    private readonly PropertyAutoSetter<BaseLayerTreeObject, LayerStateModifierListBox> stateModifierListBoxHelper;
+    private LayerStateModifierListBox? PART_StateModifierListBox => this.stateModifierListBoxHelper.TargetControl;
 
     public LayerObjectTreeViewItem() {
+        this.stateModifierListBoxHelper = new PropertyAutoSetter<BaseLayerTreeObject, LayerStateModifierListBox>(LayerStateModifierListBox.LayerObjectProperty);
+    }
+
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e) {
+        base.OnApplyTemplate(e);
+        this.stateModifierListBoxHelper.SetControl(e.NameScope.GetTemplateChild<LayerStateModifierListBox>("PART_StateModifierListBox"));
     }
 
     public void OnAdding(LayerObjectTreeView tree, LayerObjectTreeViewItem parentNode, BaseLayerTreeObject layer) {
@@ -57,7 +68,8 @@ public class LayerObjectTreeViewItem : TreeViewItem {
             }
         }
 
-        this.displayNameBinder.Attach(this, this.LayerObject);
+        this.displayNameBinder.Attach(this, this.LayerObject!);
+        this.stateModifierListBoxHelper.SetModel(this.LayerObject);
         DataManager.SetContextData(this, new ContextData().Set(DataKeys.LayerObjectKey, this.LayerObject));
     }
 
@@ -69,6 +81,7 @@ public class LayerObjectTreeViewItem : TreeViewItem {
         }
 
         this.displayNameBinder.Detach();
+        this.stateModifierListBoxHelper.SetModel(null);
     }
 
     public void OnRemoved() {

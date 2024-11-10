@@ -53,11 +53,11 @@ public class DataParameterEnumBinder<TEnum> where TEnum : struct {
     /// </summary>
     public ITransferableData? Owner { get; private set; }
 
-    public Parameter<TEnum> Parameter { get; }
+    public DataParameter<TEnum> Parameter { get; }
 
     public event DataParameterEnumBinderCurrentValueChangedEventHandler? CurrentValueChanged;
 
-    public DataParameterEnumBinder(Parameter<TEnum> parameter, TEnum defaultValue = default) {
+    public DataParameterEnumBinder(DataParameter<TEnum> parameter, TEnum defaultValue = default) {
         this.buttonToState = new Dictionary<RadioButton, TEnum>();
         this.defaultButtons = new List<RadioButton>();
         this.currentValue = defaultValue;
