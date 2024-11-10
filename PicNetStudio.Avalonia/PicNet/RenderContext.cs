@@ -34,9 +34,12 @@ public class RenderContext {
 
     public Canvas MyCanvas { get; }
 
-    public RenderContext(Canvas myCanvas, SKSurface surface) {
+    public readonly bool IsExporting;
+
+    public RenderContext(Canvas myCanvas, SKSurface surface, bool isExport) {
         this.Surface = surface;
         this.Canvas = surface.Canvas;
         this.MyCanvas = myCanvas;
+        this.IsExporting = isExport;
     }
 }

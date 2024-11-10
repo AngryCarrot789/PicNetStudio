@@ -20,10 +20,13 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.Media;
+using PicNetStudio.Avalonia.Bindings;
 using PicNetStudio.Avalonia.Interactivity.Contexts;
 using PicNetStudio.Avalonia.PicNet;
 using PicNetStudio.Avalonia.PicNet.Layers;
 using PicNetStudio.Avalonia.PicNet.PropertyEditing;
+using PicNetStudio.Avalonia.PicNet.Tools.Core;
 using PicNetStudio.Avalonia.Themes.Controls;
 using SkiaSharp;
 
@@ -39,7 +42,7 @@ public partial class EditorWindow : WindowEx {
 
         this.Editor = new Editor();
         this.Editor.ActiveDocumentChanged += this.OnActiveDocumentChanged;
-        DataManager.SetContextData(this, this.contextData = new ContextData().Set(DataKeys.EditorKey, this.Editor));
+        DataManager.SetContextData(this, this.contextData = new ContextData().Set(DataKeys.TopLevelHostKey, this).Set(DataKeys.EditorKey, this.Editor));
 
         this.PART_ToolBar.EditorToolBar = this.Editor.ToolBar;
 
@@ -88,6 +91,7 @@ public partial class EditorWindow : WindowEx {
         this.ThePropertyEditor.ApplyStyling();
         this.ThePropertyEditor.ApplyTemplate();
         this.ThePropertyEditor.PropertyEditor = PicNetPropertyEditor.Instance;
+        this.PART_ColourPicker.Color = Color.FromUInt32((uint) SKColors.DodgerBlue);
     }
 
     private void OnActiveDocumentChanged(Editor sender, Document? oldactivedocument, Document? newactivedocument) {
@@ -96,5 +100,9 @@ public partial class EditorWindow : WindowEx {
 
         this.contextData.Set(DataKeys.DocumentKey, newactivedocument);
         DataManager.InvalidateInheritedContext(this);
+    }
+
+    private void OnColourPickerColourChanged(object? sender, ColorChangedEventArgs e) {
+        this.Editor.PrimaryColour = new SKColor(e.NewColor.ToUInt32());
     }
 }

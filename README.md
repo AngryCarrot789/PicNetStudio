@@ -6,6 +6,8 @@ Some ideas I have for the future:
 - Customisable UI, something similar to PixiEditor or C4D
 - Multiple editor windows open per instance, tabs movable between windows
 
+The canvas can be exported by pressing CTRL+E
+
 ## Preview so far
 ![](PicNetStudio.Avalonia_2024-11-10_21.17.27.png)
 

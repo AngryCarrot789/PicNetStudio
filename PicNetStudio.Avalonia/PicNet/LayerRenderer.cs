@@ -33,9 +33,9 @@ public class LayerRenderer {
     public LayerRenderer() {
     }
 
-    public void Render(SKSurface target, Canvas canvas) {
+    public void Render(SKSurface target, Canvas canvas, bool isExport = false) {
         target.Canvas.Clear(SKColors.Empty);
-        RenderContext ctx = new RenderContext(canvas, target);
+        RenderContext ctx = new RenderContext(canvas, target, isExport);
 
         ReadOnlyObservableList<BaseLayerTreeObject> layers = canvas.Layers;
         for (int i = layers.Count - 1; i >= 0; i--) {
@@ -45,7 +45,7 @@ public class LayerRenderer {
     }
 
     protected void DrawLayer(RenderContext ctx, BaseVisualLayer layer) {
-        if (!layer.IsVisible || DoubleUtils.AreClose(layer.Opacity, 0.0)) {
+        if ((ctx.IsExporting && !layer.IsExportVisible) || (!ctx.IsExporting && !layer.IsVisible) || DoubleUtils.AreClose(layer.Opacity, 0.0)) {
             return;
         }
         

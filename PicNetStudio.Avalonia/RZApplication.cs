@@ -20,6 +20,7 @@
 using System;
 using System.IO;
 using PicNetStudio.Avalonia.CommandSystem;
+using PicNetStudio.Avalonia.PicNet.Commands;
 using PicNetStudio.Avalonia.PicNet.Tools.Core;
 using PicNetStudio.Avalonia.Services.Files;
 using PicNetStudio.Avalonia.Services.Messages;
@@ -104,6 +105,7 @@ public abstract class RZApplication {
         // tools
         manager.Register("command.tool.BrushTool.IncreaseBrushSize", new IncreaseBrushSizeCommand());
         manager.Register("command.tool.BrushTool.DecreaseBrushSize", new DecreaseBrushSizeCommand());
+        manager.Register("command.generic.ExportImage", new ExportImageCommand());
     }
 
     internal static void InternalPreInititalise(RZApplication application) {

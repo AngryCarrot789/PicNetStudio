@@ -3,6 +3,9 @@
 <KeyMap Version="1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="Keymap.xsd">
     <Group Name="Application">
         <Group Name="EditorWindow">
+            <Shortcut Name="ExportImage" CommandId="command.generic.ExportImage">
+                <KeyStroke Mods="CTRL" Key="E"/>
+            </Shortcut>
             <Shortcut Name="CloseDocument1" CommandId="CloseDocument">
                 <KeyStroke Mods="CTRL" Key="W"/>
             </Shortcut>
