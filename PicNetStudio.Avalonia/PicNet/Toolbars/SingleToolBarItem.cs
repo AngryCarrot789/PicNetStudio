@@ -20,19 +20,16 @@
 using System;
 using PicNetStudio.Avalonia.PicNet.Tools;
 
-namespace PicNetStudio.Avalonia.PicNet.Toolbars.ToolItems;
+namespace PicNetStudio.Avalonia.PicNet.Toolbars;
 
-public delegate void SingleToolBarItemIsActiveChangedEventHandler(SingleToolBarItem sender);
+public delegate void BaseActivatableToolBarItemIsActiveChangedEventHandler(SingleToolBarItem sender);
 
-/// <summary>
-/// A toolbar item that represents a single activatable tool. It can be clicked to activate and that's all
-/// </summary>
-public class SingleToolBarItem : BaseToolBarItem {
-    public BaseCanvasTool Tool { get; }
-
+public class SingleToolBarItem : BaseToolBarItem, IToolBarItem {
     public bool IsActive { get; private set; }
 
-    public event SingleToolBarItemIsActiveChangedEventHandler? IsActiveChanged;
+    public BaseCanvasTool Tool { get; }
+
+    public event BaseActivatableToolBarItemIsActiveChangedEventHandler? IsActiveChanged;
 
     public SingleToolBarItem(BaseCanvasTool tool) {
         this.Tool = tool ?? throw new ArgumentNullException(nameof(tool));
@@ -50,7 +47,7 @@ public class SingleToolBarItem : BaseToolBarItem {
     internal static void InternalSetIsActive(SingleToolBarItem toolBarItem, bool isActive) {
         if (isActive == toolBarItem.IsActive)
             return;
-        
+
         toolBarItem.IsActive = isActive;
         toolBarItem.IsActiveChanged?.Invoke(toolBarItem);
     }

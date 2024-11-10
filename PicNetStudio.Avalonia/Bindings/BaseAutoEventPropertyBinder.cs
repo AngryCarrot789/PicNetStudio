@@ -25,7 +25,7 @@ namespace PicNetStudio.Avalonia.Bindings;
 /// <typeparam name="TModel">The model type</typeparam>
 public abstract class BaseAutoEventPropertyBinder<TModel> : BaseBinder<TModel> where TModel : class {
     private readonly AutoEventHelper autoEventHelper;
-    
+
     protected BaseAutoEventPropertyBinder(string eventName) {
         this.autoEventHelper = new AutoEventHelper(eventName, typeof(TModel), this.OnModelValueChanged);
     }

@@ -46,6 +46,6 @@ public abstract class DocumentCommand : Command {
     protected virtual Executability CanExecute(Editor editor, Document document, CommandEventArgs e) {
         return Executability.Valid;
     }
-    
+
     protected abstract void Execute(Editor editor, Document document, CommandEventArgs e);
 }

@@ -65,7 +65,7 @@ public class ToolBarItemListBox : ItemsControl {
     private void OnToolBarItemRemovedEvent(object sender, int index, BaseToolBarItem item) {
         this.RemoveResourceInternal(index);
     }
-    
+
     private void OnToolBarItemMovedEvent(object sender, int oldIndex, int newIndex, BaseToolBarItem item) {
         ToolBarItemControl control = (ToolBarItemControl) this.Items[oldIndex]!;
         // control.OnIndexMoving(oldIndex, newIndex);

@@ -17,11 +17,9 @@
 // along with PicNetStudio. If not, see <https://www.gnu.org/licenses/>.
 // 
 
-using PicNetStudio.Avalonia.PicNet.Toolbars.ToolItems;
 using PicNetStudio.Avalonia.PicNet.Tools;
 using PicNetStudio.Avalonia.PicNet.Tools.Core;
 using PicNetStudio.Avalonia.Utils.Collections.Observable;
-using PicNetStudio.Avalonia.Utils.Collections.ObservableEx;
 
 namespace PicNetStudio.Avalonia.PicNet.Toolbars;
 
@@ -51,7 +49,7 @@ public class EditorToolBar {
 
             if (oldActiveToolItem != null && oldActiveToolItem.IsActive)
                 SingleToolBarItem.InternalSetIsActive(oldActiveToolItem, false);
-            
+
             this.activeToolItem = value;
             this.ActiveToolItemChanged?.Invoke(this, oldActiveToolItem, value);
 

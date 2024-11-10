@@ -66,7 +66,7 @@ public static class TemplateUtils {
     /// <param name="value">The found template child</param>
     /// <typeparam name="T">The type of child</typeparam>
     /// <returns>True if the child was found, or false if not</returns>
-    public static bool TryGetTemplateChild<T>(this INameScope scope, string childName, out T? value) where T : AvaloniaObject {
+    public static bool TryGetTemplateChild<T>(this INameScope scope, string childName, [NotNullWhen(true)] out T? value) where T : AvaloniaObject {
         return (value = scope?.Find(childName) as T) != null;
     }
 }

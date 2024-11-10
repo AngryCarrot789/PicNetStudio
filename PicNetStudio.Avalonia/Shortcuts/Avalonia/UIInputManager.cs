@@ -57,18 +57,18 @@ public class UIInputManager {
     // /// <summary>
     // /// A dependency property which is used to tells the input system that shortcuts key strokes can be processed when the focused element is the base WPF text editor control
     // /// </summary>
-    // public static readonly AvaloniaProperty IsInheritedFocusAllowedProperty = DependencyProperty.RegisterAttached("IsInheritedFocusAllowed", typeof(bool), typeof(UIInputManager), new PropertyMetadata(BoolBox.True));
+    // public static readonly AvaloniaProperty IsInheritedFocusAllowedProperty = AvaloniaProperty.RegisterAttached("IsInheritedFocusAllowed", typeof(bool), typeof(UIInputManager), new PropertyMetadata(BoolBox.True));
     //
     // /// <summary>
     // /// A dependency property used to check if a control blocks shortcut key processing. This is false by default for most
     // /// standard controls, but is true for things like text boxes and rich text boxes (but can be set back to false explicitly)
     // /// </summary>
-    // public static readonly DependencyProperty IsKeyShortcutProcessingBlockedProperty = DependencyProperty.RegisterAttached("IsKeyShortcutProcessingBlocked", typeof(bool), typeof(UIInputManager), new PropertyMetadata(BoolBox.False));
+    // public static readonly AvaloniaProperty IsKeyShortcutProcessingBlockedProperty = AvaloniaProperty.RegisterAttached("IsKeyShortcutProcessingBlocked", typeof(bool), typeof(UIInputManager), new PropertyMetadata(BoolBox.False));
     //
     // /// <summary>
     // /// A dependency property which is the same as <see cref="IsKeyShortcutProcessingBlockedProperty"/> except for mouse strokes
     // /// </summary>
-    // public static readonly DependencyProperty IsMouseProcessingBlockedProperty = DependencyProperty.RegisterAttached("IsMouseProcessingBlocked", typeof(bool), typeof(UIInputManager), new PropertyMetadata(default(bool)));
+    // public static readonly AvaloniaProperty IsMouseProcessingBlockedProperty = AvaloniaProperty.RegisterAttached("IsMouseProcessingBlocked", typeof(bool), typeof(UIInputManager), new PropertyMetadata(default(bool)));
 
     public static UIInputManager Instance { get; } = new UIInputManager();
 

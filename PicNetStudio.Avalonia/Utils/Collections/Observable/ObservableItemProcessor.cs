@@ -23,6 +23,7 @@ using System.Collections.Generic;
 namespace PicNetStudio.Avalonia.Utils.Collections.Observable;
 
 public delegate void ObservableItemProcessorItemEventHandler<in T>(object sender, int index, T item);
+
 public delegate void ObservableItemProcessorItemMovedEventHandler<in T>(object sender, int oldIndex, int newIndex, T item);
 
 /// <summary>

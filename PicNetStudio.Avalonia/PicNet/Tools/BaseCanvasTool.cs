@@ -86,7 +86,6 @@ public abstract class BaseCanvasTool : ITransferableData {
     }
 
     public virtual void OnCharacterInput(Document document, Key key, KeyModifiers modifiers) {
-        
     }
 
     public virtual bool OnCharacterRelease(Document document, Key key, KeyModifiers modifiers) {

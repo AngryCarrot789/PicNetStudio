@@ -19,6 +19,7 @@
 
 using Avalonia.Controls;
 using PicNetStudio.Avalonia.PicNet;
+using PicNetStudio.Avalonia.PicNet.Layers;
 using PicNetStudio.Avalonia.PicNet.Toolbars;
 
 namespace PicNetStudio.Avalonia.Interactivity.Contexts;
@@ -28,4 +29,5 @@ public static class DataKeys {
     public static readonly DataKey<Editor> EditorKey = DataKey<Editor>.Create("Editor");
     public static readonly DataKey<Document> DocumentKey = DataKey<Document>.Create("EditorDocument");
     public static readonly DataKey<BaseToolBarItem> ToolBarItemKey = DataKey<BaseToolBarItem>.Create("ToolBarItem");
+    public static readonly DataKey<BaseLayerTreeObject> LayerObjectKey = DataKey<BaseLayerTreeObject>.Create("LayerObject");
 }

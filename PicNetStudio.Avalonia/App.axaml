@@ -3,6 +3,7 @@
              xmlns:pns="clr-namespace:PicNetStudio"
              xmlns:avalonia="clr-namespace:PicNetStudio.Avalonia"
              xmlns:c="clr-namespace:PicNetStudio.Avalonia.PicNet.Controls"
+             xmlns:s="clr-namespace:System;assembly=System.Runtime"
              x:Class="PicNetStudio.Avalonia.App"
              RequestedThemeVariant="Default">
     <Application.Styles>
@@ -12,12 +13,19 @@
 
     <Application.Resources>
         <ResourceDictionary>
+            <!--<FontFamily x:Key="FontOxanium">pack://application:,,,/Resources/Fonts/Oxanium/#Oxanium</FontFamily>-->
+            <FontFamily x:Key="FontOxanium">/Resources/Fonts/Oxanium/#Oxanium</FontFamily>
             <ResourceDictionary.MergedDictionaries>
                 <MergeResourceInclude Source="Themes/Colours/SoftDark.axaml"/>
                 <MergeResourceInclude Source="Themes/ControlColours.axaml"/>
                 <MergeResourceInclude Source="PicNet/Controls/ControlStyles.axaml"/>
-                
+
                 <MergeResourceInclude Source="/PicNet/Toolbars/Controls/ToolBarItemStyles.axaml"/>
+                <MergeResourceInclude Source="/PicNet/Layers/Controls/LayerControlStyles.axaml"/>
+
+                <MergeResourceInclude Source="/PicNet/Controls/Dragger/NumberDraggerStyles.axaml"/>
+                <MergeResourceInclude Source="/PicNet/PropertyEditing/Controls/PropertyEditorStyles.axaml"/>
+                <MergeResourceInclude Source="/PicNet/PropertyEditing/Controls/PropertyEditorSlotContentStyles.axaml"/>
             </ResourceDictionary.MergedDictionaries>
 
             <ControlTheme x:Key="{x:Type c:CanvasControl}" TargetType="{x:Type c:CanvasControl}">
@@ -29,12 +37,12 @@
                     <ControlTemplate TargetType="{x:Type c:CanvasControl}">
                         <Grid>
                             <c:FreeMoveViewPortV2 x:Name="PART_FreeMoveViewPort"
-                                                         UseLayoutRounding="False"
-                                                         PanToCursorOnUserZoom="True"
-                                                         ZoomScale="{TemplateBinding ZoomScale}"
-                                                         HorizontalAlignment="Stretch"
-                                                         VerticalAlignment="Stretch"
-                                                         Margin="{TemplateBinding BorderThickness}">
+                                                  UseLayoutRounding="False"
+                                                  PanToCursorOnUserZoom="True"
+                                                  ZoomScale="{TemplateBinding ZoomScale}"
+                                                  HorizontalAlignment="Stretch"
+                                                  VerticalAlignment="Stretch"
+                                                  Margin="{TemplateBinding BorderThickness}">
                                 <avalonia:TransformationContainer UseLayoutRounding="False">
                                     <c:SKAsyncViewPort x:Name="PART_SkiaViewPort" UseLayoutRounding="False"/>
                                 </avalonia:TransformationContainer>

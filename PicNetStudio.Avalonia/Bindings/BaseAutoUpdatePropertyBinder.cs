@@ -51,7 +51,7 @@ public abstract class BaseAutoUpdatePropertyBinder<TModel> : BaseBinder<TModel> 
     // We must listen to the control's property changed event rather than add a
     // change handler for the property itself, because otherwise the handler gets
     // called for any instance. It might be cheaper to listen to the event
-    
+
     protected override void OnAttached() {
         if (this.Property != null)
             this.myControl!.PropertyChanged += this.OnControlPropertyChanged;
@@ -61,13 +61,13 @@ public abstract class BaseAutoUpdatePropertyBinder<TModel> : BaseBinder<TModel> 
         if (this.Property != null)
             this.myControl!.PropertyChanged -= this.OnControlPropertyChanged;
     }
-    
+
     /// <summary>
     /// Invoked by the property changed handler when our property changes on the control.
     /// By default this method invokes <see cref="IBinder.UpdateModel"/>
     /// </summary>
     protected virtual void OnControlValueChanged() => this.UpdateModel();
-    
+
     private void OnControlPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e) {
         if (e.Property == this.Property) {
             this.OnControlValueChanged();

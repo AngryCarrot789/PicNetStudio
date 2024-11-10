@@ -24,7 +24,7 @@ using PicNetStudio.Avalonia.DataTransfer;
 namespace PicNetStudio.Avalonia.Bindings;
 
 public class SetterDataParameterPropertyBinder<TModel, TValue> : BaseAutoUpdatePropertyBinder<TModel> where TModel : class, ITransferableData {
-    public DataParameter<TValue> Parameter { get; }
+    public Parameter<TValue> Parameter { get; }
 
     public delegate bool SetterFunction(SetterDataParameterPropertyBinder<TModel, TValue> binder, object? value);
 
@@ -55,7 +55,7 @@ public class SetterDataParameterPropertyBinder<TModel, TValue> : BaseAutoUpdateP
     /// <param name="parameter">The data parameter, used to listen to model value changes</param>
     /// <param name="parameterToProperty">Converts the parameter value to an appropriate property value (e.g. double to string)</param>
     /// <param name="propertyToParameter">Converts the property value back to the parameter value (e.g. string to double, or returns validation error)</param>
-    public SetterDataParameterPropertyBinder(AvaloniaProperty? property, DataParameter<TValue> parameter, Func<TValue?, object?> parameterToProperty, SetterFunction propToParam) : base(property) {
+    public SetterDataParameterPropertyBinder(AvaloniaProperty? property, Parameter<TValue> parameter, Func<TValue?, object?> parameterToProperty, SetterFunction propToParam) : base(property) {
         this.Parameter = parameter ?? throw new ArgumentNullException(nameof(parameter));
         this.ParamToPropForGetter = parameterToProperty ?? throw new ArgumentNullException(nameof(parameterToProperty));
         this.Setter = propToParam ?? throw new ArgumentNullException(nameof(propToParam));

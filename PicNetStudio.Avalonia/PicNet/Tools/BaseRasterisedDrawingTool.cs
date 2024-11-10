@@ -83,12 +83,12 @@ public abstract class BaseRasterisedDrawingTool : BaseDrawingTool {
         // return if not primary cursor and this brush cannot use secondary, or, it can draw secondary but it wasn't pressed
         if ((cursorMask & EnumCursorType.Primary) == 0 && (!this.CanDrawSecondaryColour || (cursorMask & EnumCursorType.Secondary) == 0))
             return false;
-        
+
         return DrawEvent(this, document, x, y, (cursorMask & EnumCursorType.Primary) != 0);
     }
 
     public static bool DrawEvent(BaseRasterisedDrawingTool tool, Document document, double x, double y, bool isPrimaryCursor) {
-        if (!(document.Canvas.ActiveLayer is BitmapLayer bitmapLayer)) {
+        if (!(document.Canvas.ActiveLayerTreeObject is RasterLayer bitmapLayer)) {
             return false;
         }
 

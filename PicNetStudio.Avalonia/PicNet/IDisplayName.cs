@@ -17,28 +17,15 @@
 // along with PicNetStudio. If not, see <https://www.gnu.org/licenses/>.
 // 
 
-using SkiaSharp;
+namespace PicNetStudio.Avalonia.PicNet;
 
-namespace PicNetStudio.Avalonia.PicNet.Layers;
+public delegate void DisplayNameChangedEventHandler(IDisplayName sender, string oldName, string newName);
 
-public delegate void BaseLayerCanvasChangedEventHandler(BaseLayer layer, Canvas? oldCanvas, Canvas? newCanvas);
+public interface IDisplayName {
+    /// <summary>
+    /// Gets or sets the display name. Setting this fires an event
+    /// </summary>
+    string DisplayName { get; set; }
 
-/// <summary>
-/// The base class for a layer in a canvas
-/// </summary>
-public abstract class BaseLayer {
-    public Canvas? Canvas { get; private set; }
-
-    public event BaseLayerCanvasChangedEventHandler? CanvasChanged;
-
-    protected BaseLayer() {
-    }
-    
-    public abstract void Render(SKSurface surface);
-
-    internal static void InternalSetCanvas(BaseLayer layer, Canvas? canvas) {
-        Canvas? oldCanvas = layer.Canvas;
-        layer.Canvas = canvas;
-        layer.CanvasChanged?.Invoke(layer, oldCanvas, canvas);
-    }
+    event DisplayNameChangedEventHandler DisplayNameChanged;
 }

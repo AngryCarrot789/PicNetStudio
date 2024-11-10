@@ -22,13 +22,12 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using PicNetStudio.Avalonia.Bindings;
 using PicNetStudio.Avalonia.Interactivity.Contexts;
-using PicNetStudio.Avalonia.PicNet.Toolbars.ToolItems;
 
 namespace PicNetStudio.Avalonia.PicNet.Toolbars.Controls;
 
 public class ToolBarItemControl : ContentControl {
     public static readonly DirectProperty<ToolBarItemControl, bool> IsActiveProperty = AvaloniaProperty.RegisterDirect<ToolBarItemControl, bool>("IsActive", o => o.IsActive, (o, v) => o.IsActive = v);
-    
+
     private bool _isActive;
 
     /// <summary>
@@ -44,7 +43,7 @@ public class ToolBarItemControl : ContentControl {
     public BaseToolBarItem? ToolBarItem { get; private set; }
 
     private readonly IBinder<SingleToolBarItem> isActiveBinder = new AutoUpdateAndEventPropertyBinder<SingleToolBarItem>(nameof(SingleToolBarItem.IsActiveChanged), (x) => ((ToolBarItemControl) x.Control).IsActive = x.Model.IsActive, null);
-    
+
     public ToolBarItemControl() {
     }
 
@@ -75,7 +74,7 @@ public class ToolBarItemControl : ContentControl {
         content.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
         content.Connect(this);
         DataManager.SetContextData(this, new ContextData().Set(DataKeys.ToolBarItemKey, this.ToolBarItem));
-        
+
         if (this.ToolBarItem is SingleToolBarItem singleToolBarItem) {
             this.isActiveBinder.Attach(this, singleToolBarItem);
         }

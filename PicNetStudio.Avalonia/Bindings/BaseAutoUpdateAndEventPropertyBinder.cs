@@ -31,7 +31,7 @@ public abstract class BaseAutoUpdateAndEventPropertyBinder<TModel> : BaseAutoUpd
 
     protected BaseAutoUpdateAndEventPropertyBinder(string eventName) : this(null, eventName) {
     }
-    
+
     protected BaseAutoUpdateAndEventPropertyBinder(AvaloniaProperty? property, string eventName) : base(property) {
         this.autoEventHelper = new AutoEventHelper(eventName, typeof(TModel), this.OnModelValueChanged);
     }

@@ -22,7 +22,9 @@ using System.Collections.Generic;
 namespace PicNetStudio.Avalonia.Utils.Collections.Observable;
 
 public delegate void ObservableListMultipleItemsEventHandler<T>(IObservableList<T> list, IList<T> items, int index);
+
 public delegate void ObservableListSingleItemEventHandler<T>(IObservableList<T> list, T item, int oldIndex, int newIndex);
+
 public delegate void ObservableListReplaceEventHandler<T>(IObservableList<T> list, T oldItem, T newItem, int index);
 
 /// <summary>
@@ -37,7 +39,7 @@ public interface IObservableList<T> : IList<T> {
     /// </para>
     /// </summary>
     event ObservableListMultipleItemsEventHandler<T> ItemsAdded;
-    
+
     /// <summary>
     /// An event fired when one or more items are removed from this list, at the given index. This is also fired
     /// when the list is cleared, where the index will equal 0 and the args contains all the items that were cleared

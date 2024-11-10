@@ -19,7 +19,6 @@
 
 using System;
 using Avalonia.Controls.Primitives;
-using PicNetStudio.Avalonia.PicNet.Toolbars.ToolItems;
 using PicNetStudio.Avalonia.PicNet.Tools;
 using PicNetStudio.Avalonia.PicNet.Tools.Core;
 
@@ -40,17 +39,17 @@ public class ToolBarItemControlContent : TemplatedControl {
     static ToolBarItemControlContent() {
         Registry = new ModelControlRegistry<BaseToolBarItem, ToolBarItemControlContent>();
         SingleToolSubRegistry = new ModelControlRegistry<BaseCanvasTool, ToolBarItemControlContentSingleTool>();
-        
+
         // This system is really confusing but it seems to work.
         // It's what happens when you explicitly avoid using MVVM :---)
-        
+
         // Register top level toolbar items
         Registry.RegisterType<SingleToolBarItem>((x) => SingleToolSubRegistry.NewInstance(x.Tool));
-        
+
         // Register single-tool specific tools
         SingleToolSubRegistry.RegisterType<BrushTool>(() => new ToolBarItemControlContent_BrushTool());
     }
-    
+
     public void Connect(ToolBarItemControl item) {
         this.ToolBarItem = item ?? throw new ArgumentNullException(nameof(item));
         this.OnConnected();
@@ -62,11 +61,9 @@ public class ToolBarItemControlContent : TemplatedControl {
     }
 
     protected virtual void OnConnected() {
-        
     }
 
     protected virtual void OnDisconnected() {
-        
     }
 }
 

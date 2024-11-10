@@ -83,7 +83,7 @@ public class FreeMoveViewPortV2 : Border {
     private Point lastMousePointRel; // Relative to us being zoomed and translated
 
     public Control? ActualChild => ((TransformationContainer) this.Child)?.Child;
-    
+
     public FreeMoveViewPortV2() {
         this.Loaded += this.OnLoaded;
         this.AddHandler(PointerWheelChangedEvent, this.OnPreviewMouseWheel, RoutingStrategies.Tunnel, false);
@@ -122,7 +122,7 @@ public class FreeMoveViewPortV2 : Border {
             // Process new zoom after layout update which occurs just after render
             RZApplication.Instance.Dispatcher.InvokeAsync(() => {
                 const double AddedBorder = 25; // pixels
-                
+
                 Size mySize = this.Bounds.Size;
                 Size childSize = child.DesiredSize.Inflate(new Thickness(AddedBorder));
                 double ratioW = mySize.Width / childSize.Width;

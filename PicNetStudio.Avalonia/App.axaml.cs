@@ -18,7 +18,6 @@
 // 
 
 using System;
-using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -26,8 +25,6 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
-using PicNetStudio.Avalonia.Shortcuts.Avalonia;
-using PicNetStudio.Avalonia.Utils;
 
 namespace PicNetStudio.Avalonia;
 

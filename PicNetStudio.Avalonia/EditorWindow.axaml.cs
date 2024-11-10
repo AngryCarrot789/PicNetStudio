@@ -17,21 +17,23 @@
 // along with PicNetStudio. If not, see <https://www.gnu.org/licenses/>.
 // 
 
-using System;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Interactivity;
 using PicNetStudio.Avalonia.Interactivity.Contexts;
 using PicNetStudio.Avalonia.PicNet;
 using PicNetStudio.Avalonia.PicNet.Layers;
+using PicNetStudio.Avalonia.PicNet.PropertyEditing;
+using PicNetStudio.Avalonia.Themes.Controls;
 using SkiaSharp;
 
 namespace PicNetStudio.Avalonia;
 
-public partial class EditorWindow : Window {
+public partial class EditorWindow : WindowEx {
     public Editor Editor { get; }
 
     private readonly ContextData contextData;
-    
+
     public EditorWindow() {
         this.InitializeComponent();
 
@@ -40,22 +42,38 @@ public partial class EditorWindow : Window {
         DataManager.SetContextData(this, this.contextData = new ContextData().Set(DataKeys.EditorKey, this.Editor));
 
         this.PART_ToolBar.EditorToolBar = this.Editor.ToolBar;
-        
+
         Document document = new Document();
         document.Canvas.Size = new PixelSize(800, 400);
 
-        BitmapLayer layer = new BitmapLayer();
-        document.Canvas.AddLayer(layer);
 
-        layer.Bitmap.InitialiseBitmap(document.Canvas.Size);
-        layer.Bitmap.Canvas!.Clear(SKColors.White);
-        
+        void MakeLayer(SKColor fill, string name) {
+            RasterLayer layer = new RasterLayer() {
+                DisplayName = name
+            };
+            layer.Bitmap.InitialiseBitmap(document.Canvas.Size);
+            layer.Bitmap.Canvas!.Clear(fill);
+            document.Canvas.AddLayer(layer);
+        }
+
+        MakeLayer(SKColors.Transparent, "Layer 1");
+        MakeLayer(SKColors.Transparent, "Layer 2");
+        MakeLayer(SKColors.White, "Background Base Layer");
+
         this.Editor.AddDocument(document);
+    }
+
+    protected override void OnLoaded(RoutedEventArgs e) {
+        base.OnLoaded(e);
+        this.ThePropertyEditor.ApplyStyling();
+        this.ThePropertyEditor.ApplyTemplate();
+        this.ThePropertyEditor.PropertyEditor = PicNetPropertyEditor.Instance;
     }
 
     private void OnActiveDocumentChanged(Editor sender, Document? oldactivedocument, Document? newactivedocument) {
         this.PART_Canvas.Document = newactivedocument;
-        
+        this.PART_LayerTreeControl.Canvas = newactivedocument?.Canvas;
+
         this.contextData.Set(DataKeys.DocumentKey, newactivedocument);
         DataManager.InvalidateInheritedContext(this);
     }

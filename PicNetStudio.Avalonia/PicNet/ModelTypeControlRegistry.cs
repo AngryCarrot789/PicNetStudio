@@ -38,7 +38,7 @@ public class ModelTypeControlRegistry<TControl> where TControl : Control {
     public void RegisterType(Type modelType, Func<TControl> constructor) {
         this.constructors[modelType] = constructor;
     }
-    
+
     public TControl NewInstance(Type modelType) {
         if (modelType == null) {
             throw new ArgumentNullException(nameof(modelType));

@@ -33,7 +33,7 @@ public class AccessorAutoUpdateAndEventPropertyBinder<TModel, TValue> : BaseAuto
     private readonly ValueAccessor<TValue> accessor;
 
     public new AvaloniaProperty<TValue>? Property => (AvaloniaProperty<TValue>?) base.Property;
-    
+
     public AccessorAutoUpdateAndEventPropertyBinder(AvaloniaProperty<TValue>? property, string eventName, ValueAccessor<TValue> accessor) : base(property, eventName) {
         this.accessor = accessor ?? throw new ArgumentNullException(nameof(accessor));
     }

@@ -6,8 +6,8 @@ Some ideas I have for the future:
 - Customisable UI, something similar to PixiEditor or C4D
 - Multiple editor windows open per instance, tabs movable between windows
 
-## Preview so far
-![](PicNetStudio.Avalonia_2024-11-09_23.19.18.png)
+## Preview so far~~~~
+![](PicNetStudio.Avalonia_2024-11-10_16.51.49.png)
 
 ## Core code
 I created a Bitmap class called PNBitmap which contains skia bitmap and canvas references and a raw pointer to the pixel data. Rasterised layers used this to store pixels and, at the moment, this is the only supported layer type.
@@ -17,3 +17,12 @@ I created a Bitmap class called PNBitmap which contains skia bitmap and canvas r
 - CanvasControl::InvalidateRender(), it initialises rendering using a combination of WriteableBitmap and SKSurface (in SKAsyncViewPort)
 - Each layer is drawn into that surface (async optimisations possible maybe?)
 - InvalidateVisual() and the WriteableBitmap is drawn onscreen
+
+## Contributing
+Feel free to contribute whatever you want if you think it'll make the editor better!
+
+## Licence
+All source files in PicNetStudio are under the GNU General Public License version 3.0 or later (GPL v3.0+). 
+PicNetStudio uses libraries that have other licences, such as MIT licences.
+
+If any source file is missing a copyright notice, it is assumed to be licenced under the same licence as PicNetStudio

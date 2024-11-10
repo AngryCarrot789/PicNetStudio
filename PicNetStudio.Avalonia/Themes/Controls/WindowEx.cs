@@ -25,9 +25,9 @@ using Avalonia.Media;
 namespace PicNetStudio.Avalonia.Themes.Controls;
 
 public class WindowEx : Window {
-    public static readonly StyledProperty<IBrush> TitleBarBrushProperty = AvaloniaProperty.Register<WindowEx, IBrush>("TitleBarBrush");
+    public static readonly StyledProperty<IBrush?> TitleBarBrushProperty = AvaloniaProperty.Register<WindowEx, IBrush?>("TitleBarBrush");
 
-    public IBrush TitleBarBrush {
+    public IBrush? TitleBarBrush {
         get => this.GetValue(TitleBarBrushProperty);
         set => this.SetValue(TitleBarBrushProperty, value);
     }

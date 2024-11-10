@@ -19,8 +19,6 @@
 
 using System;
 using Avalonia;
-using Avalonia.Controls.Platform;
-using PicNetStudio.Avalonia.Utils.Collections.Observable;
 
 namespace PicNetStudio.Avalonia;
 

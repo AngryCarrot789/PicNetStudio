@@ -30,18 +30,16 @@ namespace PicNetStudio.Avalonia.Bindings.Enums;
 /// </summary>
 public class DataParameterEnumBinder<TEnum> where TEnum : struct {
     public delegate void DataParameterEnumBinderCurrentValueChangedEventHandler(DataParameterEnumBinder<TEnum> sender, TEnum oldCurrentValue, TEnum newCurrentValue);
-    
+
     private readonly Dictionary<RadioButton, TEnum> buttonToState;
     private readonly List<RadioButton> defaultButtons;
     private readonly TEnum defaultEnum;
     private TEnum currentValue;
 
-    public TEnum CurrentValue
-    {
+    public TEnum CurrentValue {
         get => this.currentValue;
-        set
-        {
-            TEnum oldCurrentValue = this.currentValue; 
+        set {
+            TEnum oldCurrentValue = this.currentValue;
             this.currentValue = value;
             this.CurrentValueChanged?.Invoke(this, oldCurrentValue, value);
             if (this.Owner != null) {
@@ -55,11 +53,11 @@ public class DataParameterEnumBinder<TEnum> where TEnum : struct {
     /// </summary>
     public ITransferableData? Owner { get; private set; }
 
-    public DataParameter<TEnum> Parameter { get; }
-    
+    public Parameter<TEnum> Parameter { get; }
+
     public event DataParameterEnumBinderCurrentValueChangedEventHandler? CurrentValueChanged;
 
-    public DataParameterEnumBinder(DataParameter<TEnum> parameter, TEnum defaultValue = default) {
+    public DataParameterEnumBinder(Parameter<TEnum> parameter, TEnum defaultValue = default) {
         this.buttonToState = new Dictionary<RadioButton, TEnum>();
         this.defaultButtons = new List<RadioButton>();
         this.currentValue = defaultValue;
@@ -96,9 +94,9 @@ public class DataParameterEnumBinder<TEnum> where TEnum : struct {
     public void Attach(ITransferableData owner) {
         if (owner == null)
             throw new ArgumentNullException(nameof(owner));
-        
+
         this.Owner = owner;
-        foreach (KeyValuePair<RadioButton,TEnum> pair in this.buttonToState) {
+        foreach (KeyValuePair<RadioButton, TEnum> pair in this.buttonToState) {
             if (pair.Key.IsChecked == true) {
                 this.CurrentValue = pair.Value;
                 return;

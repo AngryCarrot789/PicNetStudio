@@ -38,7 +38,7 @@ public class AutoUpdatePropertyBinder<TModel> : BaseAutoUpdatePropertyBinder<TMo
 
     public AutoUpdatePropertyBinder(Action<IBinder<TModel>>? updateControl, Action<IBinder<TModel>>? updateModel) : this(null, updateControl, updateModel) {
     }
-    
+
     public AutoUpdatePropertyBinder(AvaloniaProperty? property, Action<IBinder<TModel>>? updateControl, Action<IBinder<TModel>>? updateModel) : base(property) {
         this.DoUpdateControl = updateControl;
         this.DoUpdateModel = updateModel;

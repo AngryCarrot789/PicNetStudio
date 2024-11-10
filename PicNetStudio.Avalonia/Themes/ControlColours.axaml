@@ -280,5 +280,5 @@
     <SolidColorBrush x:Key="Window.Static.Background" Color="{DynamicResource AColour.Tone3.Background.Static}"/>
     <SolidColorBrush x:Key="Window.Static.Border" Color="{DynamicResource AColour.Tone5.Border.Static}"/>
     <SolidColorBrush x:Key="Window.Static.Foreground" Color="{DynamicResource AColour.Foreground.Static}"/>
-    <SolidColorBrush x:Key="Window.Static.Title.Background" Color="{DynamicResource AColour.Tone4.Background.Static}"/>
+    <SolidColorBrush x:Key="Window.Static.Title.Background" Color="{DynamicResource AColour.Tone6.Background.Static}"/>
 </ResourceDictionary>

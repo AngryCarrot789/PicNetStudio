@@ -32,17 +32,17 @@ public class CanvasControl : TemplatedControl {
     public static readonly StyledProperty<Document?> DocumentProperty = AvaloniaProperty.Register<CanvasControl, Document?>(nameof(Document));
     public static readonly StyledProperty<double> ZoomScaleProperty = FreeMoveViewPortV2.ZoomScaleProperty.AddOwner<CanvasControl>();
     public static readonly StyledProperty<bool> IsDrawingWithPointerProperty = AvaloniaProperty.Register<CanvasControl, bool>(nameof(IsDrawingWithPointer));
-    
+
     public Document? Document {
         get => this.GetValue(DocumentProperty);
         set => this.SetValue(DocumentProperty, value);
     }
-    
+
     public double ZoomScale {
         get => this.GetValue(ZoomScaleProperty);
         set => this.SetValue(ZoomScaleProperty, value);
     }
-    
+
     public bool IsDrawingWithPointer {
         get => this.GetValue(IsDrawingWithPointerProperty);
         set => this.SetValue(IsDrawingWithPointerProperty, value);
@@ -86,7 +86,7 @@ public class CanvasControl : TemplatedControl {
             }
         }
     }
-    
+
     public bool BeginCanvasRender(out SKSurface surface) {
         if (this.PART_SkiaViewPort != null) {
             return this.PART_SkiaViewPort.BeginRender(out surface);
@@ -97,7 +97,7 @@ public class CanvasControl : TemplatedControl {
     }
 
     public void EndCanvasRender() => this.PART_SkiaViewPort?.EndRender();
-    
+
     private void OnLoaded(object? sender, RoutedEventArgs e) {
         this.Loaded -= this.OnLoaded;
         this.InvalidateRender();
@@ -114,7 +114,7 @@ public class CanvasControl : TemplatedControl {
             oldDocument.Canvas.SizeChanged -= control.OnResolutionChanged;
             oldDocument.Canvas.RenderInvalidated -= control.OnCanvasRenderInvalidated;
         }
-        
+
         if (e.TryGetNewValue(out Document? newDocument)) {
             newDocument.Canvas.SizeChanged += control.OnResolutionChanged;
             newDocument.Canvas.RenderInvalidated += control.OnCanvasRenderInvalidated;
@@ -129,7 +129,7 @@ public class CanvasControl : TemplatedControl {
     private void UpdatePnbSize(PixelSize size) {
         if (this.PART_SkiaViewPort == null)
             return;
-        
+
         this.PART_SkiaViewPort.Width = size.Width;
         this.PART_SkiaViewPort.Height = size.Height;
     }

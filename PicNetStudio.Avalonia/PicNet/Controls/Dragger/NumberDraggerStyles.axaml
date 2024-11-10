@@ -1,0 +1,97 @@
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:l="clr-namespace:PicNetStudio.Avalonia.PicNet.Controls.Dragger">
+    <ControlTheme x:Key="{x:Type l:NumberDragger}" TargetType="{x:Type l:NumberDragger}">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Focusable" Value="True"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type l:NumberDragger}">
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}">
+                        <Grid Margin="{TemplateBinding Padding}" VerticalAlignment="Stretch">
+                            <TextBlock Text="0" x:Name="PART_TextBlock" Padding="2,0,2,0"
+                                       Background="Transparent"
+                                       HorizontalAlignment="Center"/>
+                            <TextBox Text="0" x:Name="PART_TextBox" VerticalContentAlignment="Center"
+                                     HorizontalContentAlignment="Center"
+                                     BorderThickness="0" Background="Transparent" HorizontalAlignment="Stretch"/>
+                            <TextBlock x:Name="PART_HintTextBlock" Padding="2,0,2,0"
+                                       Background="Transparent"
+                                       HorizontalAlignment="Center"
+                                       Foreground="{DynamicResource ABrush.Foreground.Disabled}"
+                                       Text="{TemplateBinding EditingHint}" IsVisible="False"/>
+                        </Grid>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </ControlTheme>
+
+    <ControlTheme x:Key="AbletonNumberDraggerStyle" TargetType="{x:Type l:NumberDragger}" BasedOn="{StaticResource {x:Type l:NumberDragger}}">
+        <Setter Property="Background" Value="{DynamicResource PanelBackground2}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource PanelBorderBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type l:NumberDragger}">
+                    <Grid>
+                        <ProgressBar Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
+                                     Minimum="{TemplateBinding Minimum}" Maximum="{TemplateBinding Maximum}"
+                                     Value="{TemplateBinding Value}"
+                                     UseLayoutRounding="True"/>
+                        <Grid Margin="{TemplateBinding Padding}" VerticalAlignment="Stretch">
+                            <TextBlock Text="0" x:Name="PART_TextBlock" Padding="2,0"
+                                       Background="Transparent"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"/>
+                            <TextBox Text="0" x:Name="PART_TextBox" VerticalContentAlignment="Center"
+                                     HorizontalContentAlignment="Center"
+                                     BorderThickness="0" Background="Transparent" HorizontalAlignment="Stretch"
+                                     VerticalAlignment="Center" Padding="0,0,0,0"/>
+                            <TextBlock x:Name="PART_HintTextBlock" Padding="2,0,2,0"
+                                       Background="Transparent"
+                                       HorizontalAlignment="Center"
+                                       Foreground="{DynamicResource ABrush.Foreground.Disabled}"
+                                       Text="{TemplateBinding EditingHint}" IsVisible="False"/>
+                        </Grid>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </ControlTheme>
+
+    <ControlTheme x:Key="AbletonNumberDraggerWithoutProgressStyle" TargetType="{x:Type l:NumberDragger}" BasedOn="{StaticResource {x:Type l:NumberDragger}}">
+        <Setter Property="Background" Value="{DynamicResource PanelBackground2}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource PanelBorderBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type l:NumberDragger}">
+                    <Grid>
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                UseLayoutRounding="True"/>
+                        <Grid Margin="{TemplateBinding Padding}" VerticalAlignment="Stretch">
+                            <TextBlock Text="0" x:Name="PART_TextBlock" Padding="2,0"
+                                       Background="Transparent"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"/>
+                            <TextBox Text="0" x:Name="PART_TextBox" VerticalContentAlignment="Center"
+                                     HorizontalContentAlignment="Center"
+                                     BorderThickness="0" Background="Transparent" HorizontalAlignment="Stretch"
+                                     VerticalAlignment="Center" Padding="0,0,0,0"/>
+                            <TextBlock x:Name="PART_HintTextBlock" Padding="2,0,2,0"
+                                       Background="Transparent"
+                                       HorizontalAlignment="Center"
+                                       Foreground="{DynamicResource ABrush.Foreground.Disabled}"
+                                       Text="{TemplateBinding EditingHint}" IsVisible="False"/>
+                        </Grid>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </ControlTheme>
+</ResourceDictionary>

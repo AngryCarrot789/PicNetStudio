@@ -131,14 +131,14 @@ public readonly struct ObservableListChangedEventArgs<T> {
     /// The action that occurred
     /// </summary>
     public ObservableListCollectionChangedAction Action { get; }
-    
+
     /// <summary>
     /// The added items when <see cref="ObservableListCollectionChangedAction.Add"/> occurs or
     /// the new items when <see cref="ObservableListCollectionChangedAction.Replace"/> occurs or
     /// the moved items when <see cref="ObservableListCollectionChangedAction.Move"/> occurs
     /// </summary>
     public IReadOnlyList<T> NewItems { get; }
-    
+
     /// <summary>
     /// The removed items when <see cref="ObservableListCollectionChangedAction.Remove"/> occurs or
     /// the old items when <see cref="ObservableListCollectionChangedAction.Replace"/> occurs or
@@ -146,12 +146,12 @@ public readonly struct ObservableListChangedEventArgs<T> {
     /// the items that were cleared when <see cref="ObservableListCollectionChangedAction.Reset"/> occurs
     /// </summary>
     public IReadOnlyList<T> OldItems { get; }
-    
+
     /// <summary>
     /// The index of the 0th added, replaced or moved item(s)
     /// </summary>
     public int NewIndex { get; } = -1;
-    
+
     /// <summary>
     /// The index of the 0th removed, replaced or moved item(s)
     /// </summary>
@@ -164,7 +164,7 @@ public readonly struct ObservableListChangedEventArgs<T> {
         this.NewIndex = newIndex;
         this.OldIndex = oldIndex;
     }
-    
+
     public ObservableListChangedEventArgs(ObservableListCollectionChangedAction action, IEnumerable<T>? oldItems, IEnumerable<T>? newItems, int oldIndex, int newIndex) {
         this.Action = action;
         this.OldItems = oldItems == null ? ReadOnlyCollection<T>.Empty : (oldItems is IList<T> ? new ReadOnlyCollection<T>((IList<T>) oldItems) : oldItems.ToList().AsReadOnly());
@@ -172,7 +172,7 @@ public readonly struct ObservableListChangedEventArgs<T> {
         this.NewIndex = newIndex;
         this.OldIndex = oldIndex;
     }
-    
+
     public ObservableListChangedEventArgs(IEnumerable<T>? itemsBeingCleared) {
         this.Action = ObservableListCollectionChangedAction.Reset;
         this.OldItems = itemsBeingCleared == null ? ReadOnlyCollection<T>.Empty : (itemsBeingCleared is IList<T> ? new ReadOnlyCollection<T>((IList<T>) itemsBeingCleared) : itemsBeingCleared.ToList().AsReadOnly());
@@ -185,21 +185,25 @@ public enum ObservableListCollectionChangedAction {
     /// <summary>
     /// Item(s) added. <see cref="ObservableListChangedEventArgs{T}.NewItems"/> contains the added items
     /// </summary>
-    Add, 
+    Add,
+
     /// <summary>
     /// Item(s) removed. <see cref="ObservableListChangedEventArgs{T}.OldItems"/> contains the removed items
     /// </summary>
-    Remove, 
+    Remove,
+
     /// <summary>
     /// Item(s) removed. <see cref="ObservableListChangedEventArgs{T}.OldItems"/> contains the item that
     /// was removed, <see cref="ObservableListChangedEventArgs{T}.NewItems"/> contains the new item.
     /// The old and new index will be the same
     /// </summary>
-    Replace, 
+    Replace,
+
     /// <summary>
     /// Item(s) moved. Both the old and new items lists contain the same item(s) 
     /// </summary>
-    Move, 
+    Move,
+
     /// <summary>
     /// Items cleared. <see cref="ObservableListChangedEventArgs{T}.OldItems"/> contains the items that were removed
     /// </summary>

@@ -1,8 +1,6 @@
 ﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:tb="clr-namespace:PicNetStudio.Avalonia.PicNet.Toolbars.Controls">
-
-
     <ControlTheme x:Key="{x:Type tb:ToolBarItemListBox}" TargetType="{x:Type tb:ToolBarItemListBox}">
         <Setter Property="Background" Value="{DynamicResource ListBox.Static.Background}"/>
         <Setter Property="BorderBrush" Value="Transparent"/>
@@ -88,16 +86,16 @@
     </ControlTheme>
 
     <ControlTheme x:Key="{x:Type tb:ToolBarItemControlContent}" TargetType="{x:Type tb:ToolBarItemControlContent}">
-        
+
     </ControlTheme>
-    
-    <ControlTheme x:Key="{x:Type tb:ToolBarItemControlContentSingleTool}" 
-                  TargetType="{x:Type tb:ToolBarItemControlContentSingleTool}" 
+
+    <ControlTheme x:Key="{x:Type tb:ToolBarItemControlContentSingleTool}"
+                  TargetType="{x:Type tb:ToolBarItemControlContentSingleTool}"
                   BasedOn="{StaticResource {x:Type tb:ToolBarItemControlContent}}">
     </ControlTheme>
-    
-    <ControlTheme x:Key="{x:Type tb:ToolBarItemControlContent_BrushTool}" 
-                  TargetType="{x:Type tb:ToolBarItemControlContent_BrushTool}" 
+
+    <ControlTheme x:Key="{x:Type tb:ToolBarItemControlContent_BrushTool}"
+                  TargetType="{x:Type tb:ToolBarItemControlContent_BrushTool}"
                   BasedOn="{StaticResource {x:Type tb:ToolBarItemControlContentSingleTool}}">
         <Setter Property="Template">
             <ControlTemplate>

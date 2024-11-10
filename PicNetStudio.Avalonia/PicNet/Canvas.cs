@@ -18,46 +18,51 @@
 // 
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using Avalonia;
 using PicNetStudio.Avalonia.PicNet.Layers;
+using PicNetStudio.Avalonia.PicNet.PropertyEditing;
+using PicNetStudio.Avalonia.Utils.Collections.Observable;
 using SkiaSharp;
 
 namespace PicNetStudio.Avalonia.PicNet;
 
 public delegate void CanvasRenderInvalidatedEventHandler(Canvas canvas);
-public delegate void CanvasLayerIndexChangedEventHandler(Canvas canvas, BaseLayer layer, int oldIndex, int newIndex);
-public delegate void CanvasActiveLayerChangedEventHandler(Canvas canvas, BaseLayer oldActiveLayer, BaseLayer newActiveLayer);
+
+public delegate void CanvasLayerIndexChangedEventHandler(Canvas canvas, BaseLayerTreeObject layerTreeObject, int oldIndex, int newIndex);
+
+public delegate void CanvasActiveLayerChangedEventHandler(Canvas canvas, BaseLayerTreeObject oldActiveLayerTreeObject, BaseLayerTreeObject newActiveLayerTreeObject);
+
 public delegate void CanvasSizeChangedEventHandler(Canvas canvas, PixelSize oldSize, PixelSize newSize);
 
 /// <summary>
 /// Represents the canvas for a document. This contains layer information among other data
 /// </summary>
 public class Canvas {
-    private readonly List<BaseLayer> layers;
+    private readonly SuspendableObservableList<BaseLayerTreeObject> layers;
     private PixelSize size;
-    private BaseLayer activeLayer;
+    private BaseLayerTreeObject activeLayerTreeObject;
 
     /// <summary>
     /// The document that owns this canvas
     /// </summary>
     public Document Document { get; }
-    
-    public IList<BaseLayer> Layers { get; }
 
-    public BaseLayer ActiveLayer {
-        get => this.activeLayer;
+    public ReadOnlyObservableList<BaseLayerTreeObject> Layers { get; }
+
+    public BaseLayerTreeObject ActiveLayerTreeObject {
+        get => this.activeLayerTreeObject;
         set {
-            BaseLayer oldActiveLayer = this.activeLayer;
-            if (oldActiveLayer == value)
+            BaseLayerTreeObject oldActiveLayerTreeObject = this.activeLayerTreeObject;
+            if (oldActiveLayerTreeObject == value)
                 return;
 
-            this.activeLayer = value;
-            this.ActiveLayerChanged?.Invoke(this, oldActiveLayer, value);
+            this.activeLayerTreeObject = value;
+            this.ActiveLayerChanged?.Invoke(this, oldActiveLayerTreeObject, value);
+            PicNetPropertyEditor.Instance.UpdateSelectedLayerSelection(this);
         }
     }
-    
+
     public PixelSize Size {
         get => this.size;
         set {
@@ -69,77 +74,67 @@ public class Canvas {
             this.SizeChanged?.Invoke(this, oldSize, value);
         }
     }
-    
+
     /// <summary>
     /// An event fired when the canvas has changed and any UI needs redrawing due to the pixels changing
     /// </summary>
     public event CanvasRenderInvalidatedEventHandler? RenderInvalidated;
 
     /// <summary>
-    /// An event fired when a layer is added, removed or moved
-    /// </summary>
-    public event CanvasLayerIndexChangedEventHandler? LayerIndexChanged;
-    
-    /// <summary>
     /// An event fired when the active layer changes
     /// </summary>
     public event CanvasActiveLayerChangedEventHandler? ActiveLayerChanged;
-    
+
     /// <summary>
     /// An event fired when the size of the canvas changes, e.g. from cropping
     /// </summary>
     public event CanvasSizeChangedEventHandler? SizeChanged;
 
     // TODO: two bitmaps containing pre-rendered layers before and after active layer, as to make rendering faster 
-    
+
     public Canvas(Document document) {
         this.Document = document;
-        this.layers = new List<BaseLayer>();
-        this.Layers = this.layers.AsReadOnly();
+        this.layers = new SuspendableObservableList<BaseLayerTreeObject>();
+        this.Layers = new ReadOnlyObservableList<BaseLayerTreeObject>(this.layers);
         this.size = new PixelSize(500, 500);
     }
-    
+
     // QtBitmapEditor -> Project::paintEvent
     public void Render(SKSurface surface) {
-        foreach (BaseLayer layer in this.layers) {
-            layer.Render(surface);
-        }
-
-        // surface.Canvas.DrawBitmap(pnb.Bitmap, 0, 0);
+        LayerRenderer.Instance.Render(surface, this);
     }
 
     public void RaiseRenderInvalidated() {
         this.RenderInvalidated?.Invoke(this);
     }
-    
-    public void AddLayer(BaseLayer layer) {
-        if (layer.Canvas == this)
+
+    public void AddLayer(BaseLayerTreeObject layerTreeObject) {
+        if (layerTreeObject.Canvas == this)
             throw new InvalidOperationException("Layer already added");
 
-        this.InsertLayer(this.layers.Count, layer);
+        this.InsertLayer(this.layers.Count, layerTreeObject);
     }
 
-    public void InsertLayer(int index, BaseLayer layer) {
-        if (layer.Canvas == this)
+    public void InsertLayer(int index, BaseLayerTreeObject layerTreeObject) {
+        if (layerTreeObject.Canvas == this)
             throw new InvalidOperationException("Layer already added");
 
-        this.layers.Insert(index, layer);
-        BaseLayer.InternalSetCanvas(layer, this);
-        this.LayerIndexChanged?.Invoke(this, layer, -1, index);
+        this.layers.Insert(index, layerTreeObject);
+        BaseLayerTreeObject.InternalSetCanvasInTree(layerTreeObject, this);
 
         // Select first layer for now
         if (this.layers.Count == 1)
-            this.ActiveLayer = layer;
-        
+            this.ActiveLayerTreeObject = layerTreeObject;
+
         this.RaiseRenderInvalidated();
     }
 
-    public bool RemoveLayer(BaseLayer layer) {
-        int index = this.layers.IndexOf(layer);
+    public bool RemoveLayer(BaseLayerTreeObject layerTreeObject) {
+        int index = this.layers.IndexOf(layerTreeObject);
         if (index == -1)
             return false;
 
-        this.RemoveLayerInternal(index, layer);
+        this.RemoveLayerInternal(index, layerTreeObject);
         return true;
     }
 
@@ -147,20 +142,15 @@ public class Canvas {
         this.RemoveLayerInternal(index, this.layers[index]);
     }
 
-    public void MoveLayer(int oldIndex, int newIndex) {
-        this.LayerIndexChanged?.Invoke(this, this.layers[oldIndex], oldIndex, newIndex);
-    }
-
-    private void RemoveLayerInternal(int index, BaseLayer layer) {
+    private void RemoveLayerInternal(int index, BaseLayerTreeObject layerTreeObject) {
         if (this.layers.Count == 1) {
             Debug.Assert(index == 0, "Expected removal index to equal 0 when layer count is 1");
 
             // Un-set active layer as it's being removed
-            this.ActiveLayer = null;
+            this.ActiveLayerTreeObject = null;
         }
 
         this.layers.RemoveAt(index);
-        BaseLayer.InternalSetCanvas(layer, null);
-        this.LayerIndexChanged?.Invoke(this, layer, index, -1);
+        BaseLayerTreeObject.InternalSetCanvasInTree(layerTreeObject, null);
     }
 }

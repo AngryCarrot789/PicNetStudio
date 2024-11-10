@@ -21,8 +21,7 @@ namespace PicNetStudio.Avalonia.Utils.Accessing;
 public static class ValueAccessors {
     // Is using a map of maps even a good idea? It might be slower...
     private static readonly Dictionary<Type, Dictionary<PropOrFieldKey, object>> CachedLinqAccessors;
-
-    private static ParameterExpression InstanceParameter;
+    private static ParameterExpression? InstanceParameter;
 
     static ValueAccessors() {
         CachedLinqAccessors = new Dictionary<Type, Dictionary<PropOrFieldKey, object>>();
@@ -57,7 +56,7 @@ public static class ValueAccessors {
     /// <returns>A value accessor</returns>
     public static ValueAccessor<TValue> LinqExpression<TValue>(Type owner, string propertyOrField, bool canUseCached = false) {
         MemberInfo targetMember = GetPropertyOrField(owner, propertyOrField);
-        Type memberOwnerType = targetMember.DeclaringType;
+        Type? memberOwnerType = targetMember.DeclaringType;
         if (memberOwnerType == null)
             throw new Exception($"The target member named '{propertyOrField}' does not have a declaring type somehow");
 
@@ -87,20 +86,20 @@ public static class ValueAccessors {
 
     private static ValueAccessor<TValue> GetOrCreateCachedLinqAccessor<TValue>(Type memberOwnerType, string propertyOrField, MemberInfo targetMember) {
         PropOrFieldKey key = new PropOrFieldKey(propertyOrField, targetMember);
-        Dictionary<PropOrFieldKey, object> memberToAccessor;
+        Dictionary<PropOrFieldKey, object>? memberToAccessor;
         lock (CachedLinqAccessors) {
             if (!CachedLinqAccessors.TryGetValue(memberOwnerType, out memberToAccessor))
                 CachedLinqAccessors[memberOwnerType] = memberToAccessor = new Dictionary<PropOrFieldKey, object>();
         }
 
         lock (memberToAccessor) {
-            bool result = memberToAccessor.TryGetValue(key, out object rawAccessor);
+            bool result = memberToAccessor.TryGetValue(key, out object? rawAccessor);
             ValueAccessor<TValue> accessor;
             if (result) {
                 // Assuming the CLR won't allow duplicate properties or fields with the same name,
                 // or if that's not the case then assuming order is at least maintained during runtime and
                 // the property/field types cannot be changed, then this should cast successfully
-                accessor = (ValueAccessor<TValue>) rawAccessor;
+                accessor = (ValueAccessor<TValue>) rawAccessor!;
             }
             else {
                 memberToAccessor[key] = accessor = CreateLinqAccessor<TValue>(memberOwnerType, targetMember);
@@ -111,7 +110,7 @@ public static class ValueAccessors {
     }
 
     private static ValueAccessor<TValue> CreateLinqAccessor<TValue>(Type memberOwnerType, MemberInfo memberInfo) {
-        ParameterExpression paramInstance = InstanceParameter ?? (InstanceParameter = Expression.Parameter(typeof(object), "instance"));
+        ParameterExpression paramInstance = InstanceParameter ??= Expression.Parameter(typeof(object), "instance");
         UnaryExpression castToOwner = Expression.Convert(paramInstance, memberOwnerType);
         MemberExpression dataMember = Expression.MakeMemberAccess(castToOwner, memberInfo);
 
@@ -121,7 +120,7 @@ public static class ValueAccessors {
         BinaryExpression assignValue = Expression.Assign(dataMember, paramValue);
         AccessSetter<TValue> setter = Expression.Lambda<AccessSetter<TValue>>(assignValue, paramInstance, paramValue).Compile();
 
-        return new GetSetValueAccessor<TValue>(getter, setter);
+        return new GetSetValueAccessor<TValue>(getter, setter!);
     }
 
     /// <summary>
@@ -132,11 +131,11 @@ public static class ValueAccessors {
     /// <typeparam name="TValue">The value type</typeparam>
     /// <returns>A value accessor</returns>
     public static ValueAccessor<TValue> GetSet<TValue>(AccessGetter<TValue> getter, AccessSetter<TValue> setter) {
-        return new GetSetValueAccessor<TValue>(getter, setter);
+        return new GetSetValueAccessor<TValue>(getter, setter!);
     }
 
-    public static ValueAccessor<TValue> DependencyProperty<TValue>(AvaloniaProperty<TValue> property) {
-        return new DependencyPropertyValueAccessor<TValue>(property);
+    public static ValueAccessor<TValue> AvaloniaProperty<TValue>(AvaloniaProperty<TValue> property) {
+        return new AvaloniaPropertyValueAccessor<TValue>(property);
     }
 
     // /// <summary>
@@ -155,7 +154,7 @@ public static class ValueAccessors {
         }
 
         public override TValue? GetValue(object owner) {
-            return (TValue) this.info.GetValue(owner);
+            return (TValue?) this.info.GetValue(owner);
         }
 
         public override object? GetObjectValue(object owner) {
@@ -180,7 +179,7 @@ public static class ValueAccessors {
         }
 
         public override TValue? GetValue(object owner) {
-            return (TValue) this.info.GetValue(owner);
+            return (TValue?) this.info.GetValue(owner);
         }
 
         public override object? GetObjectValue(object owner) {
@@ -270,10 +269,10 @@ public static class ValueAccessors {
     }
 
     // eh probably won't use this...
-    private class DependencyPropertyValueAccessor<TValue> : ValueAccessor<TValue> {
+    private class AvaloniaPropertyValueAccessor<TValue> : ValueAccessor<TValue> {
         private readonly AvaloniaProperty<TValue> property;
 
-        public DependencyPropertyValueAccessor(AvaloniaProperty<TValue> property) {
+        public AvaloniaPropertyValueAccessor(AvaloniaProperty<TValue> property) {
             this.property = property;
         }
 
@@ -318,10 +317,10 @@ public static class ValueAccessors {
 
     private static MemberInfo GetPropertyOrField(Type type, string name) {
         // Can't get public or private in a single method call, according to the Expression class
-        PropertyInfo p = type.GetProperty(name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.FlattenHierarchy);
+        PropertyInfo? p = type.GetProperty(name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.FlattenHierarchy);
         if (!ReferenceEquals(p, null))
             return p;
-        FieldInfo f = type.GetField(name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.FlattenHierarchy);
+        FieldInfo? f = type.GetField(name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.FlattenHierarchy);
         if (!ReferenceEquals(f, null))
             return f;
         if (!ReferenceEquals(p = type.GetProperty(name, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy), null))
@@ -347,7 +346,7 @@ public static class ValueAccessors {
 
         public bool Equals(PropOrFieldKey other) => this.Name == other.Name && this.DataType == other.DataType;
 
-        public override bool Equals(object obj) => obj is PropOrFieldKey other && this.Equals(other);
+        public override bool Equals(object? obj) => obj is PropOrFieldKey other && this.Equals(other);
 
         public override int GetHashCode() => this.HashCode;
     }

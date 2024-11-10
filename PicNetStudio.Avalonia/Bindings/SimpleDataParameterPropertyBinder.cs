@@ -61,7 +61,7 @@ public class SimpleDataParameterPropertyBinder<TModel> : BaseAutoUpdatePropertyB
     }
 
     private void OnDataParameterValueChanged(DataParameter parameter, ITransferableData owner) => this.UpdateControl();
-    
+
     protected override void OnAttached() {
         base.OnAttached();
         this.Parameter?.AddValueChangedHandler(this.Model, this.OnDataParameterValueChanged);

@@ -17,19 +17,11 @@
 // along with PicNetStudio. If not, see <https://www.gnu.org/licenses/>.
 // 
 
-using SkiaSharp;
-
 namespace PicNetStudio.Avalonia.PicNet.Layers;
 
-public class BitmapLayer : BaseLayer {
-    public PNBitmap Bitmap { get; }
-
-    public BitmapLayer() {
-        this.Bitmap = new PNBitmap();
-    }
-
-    public override void Render(SKSurface surface) {
-        if (this.Bitmap.HasPixels)
-            surface.Canvas.DrawBitmap(this.Bitmap.Bitmap, 0, 0);
-    }
+/// <summary>
+/// A class which manages the layer tree selection so that models
+/// can access selected items without interacting with the UI components directly
+/// </summary>
+public class LayerTreeSelectionManager {
 }

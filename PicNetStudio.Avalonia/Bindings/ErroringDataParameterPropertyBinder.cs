@@ -25,10 +25,10 @@ namespace PicNetStudio.Avalonia.Bindings;
 
 public class ErroringDataParameterPropertyBinder<TModel, TValue> : BaseAutoUpdatePropertyBinder<TModel> where TModel : class, ITransferableData {
     private bool hasError;
-    
+
     public delegate bool PropertyToParameterFunction(object? prop, out TValue? value);
 
-    public DataParameter<TValue> Parameter { get; }
+    public Parameter<TValue> Parameter { get; }
 
     private readonly Func<TValue?, object?> ParamToProp;
     private readonly PropertyToParameterFunction PropToParam;
@@ -53,7 +53,7 @@ public class ErroringDataParameterPropertyBinder<TModel, TValue> : BaseAutoUpdat
     /// <param name="parameter">The data parameter, used to listen to model value changes</param>
     /// <param name="parameterToProperty">Converts the parameter value to an appropriate property value (e.g. double to string)</param>
     /// <param name="propertyToParameter">Converts the property value back to the parameter value (e.g. string to double, or returns validation error)</param>
-    public ErroringDataParameterPropertyBinder(AvaloniaProperty? property, DataParameter<TValue> parameter, Func<TValue?, object?> parameterToProperty, PropertyToParameterFunction propertyToParameter) : base(property) {
+    public ErroringDataParameterPropertyBinder(AvaloniaProperty? property, Parameter<TValue> parameter, Func<TValue?, object?> parameterToProperty, PropertyToParameterFunction propertyToParameter) : base(property) {
         this.Parameter = parameter ?? throw new ArgumentNullException(nameof(parameter));
         this.ParamToProp = parameterToProperty ?? throw new ArgumentNullException(nameof(parameterToProperty));
         this.PropToParam = propertyToParameter ?? throw new ArgumentNullException(nameof(propertyToParameter));

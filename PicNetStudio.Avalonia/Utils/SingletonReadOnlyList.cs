@@ -45,7 +45,7 @@ public class SingletonReadOnlyList<T> : IReadOnlyList<T> {
 
 public class SingletonList<T> : IList<T> {
     private readonly T value;
-    
+
     public int Count => 1;
 
     public bool IsReadOnly => true;
@@ -58,11 +58,11 @@ public class SingletonList<T> : IList<T> {
     public SingletonList(T value) {
         this.value = value;
     }
-    
+
     public void Add(T item) => throw new NotImplementedException("Read-only list");
 
     public void Clear() => throw new NotImplementedException("Read-only list");
-    
+
     public bool Remove(T item) => throw new NotImplementedException("Read-only list");
 
     public void Insert(int index, T item) => throw new NotImplementedException("Read-only list");
@@ -77,7 +77,7 @@ public class SingletonList<T> : IList<T> {
     public void CopyTo(T[] array, int arrayIndex) {
         array[arrayIndex] = this.value;
     }
-    
+
     public int IndexOf(T item) {
         return EqualityComparer<T>.Default.Equals(item, this.value) ? 0 : -1;
     }

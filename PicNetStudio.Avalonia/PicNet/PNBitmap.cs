@@ -38,7 +38,7 @@ public class PNBitmap {
     /// Returns true when this bitmap has been initialised and can therefore be drawn into. The size will be non-zero when true
     /// </summary>
     public bool HasPixels => this.hColourData != IntPtr.Zero;
-    
+
     /// <summary>
     /// Gets the handle to the raw pixels 
     /// </summary>
@@ -48,7 +48,7 @@ public class PNBitmap {
     /// Gets our Skia canvas
     /// </summary>
     public SKCanvas? Canvas => this.skCanvas;
-    
+
     /// <summary>
     /// Gets our skia bitmap
     /// </summary>

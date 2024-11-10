@@ -172,11 +172,11 @@ public static class CollectionUtils {
         list.Clear();
         list.Add(value);
     }
-    
+
     public static bool TryAdd<T>(this IList<T> list, T value) {
         if (list.Contains(value))
             return false;
-        
+
         list.Add(value);
         return true;
     }

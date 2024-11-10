@@ -54,7 +54,7 @@ public sealed class TransferableData {
     internal static void InternalAddHandlerUnsafe(DataParameter parameter, TransferableData owner, Delegate handler) {
         owner.GetParamData(parameter).AddValueChangedHandler(handler);
     }
-    
+
     internal static void InternalRemoveHandlerUnsafe(DataParameter parameter, TransferableData owner, Delegate handler) {
         if (owner.TryGetParameterData(parameter, out ParameterData data)) {
             data.RemoveValueChangedHandler(handler);
@@ -106,16 +106,16 @@ public sealed class TransferableData {
             lock (this.handlerList) {
                 foreach (Delegate handler in this.handlerList) {
                     DataParameter.InternalInvokeValueChangeHandler(parameter, owner, handler);
-                }   
+                }
             }
         }
-        
+
         public void AddValueChangedHandler(Delegate handler) {
             lock (this.handlerList) {
                 this.handlerList.TryAdd(handler);
             }
         }
-    
+
         public void RemoveValueChangedHandler(Delegate handler) {
             lock (this) {
                 this.handlerList.Remove(handler);

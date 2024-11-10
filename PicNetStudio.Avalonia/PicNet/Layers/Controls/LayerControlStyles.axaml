@@ -1,0 +1,9 @@
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:c="clr-namespace:PicNetStudio.Avalonia.PicNet.Layers.Controls">
+    <ControlTheme x:Key="{x:Type c:LayerObjectTreeView}" TargetType="{x:Type c:LayerObjectTreeView}" BasedOn="{StaticResource {x:Type TreeView}}">
+        <Setter Property="SelectionMode" Value="Multiple"/>
+    </ControlTheme>
+    <ControlTheme x:Key="{x:Type c:LayerObjectTreeViewItem}" TargetType="{x:Type c:LayerObjectTreeViewItem}" BasedOn="{StaticResource {x:Type TreeViewItem}}">
+    </ControlTheme>
+</ResourceDictionary>

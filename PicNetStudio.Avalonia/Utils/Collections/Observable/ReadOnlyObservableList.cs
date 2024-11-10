@@ -27,7 +27,7 @@ public class ReadOnlyObservableList<T> : ReadOnlyCollection<T>, IObservableList<
     public event ObservableListMultipleItemsEventHandler<T>? ItemsRemoved;
     public event ObservableListReplaceEventHandler<T>? ItemReplaced;
     public event ObservableListSingleItemEventHandler<T>? ItemMoved;
-    
+
     public ReadOnlyObservableList(IObservableList<T> list) : base(list) {
         list.ItemsAdded += this.ListOnItemsAdded;
         list.ItemsRemoved += this.ListOnItemsRemoved;

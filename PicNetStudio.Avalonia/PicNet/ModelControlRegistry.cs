@@ -41,11 +41,11 @@ public class ModelControlRegistry<TModel, TControl> where TControl : Control whe
         // incompatible and therefore impossible to use in the NewInstance method, at least without using reflection it is
         this.constructors[typeof(TSpecificModel)] = new Func<TModel, TControl>(x => constructor((TSpecificModel) x));
     }
-    
+
     public void RegisterType<TSpecificModel>(Func<TControl> constructor) where TSpecificModel : TModel {
-        this.constructors[typeof(TSpecificModel)] = constructor; 
+        this.constructors[typeof(TSpecificModel)] = constructor;
     }
-    
+
     public TControl NewInstance(TModel model) {
         if (model == null) {
             throw new ArgumentNullException(nameof(model));

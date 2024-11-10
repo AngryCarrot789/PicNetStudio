@@ -23,7 +23,7 @@ namespace PicNetStudio.Avalonia.Utils.Collections.ObservableEx;
 
 public class ReadOnlyObservableListEx<T> : ReadOnlyCollection<T>, IObservableListEx<T> {
     public event ObservableListExChangedEventHandler<T>? CollectionChanged;
-    
+
     public ReadOnlyObservableListEx(IObservableListEx<T> list) : base(list) {
         list.CollectionChanged += this.HandleCollectionChanged;
     }

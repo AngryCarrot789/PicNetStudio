@@ -54,7 +54,7 @@ public abstract class RZApplication {
     /// Gets the avalonia application
     /// </summary>
     public App App { get; }
-    
+
     /// <summary>
     /// Gets the current version of the application. This value does not change during runtime.
     /// <para>The <see cref="Version.Major"/> property is used to represent a backwards-compatibility breaking change to the application (e.g. removal or a change in operating behaviour of a core feature)</para>
@@ -75,7 +75,7 @@ public abstract class RZApplication {
 
     private void OnPreInitialise() {
     }
-    
+
     private void OnInitialise() {
         this.serviceManager.Register<IMessageDialogService>(new DummyMessageDialogService());
         this.serviceManager.Register<IUserInputDialogService>(new DummyUserInputDialogService());
@@ -83,7 +83,7 @@ public abstract class RZApplication {
         this.serviceManager.Register<TaskManager>(new TaskManager());
 
         this.RegisterCommands(CommandManager.Instance);
-        
+
         string keymapFilePath = Path.GetFullPath(@"Keymap.xml");
         if (File.Exists(keymapFilePath)) {
             try {
@@ -109,10 +109,10 @@ public abstract class RZApplication {
     internal static void InternalPreInititalise(RZApplication application) {
         if (application == null)
             throw new ArgumentNullException(nameof(application));
-        
+
         if (instance != null)
             throw new InvalidOperationException("Cannot re-initialise application");
-        
+
         instance = application;
     }
 

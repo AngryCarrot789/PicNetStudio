@@ -32,13 +32,13 @@ public readonly struct AutoEventHelper {
 
     public AutoEventHelper(string eventName, Type modelType, Action callback) {
         Validate.NotNull(eventName);
-        
+
         EventInfo? info = modelType.GetEvent(eventName, BindingFlags.Public | BindingFlags.Instance);
         if (info == null)
             throw new Exception("Could not find event by name: " + modelType.Name + "." + eventName);
 
         Type handlerType = info.EventHandlerType ?? throw new Exception("Missing event handler type");
-        
+
         this.EventInfo = info;
         this.HandlerDelegate = EventUtils.CreateDelegateToInvokeActionFromEvent(handlerType, callback);
     }
@@ -46,7 +46,7 @@ public readonly struct AutoEventHelper {
     public void AddEventHandler(object model) {
         this.EventInfo.AddEventHandler(model, this.HandlerDelegate);
     }
-    
+
     public void RemoveEventHandler(object model) {
         this.EventInfo.RemoveEventHandler(model, this.HandlerDelegate);
     }

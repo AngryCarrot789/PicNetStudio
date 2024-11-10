@@ -7,27 +7,51 @@
         <ApplicationManifest>app.manifest</ApplicationManifest>
         <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <Platforms>AnyCPU;x64</Platforms>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Avalonia" Version="11.2.999-cibuild0048720-alpha"/>
-        <PackageReference Include="Avalonia.Desktop" Version="11.2.999-cibuild0048720-alpha"/>
-        <PackageReference Include="Avalonia.Themes.Fluent" Version="11.2.999-cibuild0048720-alpha"/>
-        <PackageReference Include="Avalonia.Fonts.Inter" Version="11.2.999-cibuild0048720-alpha"/>
+        <PackageReference Include="Avalonia" Version="11.2.999-cibuild0048720-alpha" />
+        <PackageReference Include="Avalonia.Desktop" Version="11.2.999-cibuild0048720-alpha" />
+        <PackageReference Include="Avalonia.Themes.Fluent" Version="11.2.999-cibuild0048720-alpha" />
+        <PackageReference Include="Avalonia.Fonts.Inter" Version="11.2.999-cibuild0048720-alpha" />
         <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
-        <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.2.999-cibuild0048720-alpha"/>
+        <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.2.999-cibuild0048720-alpha" />
     </ItemGroup>
 
     <ItemGroup>
-      <Reference Include="Avalonia.Themes.Simple">
-        <HintPath>C:\Users\kettl\.nuget\packages\avalonia.themes.simple\11.2.999-cibuild0048720-alpha\lib\net8.0\Avalonia.Themes.Simple.dll</HintPath>
-      </Reference>
+        <Reference Include="Avalonia.Themes.Simple">
+            <HintPath>C:\Users\kettl\.nuget\packages\avalonia.themes.simple\11.2.999-cibuild0048720-alpha\lib\net8.0\Avalonia.Themes.Simple.dll</HintPath>
+        </Reference>
     </ItemGroup>
 
     <ItemGroup>
-      <None Remove="Keymap.xml" />
-      <Content Include="Keymap.xml">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </Content>
+        <None Remove="Keymap.xml" />
+        <Content Include="Keymap.xml">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Folder Include="Resources\" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Remove="Resources\Fonts\Oxanium\Oxanium-Bold.ttf" />
+        <AvaloniaResource Include="Resources\Fonts\Oxanium\Oxanium-Bold.ttf" />
+        <None Remove="Resources\Fonts\Oxanium\Oxanium-ExtraBold.ttf" />
+        <AvaloniaResource Include="Resources\Fonts\Oxanium\Oxanium-ExtraBold.ttf" />
+        <None Remove="Resources\Fonts\Oxanium\Oxanium-ExtraLight.ttf" />
+        <AvaloniaResource Include="Resources\Fonts\Oxanium\Oxanium-ExtraLight.ttf" />
+        <None Remove="Resources\Fonts\Oxanium\Oxanium-Light.ttf" />
+        <AvaloniaResource Include="Resources\Fonts\Oxanium\Oxanium-Light.ttf" />
+        <None Remove="Resources\Fonts\Oxanium\Oxanium-Medium.ttf" />
+        <AvaloniaResource Include="Resources\Fonts\Oxanium\Oxanium-Medium.ttf" />
+        <None Remove="Resources\Fonts\Oxanium\Oxanium-Regular.ttf" />
+        <AvaloniaResource Include="Resources\Fonts\Oxanium\Oxanium-Regular.ttf" />
+        <None Remove="Resources\Fonts\Oxanium\Oxanium-SemiBold.ttf" />
+        <AvaloniaResource Include="Resources\Fonts\Oxanium\Oxanium-SemiBold.ttf" />
+        <None Remove="Resources\Fonts\Oxanium\Oxanium-VariableFont_wght.ttf" />
+        <AvaloniaResource Include="Resources\Fonts\Oxanium\Oxanium-VariableFont_wght.ttf" />
     </ItemGroup>
 </Project>

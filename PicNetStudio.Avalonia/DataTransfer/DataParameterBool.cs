@@ -25,7 +25,7 @@ namespace PicNetStudio.Avalonia.DataTransfer;
 
 public delegate void DataParameterBoolValueChangedEventHandler(DataParameterBool parameter, ITransferableData owner);
 
-public sealed class DataParameterBool : DataParameter<bool> {
+public sealed class DataParameterBool : Parameter<bool> {
     public DataParameterBool(Type ownerType, string key, ValueAccessor<bool> accessor, DataParameterFlags flags = DataParameterFlags.None) : this(ownerType, key, false, accessor, flags) {
     }
 
@@ -41,7 +41,7 @@ public sealed class DataParameterBool : DataParameter<bool> {
             base.SetValue(owner, value);
         }
     }
-    
+
     public void AddValueChangedHandler(ITransferableData owner, DataParameterBoolValueChangedEventHandler handler) => TransferableData.InternalAddHandlerUnsafe(this, owner.TransferableData, handler);
 
     public void RemoveValueChangedHandler(ITransferableData owner, DataParameterBoolValueChangedEventHandler handler) => TransferableData.InternalRemoveHandlerUnsafe(this, owner.TransferableData, handler);

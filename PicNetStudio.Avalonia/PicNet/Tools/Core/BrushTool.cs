@@ -30,18 +30,18 @@ namespace PicNetStudio.Avalonia.PicNet.Tools.Core;
 /// The brush tool, which lets you draw circular arrangement of pixels on the canvas, with an adjustable diameter
 /// </summary>
 public class BrushTool : BaseRasterisedDrawingTool {
-    public static readonly DataParameterFloat DiameterParameter =
+    public static readonly DataParameterFloat DiameterDataParameter =
         DataParameter.Register(
             new DataParameterFloat(
                 typeof(BrushTool),
                 nameof(Diameter), 5.0f, 0.5f, 1000f,
                 ValueAccessors.Reflective<float>(typeof(BrushTool), nameof(diameter))));
 
-    private float diameter = DiameterParameter.DefaultValue;
+    private float diameter = DiameterDataParameter.DefaultValue;
 
     public float Diameter {
         get => this.diameter;
-        set => DataParameter.SetValueHelper(this, DiameterParameter, ref this.diameter, value);
+        set => DataParameter.SetValueHelper(this, DiameterDataParameter, ref this.diameter, value);
     }
 
     public override double SpacingFeedback => this.Diameter / 2.0;

@@ -46,7 +46,7 @@ public class CanvasInputHandler {
         this.control.PointerPressed += this.OnControlPointerPressed;
         this.control.PointerReleased += this.OnControlPointerReleased;
         this.control.PointerMoved += this.OnPointerPointerMoved;
-        
+
         this.control.KeyDown += this.OnControlKeyDown;
         this.control.KeyUp += this.OnControlKeyUp;
     }
@@ -67,120 +67,101 @@ public class CanvasInputHandler {
             }
         }
     }
-    
+
     private void OnControlKeyUp(object? sender, KeyEventArgs e) {
         if (this.control.Document is Document document && document.Editor?.ToolBar.ActiveTool is BaseCanvasTool activeTool) {
             e.Handled = activeTool.OnCharacterRelease(document, e.Key, e.KeyModifiers);
         }
     }
-    
+
     // Returns old buttons
-    private EnumCursorType UpdateButtonForChange(PointerUpdateKind kind, bool isPress) {
+    private EnumCursorType UpdateButtonForChange(PointerPoint pointer, bool isPress) {
+        PointerUpdateKind kind = pointer.Properties.PointerUpdateKind;
         if (isPress && kind >= PointerUpdateKind.LeftButtonReleased && kind <= PointerUpdateKind.XButton2Released) {
             // If it's a press event but for some reason the update kind is a release update, then just ignore it...? who knows
             return this.myCursors;
         }
-        
-        return this.UpdateButtons(kind);
+
+        return this.UpdateButtons(pointer);
     }
-    
+
     // Avalonia will put the button whose state change into
     // the move event, so we extract it and update our state
-    private EnumCursorType UpdateButtons(PointerUpdateKind kind) {
+    private EnumCursorType UpdateButtons(PointerPoint pointer) {
         EnumCursorType oldButtons = this.myCursors;
-        switch (kind) {
-            // Button pressed. Add to mask
-            case PointerUpdateKind.LeftButtonPressed:   this.myCursors |= EnumCursorType.Primary; break;
-            case PointerUpdateKind.MiddleButtonPressed: this.myCursors |= EnumCursorType.Middle; break;
-            case PointerUpdateKind.RightButtonPressed:  this.myCursors |= EnumCursorType.Secondary; break;
-            case PointerUpdateKind.XButton1Pressed:     this.myCursors |= EnumCursorType.XButton1; break;
-            case PointerUpdateKind.XButton2Pressed:     this.myCursors |= EnumCursorType.XButton2; break;
-            
-            // Button released. Remove from mask
-            case PointerUpdateKind.LeftButtonReleased:   this.myCursors &= ~EnumCursorType.Primary; break;
-            case PointerUpdateKind.MiddleButtonReleased: this.myCursors &= ~EnumCursorType.Middle; break;
-            case PointerUpdateKind.RightButtonReleased:  this.myCursors &= ~EnumCursorType.Secondary; break;
-            case PointerUpdateKind.XButton1Released:     this.myCursors &= ~EnumCursorType.XButton1; break;
-            case PointerUpdateKind.XButton2Released:     this.myCursors &= ~EnumCursorType.XButton2; break;
-            
-            // ??? no change
-            case PointerUpdateKind.Other: return oldButtons;
-            default: throw new ArgumentOutOfRangeException(nameof(kind), kind, null);
-        }
-
+        this.myCursors = this.GetPressedCursors(pointer);
         return oldButtons;
     }
-    
+
     private void OnControlPointerPressed(object? sender, PointerPressedEventArgs e) {
         PointerPoint pointer = e.GetCurrentPoint(this.control.PART_SkiaViewPort);
-        EnumCursorType oldButtons = this.UpdateButtonForChange(pointer.Properties.PointerUpdateKind, true);
+        EnumCursorType oldButtons = this.UpdateButtonForChange(pointer, true);
         EnumCursorType newButtons = this.myCursors;
         if (oldButtons == newButtons) {
             // no buttons changed, so do nothing
             return;
         }
-        
+
         if (this.control.Document is Document document && document.Editor?.ToolBar.ActiveTool is BaseCanvasTool activeTool) {
-            this.ProcessChangedButtons(pointer.Position, document, activeTool, e.ClickCount, oldButtons, newButtons);
+            ProcessChangedButtons(pointer.Position, document, activeTool, e.ClickCount, oldButtons, newButtons);
         }
     }
-    
+
     private void OnControlPointerReleased(object? sender, PointerReleasedEventArgs e) {
         PointerPoint pointer = e.GetCurrentPoint(this.control.PART_SkiaViewPort);
-        EnumCursorType oldButtons = this.UpdateButtonForChange(pointer.Properties.PointerUpdateKind, false);
+        EnumCursorType oldButtons = this.UpdateButtonForChange(pointer, false);
         EnumCursorType newButtons = this.myCursors;
         if (oldButtons == newButtons) {
             // no buttons changed, so do nothing
             return;
         }
-        
+
         if (this.control.Document is Document document && document.Editor?.ToolBar.ActiveTool is BaseCanvasTool activeTool) {
-            this.ProcessChangedButtons(pointer.Position, document, activeTool, 1, oldButtons, newButtons);
+            ProcessChangedButtons(pointer.Position, document, activeTool, 1, oldButtons, newButtons);
         }
     }
-    
+
     private void OnPointerPointerMoved(object? sender, PointerEventArgs e) {
         PointerPoint pointer = e.GetCurrentPoint(this.control.PART_SkiaViewPort);
-        PointerUpdateKind update = pointer.Properties.PointerUpdateKind;
-        EnumCursorType oldButtons = this.UpdateButtons(update);
+        EnumCursorType oldButtons = this.UpdateButtons(pointer);
         EnumCursorType newButtons = this.myCursors;
-        
+
         Point point = pointer.Position;
         if (this.control.Document is Document document && document.Editor?.ToolBar.ActiveTool is BaseCanvasTool activeTool) {
             // We also need to do a final check on the last mouse move position,
             // because Avalonia receives WM_MOVE even though the mouse didn't actually move.
             // To reproduce: Click LMB then RMB then release RMB, and with the lastMouseMove check
             // removed you will hit a breakpoint on OnCursorMoved
-            if (update == PointerUpdateKind.Other && newButtons != EnumCursorType.None && (!this.lastMouseMove.HasValue || !this.lastMouseMove.Value.Equals(point))) {
+            if ((oldButtons == newButtons) && newButtons != EnumCursorType.None && (!this.lastMouseMove.HasValue || !this.lastMouseMove.Value.Equals(point))) {
                 // Debug.WriteLine("Cursor Moved with [" + newButtons + "] pressed");
                 e.Handled = activeTool.OnCursorMoved(document, point.X, point.Y, newButtons);
             }
             else {
-                e.Handled = this.ProcessChangedButtons(point, document, activeTool, 1, oldButtons, newButtons);
+                e.Handled = ProcessChangedButtons(point, document, activeTool, 1, oldButtons, newButtons);
             }
         }
-        
+
         this.lastMouseMove = point;
     }
 
-    private bool ProcessChangedButtons(Point point, Document document, BaseCanvasTool activeTool, int clickCount, EnumCursorType oldButtons, EnumCursorType newButtons) {
+    private static bool ProcessChangedButtons(Point point, Document document, BaseCanvasTool activeTool, int clickCount, EnumCursorType oldButtons, EnumCursorType newButtons) {
         bool handled = false;
         EnumCursorType addedFlags = (oldButtons ^ newButtons) & newButtons;
-        foreach (EnumCursorType type in GetIndividualFlags(addedFlags)) {
+        foreach (EnumCursorType type in GetEnumerableFlagSet(addedFlags)) {
             Debug.WriteLine("Cursor pressed: " + type);
             handled |= activeTool.OnCursorPressed(document, point.X, point.Y, clickCount, type);
         }
-        
+
         EnumCursorType removedFlags = (oldButtons ^ newButtons) & oldButtons;
-        foreach (EnumCursorType type in GetIndividualFlags(removedFlags)) {
+        foreach (EnumCursorType type in GetEnumerableFlagSet(removedFlags)) {
             Debug.WriteLine("Cursor released: " + type);
             handled |= activeTool.OnCursorReleased(document, point.X, point.Y, type);
         }
 
         return handled;
     }
-    
-    public static IEnumerable<EnumCursorType> GetIndividualFlags(EnumCursorType flags) {
+
+    public static IEnumerable<EnumCursorType> GetEnumerableFlagSet(EnumCursorType flags) {
         if ((flags & EnumCursorType.Primary) != 0)
             yield return EnumCursorType.Primary;
         if ((flags & EnumCursorType.Secondary) != 0)
@@ -193,20 +174,19 @@ public class CanvasInputHandler {
             yield return EnumCursorType.XButton2;
     }
 
-    public static EnumCursorType PointerUpdateKindToEnumCursorType(PointerUpdateKind updateKind) {
-        switch (updateKind) {
-            case PointerUpdateKind.LeftButtonPressed:
-            case PointerUpdateKind.LeftButtonReleased:      return EnumCursorType.Primary;
-            case PointerUpdateKind.RightButtonPressed: 
-            case PointerUpdateKind.RightButtonReleased:     return EnumCursorType.Secondary;
-            case PointerUpdateKind.MiddleButtonPressed:
-            case PointerUpdateKind.MiddleButtonReleased:    return EnumCursorType.Middle;
-            case PointerUpdateKind.XButton1Pressed:
-            case PointerUpdateKind.XButton1Released:        return EnumCursorType.XButton1;
-            case PointerUpdateKind.XButton2Pressed: 
-            case PointerUpdateKind.XButton2Released:        return EnumCursorType.XButton2;
-            case PointerUpdateKind.Other:                   return EnumCursorType.None;
-            default: throw new ArgumentOutOfRangeException();
-        }
+    public EnumCursorType GetPressedCursors(PointerPoint point) {
+        EnumCursorType cursors = EnumCursorType.None;
+        PointerPointProperties props = point.Properties;
+        if (props.IsLeftButtonPressed)
+            cursors |= EnumCursorType.Primary;
+        if (props.IsMiddleButtonPressed)
+            cursors |= EnumCursorType.Middle;
+        if (props.IsRightButtonPressed)
+            cursors |= EnumCursorType.Secondary;
+        if (props.IsXButton1Pressed)
+            cursors |= EnumCursorType.XButton1;
+        if (props.IsXButton2Pressed)
+            cursors |= EnumCursorType.XButton2;
+        return cursors;
     }
 }

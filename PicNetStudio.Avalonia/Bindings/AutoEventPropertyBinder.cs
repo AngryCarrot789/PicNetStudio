@@ -29,7 +29,7 @@ namespace PicNetStudio.Avalonia.Bindings;
 public class AutoEventPropertyBinder<TModel> : BaseAutoEventPropertyBinder<TModel> where TModel : class {
     public event Action<IBinder<TModel>>? DoUpdateControl;
     public event Action<IBinder<TModel>>? DoUpdateModel;
-    
+
     public AutoEventPropertyBinder(string eventName, Action<IBinder<TModel>>? updateControl, Action<IBinder<TModel>>? updateModel = null) : base(eventName) {
         this.DoUpdateControl = updateControl;
         this.DoUpdateModel = updateModel;

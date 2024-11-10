@@ -25,7 +25,9 @@ using SkiaSharp;
 namespace PicNetStudio.Avalonia.PicNet;
 
 public delegate void EditorDocumentIndexChangedEventHandler(Editor editor, Document document, int oldIndex, int newIndex);
+
 public delegate void EditorActiveDocumentChangedEventHandler(Editor sender, Document? oldActiveDocument, Document? newActiveDocument);
+
 public delegate void EditorEventHandler(Editor sender);
 
 /// <summary>
@@ -37,7 +39,7 @@ public class Editor {
     private SKColor primaryColour;
     private SKColor secondaryColour;
     private Document? activeDocument;
-    
+
     /// <summary>
     /// A read-only list of all of the documents currently open
     /// </summary>
@@ -58,7 +60,7 @@ public class Editor {
             this.PrimaryColourChanged?.Invoke(this);
         }
     }
-    
+
     public SKColor SecondaryColour {
         get => this.secondaryColour;
         set {
@@ -69,7 +71,7 @@ public class Editor {
             this.PrimaryColourChanged?.Invoke(this);
         }
     }
-    
+
     public Document? ActiveDocument {
         get => this.activeDocument;
         set {
@@ -81,24 +83,24 @@ public class Editor {
             this.ActiveDocumentChanged?.Invoke(this, oldActiveDocument, value);
         }
     }
-    
+
     /// <summary>
     /// An event fired when a document is added, removed or moved
     /// </summary>
     public event EditorDocumentIndexChangedEventHandler? DocumentIndexChanged;
-    
+
     /// <summary>
     /// An event fired when the active document changes
     /// </summary>
     public event EditorActiveDocumentChangedEventHandler? ActiveDocumentChanged;
-    
+
     public event EditorEventHandler? PrimaryColourChanged;
     public event EditorEventHandler? SecondaryColourChanged;
 
     public Editor() {
         this.primaryColour = SKColors.ForestGreen;
         this.secondaryColour = SKColors.White;
-        
+
         this.documents = new List<Document>();
         this.Documents = this.documents.AsReadOnly();
         this.ToolBar = new EditorToolBar(this);
@@ -126,11 +128,11 @@ public class Editor {
     public void RemoveDocumentAt(int index) {
         this.RemoveDocumentInternal(index, this.documents[index]);
     }
-    
+
     public void RemoveDocumentInternal(int index, Document document) {
         if (this.documents.Count == 1)
             this.ActiveDocument = null;
-        
+
         this.documents.RemoveAt(index);
         Document.InternalSetEditor(document, null);
         this.DocumentIndexChanged?.Invoke(this, document, index, -1);

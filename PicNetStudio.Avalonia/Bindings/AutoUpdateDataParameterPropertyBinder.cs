@@ -43,7 +43,7 @@ public class AutoUpdateDataParameterPropertyBinder<TModel> : AutoUpdatePropertyB
         base.OnDetached();
         this.Parameter.RemoveValueChangedHandler(this.Model, this.OnParameterChanged);
     }
-    
+
     private void OnParameterChanged(DataParameter parameter, ITransferableData owner) {
         this.UpdateControl();
     }
