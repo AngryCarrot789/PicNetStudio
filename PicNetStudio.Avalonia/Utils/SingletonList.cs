@@ -23,26 +23,6 @@ using System.Collections.Generic;
 
 namespace PicNetStudio.Avalonia.Utils;
 
-public class SingletonReadOnlyList<T> : IReadOnlyList<T> {
-    private readonly T value;
-
-    public int Count => 1;
-
-    public T this[int index] => index == 0 ? this.value : throw new IndexOutOfRangeException("Index was out of range: " + index);
-
-    public SingletonReadOnlyList(T value) {
-        this.value = value;
-    }
-
-    public IEnumerator<T> GetEnumerator() {
-        yield return this.value;
-    }
-
-    IEnumerator IEnumerable.GetEnumerator() {
-        yield return this.value;
-    }
-}
-
 public class SingletonList<T> : IList<T> {
     private readonly T value;
 
@@ -80,6 +60,26 @@ public class SingletonList<T> : IList<T> {
 
     public int IndexOf(T item) {
         return EqualityComparer<T>.Default.Equals(item, this.value) ? 0 : -1;
+    }
+
+    public IEnumerator<T> GetEnumerator() {
+        yield return this.value;
+    }
+
+    IEnumerator IEnumerable.GetEnumerator() {
+        yield return this.value;
+    }
+}
+
+public class SingletonReadOnlyList<T> : IReadOnlyList<T> {
+    private readonly T value;
+
+    public int Count => 1;
+
+    public T this[int index] => index == 0 ? this.value : throw new IndexOutOfRangeException("Index was out of range: " + index);
+
+    public SingletonReadOnlyList(T value) {
+        this.value = value;
     }
 
     public IEnumerator<T> GetEnumerator() {

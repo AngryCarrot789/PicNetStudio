@@ -320,4 +320,60 @@ public static class CollectionUtils {
 
         return index == (count - 1) ? (index - 1) : (index + 1);
     }
+
+    /// <summary>
+    /// Adds all items in the given enumerable, and returns a list of items that actually added
+    /// </summary>
+    /// <param name="set">Target set</param>
+    /// <param name="itemsToAdd">Items to add</param>
+    /// <typeparam name="T">Type of element</typeparam>
+    /// <returns>The items that were actually added</returns>
+    public static List<T> UnionAddEx<T>(this ISet<T> set, IEnumerable<T> itemsToAdd) {
+        List<T> addedItems = new List<T>();
+        foreach (T item in itemsToAdd) {
+            if (set.Add(item)) {
+                addedItems.Add(item);
+            }
+        }
+
+        return addedItems;
+    }
+    
+    /// <summary>
+    /// Removes all items in the given enumerable, and returns a list of items that actually removes
+    /// </summary>
+    /// <param name="set">Target set</param>
+    /// <param name="itemsToRemove">Items to remove</param>
+    /// <typeparam name="T">Type of element</typeparam>
+    /// <returns>The items that were actually removed</returns>
+    public static List<T> UnionRemoveEx<T>(this ISet<T> set, IEnumerable<T> itemsToRemove) {
+        List<T> removedItems = new List<T>();
+        foreach (T item in itemsToRemove) {
+            if (set.Remove(item)) {
+                removedItems.Add(item);
+            }
+        }
+
+        return removedItems;
+    }
+    
+    /// <summary>
+    /// Replaces the set with the given enumerable, and returns a list of items that were removed
+    /// </summary>
+    /// <param name="set"></param>
+    /// <param name="itemsToSet"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public static List<T> UnionSwapEx<T>(this ISet<T> set, IEnumerable<T> itemsToSet) {
+        HashSet<T> clone = new HashSet<T>(set);
+        List<T> removedItems = new List<T>();
+        foreach (T item in itemsToSet) {
+            if (set.Contains(item)) {
+                set.Remove(item);
+                removedItems.Add(item);
+            }
+        }
+
+        return removedItems;
+    }
 }

@@ -21,11 +21,17 @@ namespace PicNetStudio.Avalonia.PicNet;
 
 public delegate void DisplayNameChangedEventHandler(IDisplayName sender, string oldName, string newName);
 
+/// <summary>
+/// An generic interface for models with a display name
+/// </summary>
 public interface IDisplayName {
     /// <summary>
     /// Gets or sets the display name. Setting this fires an event
     /// </summary>
     string DisplayName { get; set; }
 
+    /// <summary>
+    /// Fired when our display name property changes
+    /// </summary>
     event DisplayNameChangedEventHandler DisplayNameChanged;
 }

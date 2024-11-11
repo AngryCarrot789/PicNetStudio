@@ -21,18 +21,18 @@ using SkiaSharp;
 
 namespace PicNetStudio.Avalonia.PicNet;
 
-public class RenderContext {
+public readonly struct RenderContext {
     /// <summary>
     /// The surface used to draw things
     /// </summary>
-    public SKSurface Surface { get; }
+    public readonly SKSurface Surface;
 
     /// <summary>
     /// Our <see cref="Surface"/>'s canvas
     /// </summary>
-    public SKCanvas Canvas { get; }
+    public readonly SKCanvas Canvas;
 
-    public Canvas MyCanvas { get; }
+    public readonly Canvas MyCanvas;
 
     public readonly bool IsExporting;
 

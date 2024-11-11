@@ -75,7 +75,7 @@ public class SKAsyncViewPort : Control {
 
         WriteableBitmap? bmp = this.bitmap;
         if (bmp == null || frameInfo.Width != bmp.PixelSize.Width || frameInfo.Height != bmp.PixelSize.Height) {
-            this.bitmap = bmp = new WriteableBitmap(new PixelSize(frameInfo.Width, frameInfo.Height), new Vector(scaleX * 96d, scaleY * 96d), PixelFormats.Bgra8888);
+            this.bitmap = bmp = new WriteableBitmap(new PixelSize(frameInfo.Width, frameInfo.Height), new Vector(scaleX * 96d, scaleY * 96d));
         }
 
         this.lockKey = bmp.Lock();

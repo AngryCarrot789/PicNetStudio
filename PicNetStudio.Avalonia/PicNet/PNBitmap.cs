@@ -91,12 +91,12 @@ public class PNBitmap {
         this.hColourData = hColourData;
         this.size = new PixelSize(w, h);
 
-        // this.skBitmap = new SKBitmap(new SKImageInfo(w, h, SKColorType.Bgra8888, SKAlphaType.Unpremul));
+        // this.skBitmap = new SKBitmap(new SKImageInfo(w, h, SKImageInfo.PlatformColorType, SKAlphaType.Unpremul));
         // this.skBitmap.SetPixels(this.hColourData);
 
         this.skBitmap = new SKBitmap();
         // Sets the SKBitmap back buffer as our colour data handle
-        this.skBitmap.InstallPixels(new SKImageInfo(w, h, SKColorType.Bgra8888, SKAlphaType.Unpremul), hColourData, w * 4, (address, context) => {
+        this.skBitmap.InstallPixels(new SKImageInfo(w, h, SKImageInfo.PlatformColorType, SKAlphaType.Premul), hColourData, w * 4, (address, context) => {
         });
 
         this.skCanvas = new SKCanvas(this.skBitmap);
@@ -122,7 +122,7 @@ public class PNBitmap {
         }
 
         this.size = resolution;
-        this.skBitmap = new SKBitmap(new SKImageInfo(resolution.Width, resolution.Height, SKColorType.Bgra8888, SKAlphaType.Unpremul));
+        this.skBitmap = new SKBitmap(new SKImageInfo(resolution.Width, resolution.Height, SKImageInfo.PlatformColorType, SKAlphaType.Premul));
         this.skCanvas = new SKCanvas(this.skBitmap);
         this.hColourData = this.skBitmap.GetPixels();
         this.BitmapHandleChanged?.Invoke(this);

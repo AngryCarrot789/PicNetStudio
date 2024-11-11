@@ -1,4 +1,4 @@
-﻿// 
+// 
 // Copyright (c) 2024-2024 REghZy
 // 
 // This file is part of PicNetStudio.
@@ -17,11 +17,16 @@
 // along with PicNetStudio. If not, see <https://www.gnu.org/licenses/>.
 // 
 
-namespace PicNetStudio.Avalonia.PicNet.Layers;
+using System.Threading.Tasks;
 
-/// <summary>
-/// A class which manages the layer tree selection so that models
-/// can access selected items without interacting with the UI components directly
-/// </summary>
-public class LayerTreeSelectionManager {
+namespace PicNetStudio.Avalonia.Services.Messages.Classic;
+
+public class ClassicDesktopMessageDialogService : IMessageDialogService {
+    public Task<MessageBoxResult> ShowMessage(string caption, string message, MessageBoxButton buttons = MessageBoxButton.OK) {
+        throw new System.NotImplementedException();
+    }
+
+    public Task<MessageBoxResult> ShowMessage(string caption, string header, string message, MessageBoxButton buttons = MessageBoxButton.OK) {
+        throw new System.NotImplementedException();
+    }
 }

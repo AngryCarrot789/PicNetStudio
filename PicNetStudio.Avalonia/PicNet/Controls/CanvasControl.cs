@@ -79,24 +79,13 @@ public class CanvasControl : TemplatedControl {
     }
 
     public void InvalidateRender() {
-        if (this.Document is Document document) {
-            if (this.BeginCanvasRender(out SKSurface surface)) {
+        if (this.PART_SkiaViewPort != null && this.Document is Document document) {
+            if (this.PART_SkiaViewPort.BeginRender(out SKSurface surface)) {
                 document.Canvas.Render(surface);
-                this.EndCanvasRender();
+                this.PART_SkiaViewPort.EndRender();
             }
         }
     }
-
-    public bool BeginCanvasRender(out SKSurface surface) {
-        if (this.PART_SkiaViewPort != null) {
-            return this.PART_SkiaViewPort.BeginRender(out surface);
-        }
-
-        surface = null;
-        return false;
-    }
-
-    public void EndCanvasRender() => this.PART_SkiaViewPort?.EndRender();
 
     private void OnLoaded(object? sender, RoutedEventArgs e) {
         this.Loaded -= this.OnLoaded;

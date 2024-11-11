@@ -18,7 +18,9 @@
 // 
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using Avalonia;
 using PicNetStudio.Avalonia.PicNet.Layers;
 using PicNetStudio.Avalonia.PicNet.PropertyEditing;
@@ -29,9 +31,9 @@ namespace PicNetStudio.Avalonia.PicNet;
 
 public delegate void CanvasRenderInvalidatedEventHandler(Canvas canvas);
 
-public delegate void CanvasLayerIndexChangedEventHandler(Canvas canvas, BaseLayerTreeObject layerTreeObject, int oldIndex, int newIndex);
+public delegate void CanvasLayerIndexChangedEventHandler(Canvas canvas, BaseLayerTreeObject layer, int oldIndex, int newIndex);
 
-public delegate void CanvasActiveLayerChangedEventHandler(Canvas canvas, BaseLayerTreeObject oldActiveLayerTreeObject, BaseLayerTreeObject newActiveLayerTreeObject);
+public delegate void CanvasActiveLayerChangedEventHandler(Canvas canvas, BaseLayerTreeObject? oldActiveLayerTreeObject, BaseLayerTreeObject? newActiveLayerTreeObject);
 
 public delegate void CanvasSizeChangedEventHandler(Canvas canvas, PixelSize oldSize, PixelSize newSize);
 
@@ -41,19 +43,24 @@ public delegate void CanvasSizeChangedEventHandler(Canvas canvas, PixelSize oldS
 public class Canvas {
     private readonly SuspendableObservableList<BaseLayerTreeObject> layers;
     private PixelSize size;
-    private BaseLayerTreeObject activeLayerTreeObject;
+    private BaseLayerTreeObject? activeLayerTreeObject;
 
     /// <summary>
     /// The document that owns this canvas
     /// </summary>
     public Document Document { get; }
 
+    /// <summary>
+    /// Gets this canvas' layer selection manager, which stores which layers are selected
+    /// </summary>
+    public SelectionManager<BaseLayerTreeObject> LayerSelectionManager { get; }
+
     public ReadOnlyObservableList<BaseLayerTreeObject> Layers { get; }
 
-    public BaseLayerTreeObject ActiveLayerTreeObject {
+    public BaseLayerTreeObject? ActiveLayerTreeObject {
         get => this.activeLayerTreeObject;
         set {
-            BaseLayerTreeObject oldActiveLayerTreeObject = this.activeLayerTreeObject;
+            BaseLayerTreeObject? oldActiveLayerTreeObject = this.activeLayerTreeObject;
             if (oldActiveLayerTreeObject == value)
                 return;
 
@@ -94,9 +101,15 @@ public class Canvas {
 
     public Canvas(Document document) {
         this.Document = document;
+        this.LayerSelectionManager = new SelectionManager<BaseLayerTreeObject>();
+        this.LayerSelectionManager.SelectionChanged += OnSelectionChanged;
         this.layers = new SuspendableObservableList<BaseLayerTreeObject>();
         this.Layers = new ReadOnlyObservableList<BaseLayerTreeObject>(this.layers);
         this.size = new PixelSize(500, 500);
+    }
+
+    private void OnSelectionChanged(SelectionManager<BaseLayerTreeObject> sender, IList<BaseLayerTreeObject>? olditems, IList<BaseLayerTreeObject>? newitems) {
+        this.ActiveLayerTreeObject = sender.Selection.Count == 1 ? sender.Selection.FirstOrDefault() : null;
     }
 
     // QtBitmapEditor -> Project::paintEvent
@@ -108,33 +121,33 @@ public class Canvas {
         this.RenderInvalidated?.Invoke(this);
     }
 
-    public void AddLayer(BaseLayerTreeObject layerTreeObject) {
-        if (layerTreeObject.Canvas == this)
+    public void AddLayer(BaseLayerTreeObject layer) {
+        if (layer.Canvas == this)
             throw new InvalidOperationException("Layer already added");
 
-        this.InsertLayer(this.layers.Count, layerTreeObject);
+        this.InsertLayer(this.layers.Count, layer);
     }
 
-    public void InsertLayer(int index, BaseLayerTreeObject layerTreeObject) {
-        if (layerTreeObject.Canvas == this)
+    public void InsertLayer(int index, BaseLayerTreeObject layer) {
+        if (layer.Canvas == this)
             throw new InvalidOperationException("Layer already added");
 
-        this.layers.Insert(index, layerTreeObject);
-        BaseLayerTreeObject.InternalSetCanvasInTree(layerTreeObject, this);
+        this.layers.Insert(index, layer);
+        BaseLayerTreeObject.InternalOnAddedAsTopLevelLayer(layer, this);
 
         // Select first layer for now
         if (this.layers.Count == 1)
-            this.ActiveLayerTreeObject = layerTreeObject;
+            this.ActiveLayerTreeObject = layer;
 
         this.RaiseRenderInvalidated();
     }
 
-    public bool RemoveLayer(BaseLayerTreeObject layerTreeObject) {
-        int index = this.layers.IndexOf(layerTreeObject);
+    public bool RemoveLayer(BaseLayerTreeObject layer) {
+        int index = this.layers.IndexOf(layer);
         if (index == -1)
             return false;
 
-        this.RemoveLayerInternal(index, layerTreeObject);
+        this.RemoveLayerInternal(index, layer);
         return true;
     }
 
@@ -142,7 +155,7 @@ public class Canvas {
         this.RemoveLayerInternal(index, this.layers[index]);
     }
 
-    private void RemoveLayerInternal(int index, BaseLayerTreeObject layerTreeObject) {
+    private void RemoveLayerInternal(int index, BaseLayerTreeObject layer) {
         if (this.layers.Count == 1) {
             Debug.Assert(index == 0, "Expected removal index to equal 0 when layer count is 1");
 
@@ -150,7 +163,8 @@ public class Canvas {
             this.ActiveLayerTreeObject = null;
         }
 
+        BaseLayerTreeObject.InternalOnPreRemoveFromOwner(layer);
         this.layers.RemoveAt(index);
-        BaseLayerTreeObject.InternalSetCanvasInTree(layerTreeObject, null);
+        BaseLayerTreeObject.InternalOnRemovedAsTopLevelLayer(layer, null);
     }
 }

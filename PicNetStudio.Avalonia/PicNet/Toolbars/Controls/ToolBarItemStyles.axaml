@@ -54,7 +54,7 @@
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
         <Setter Property="VerticalContentAlignment" Value="Stretch"/>
-        <Setter Property="Padding" Value="1"/>
+        <Setter Property="Padding" Value="3,0"/>
         <Setter Property="Template">
             <ControlTemplate TargetType="{x:Type tb:ToolBarItemControl}">
                 <ContentPresenter x:Name="PART_ContentPresenter"
@@ -67,7 +67,8 @@
                                   Content="{TemplateBinding Content}"
                                   ContentTemplate="{TemplateBinding ContentTemplate}"
                                   CornerRadius="{TemplateBinding CornerRadius}"
-                                  RecognizesAccessKey="True" Height="40" Width="40"
+                                  RecognizesAccessKey="True" 
+                                  Height="{Binding RelativeSource={RelativeSource Self}, Path=Bounds.Width}"
                                   TextElement.Foreground="{TemplateBinding Foreground}"/>
             </ControlTemplate>
         </Setter>

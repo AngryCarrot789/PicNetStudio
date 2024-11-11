@@ -34,7 +34,7 @@
                 </controls:CanvasControl.Styles>
             </controls:CanvasControl>
             <Border Grid.Column="0" Grid.Row="1" Background="{DynamicResource PanelBackground3}">
-                <controls1:ToolBarItemListBox x:Name="PART_ToolBar" Margin="0"/>
+                <controls1:ToolBarItemListBox x:Name="PART_ToolBar" Margin="0" Padding="1,0"/>
             </Border>
             <Border Grid.Column="3" Grid.Row="1" Background="{DynamicResource PanelBackground3}">
                 <Grid RowDefinitions="*,1,*">
@@ -49,11 +49,10 @@
                     </DockPanel>
 
                     <DockPanel Grid.Row="2">
-                        <TabControl>
+                        <TabControl BorderBrush="{DynamicResource PanelBorderBrush}" BorderThickness="0,1,0,0">
                             <TabItem Header="Property Editor">
                                 <Border Background="{DynamicResource PanelBackground3}"
-                                        BorderBrush="{DynamicResource PanelBorderBrush}"
-                                        BorderThickness="0 1 0 0">
+                                        BorderThickness="0">
                                     <c3:PropertyEditorControl x:Name="ThePropertyEditor" Focusable="True" Background="Transparent"/>
                                 </Border>
                             </TabItem>

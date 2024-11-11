@@ -6,7 +6,7 @@
     <ControlTheme x:Key="{x:Type c:LayerObjectTreeView}" TargetType="{x:Type c:LayerObjectTreeView}" BasedOn="{StaticResource {x:Type TreeView}}">
         <Setter Property="SelectionMode" Value="Multiple"/>
     </ControlTheme>
-    
+
     <ControlTheme x:Key="{x:Type c:LayerObjectTreeViewItem}" TargetType="{x:Type c:LayerObjectTreeViewItem}" BasedOn="{StaticResource {x:Type TreeViewItem}}">
         <Setter Property="Background" Value="{DynamicResource TreeViewItem.Static.Background}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource AColour.Tone2.Border.Static}"/>
@@ -25,7 +25,7 @@
                             TemplatedControl.IsTemplateFocusTarget="True">
                         <Grid>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="{Binding RelativeSource={RelativeSource AncestorType={x:Type c:LayerTreeControl}}, Path=ColumnWidth0, Mode=TwoWay}"/>
+                                <ColumnDefinition Width="{Binding RelativeSource={RelativeSource AncestorType={x:Type c:LayerTreeControl}}, Path=ColumnWidth0, Mode=TwoWay}" MinWidth="100"/>
                                 <ColumnDefinition Width="0"/>
                                 <ColumnDefinition Width="{Binding RelativeSource={RelativeSource AncestorType={x:Type c:LayerTreeControl}}, Path=ColumnWidth2, Mode=TwoWay}"/>
                                 <ColumnDefinition Width="0"/>
@@ -72,7 +72,7 @@
             <Setter Property="Background" Value="{DynamicResource AColour.Tone5.Background.Static}"/>
         </Style>
         -->
-        
+
         <Style Selector="^ /template/ ContentPresenter#PART_HeaderPresenter">
             <Setter Property="Padding" Value="2"/>
         </Style>
@@ -105,47 +105,46 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type c:LayerTreeControl}">
-                    <Panel>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="{Binding RelativeSource={RelativeSource AncestorType={x:Type c:LayerTreeControl}}, Path=ColumnWidth0, Mode=TwoWay}"/>
-                                <ColumnDefinition Width="0"/>
-                                <ColumnDefinition Width="{Binding RelativeSource={RelativeSource AncestorType={x:Type c:LayerTreeControl}}, Path=ColumnWidth2, Mode=TwoWay}"/>
-                                <ColumnDefinition Width="0"/>
-                                <ColumnDefinition Width="{Binding RelativeSource={RelativeSource AncestorType={x:Type c:LayerTreeControl}}, Path=ColumnWidth4, Mode=TwoWay}"/>
-                            </Grid.ColumnDefinitions>
-                            <Rectangle Grid.Column="1" Width="1" Fill="{DynamicResource ABrush.Tone6.Border.Static}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
-                            <Rectangle Grid.Column="3" Width="1" Fill="{DynamicResource ABrush.Tone6.Border.Static}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
-                        </Grid>
-                        <DockPanel>
-                            <Border DockPanel.Dock="Top" Background="{DynamicResource ABrush.Tone5.Background.Static}"
-                                    BorderBrush="{DynamicResource ABrush.Tone1.Border.Static}" BorderThickness="0,0,0,1">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="{Binding RelativeSource={RelativeSource AncestorType={x:Type c:LayerTreeControl}}, Path=ColumnWidth0, Mode=TwoWay}"/>
-                                        <ColumnDefinition Width="0"/>
-                                        <ColumnDefinition Width="{Binding RelativeSource={RelativeSource AncestorType={x:Type c:LayerTreeControl}}, Path=ColumnWidth2, Mode=TwoWay}"/>
-                                        <ColumnDefinition Width="0"/>
-                                        <ColumnDefinition Width="{Binding RelativeSource={RelativeSource AncestorType={x:Type c:LayerTreeControl}}, Path=ColumnWidth4, Mode=TwoWay}"/>
-                                    </Grid.ColumnDefinitions>
-                                    <TextBlock Text="Name" Grid.Column="0" Padding="5,1,0,1" HorizontalAlignment="Stretch"/>
-                                    <TextBlock Text="State" Grid.Column="2" Padding="5,1,0,1" HorizontalAlignment="Stretch"/>
-                                    <TextBlock Text="Extras" Grid.Column="4" Padding="5,1,0,1" HorizontalAlignment="Stretch"/>
-                                    <Border Background="{DynamicResource ABrush.Tone1.Border.Static}" Grid.Column="1" Width="1"/>
-                                    <Border Background="{DynamicResource ABrush.Tone1.Border.Static}" Grid.Column="3" Width="1"/>
-                                    <GridSplitter ResizeDirection="Columns" Grid.Column="1" Margin="-4,0" Background="Transparent"/>
-                                    <GridSplitter ResizeDirection="Columns" Grid.Column="3" Margin="-4,0" Background="Transparent"/>
-                                </Grid>
-                            </Border>
-                            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                        <Panel>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="{Binding RelativeSource={RelativeSource AncestorType={x:Type c:LayerTreeControl}}, Path=ColumnWidth0, Mode=TwoWay}" MinWidth="100"/>
+                                    <ColumnDefinition Width="0"/>
+                                    <ColumnDefinition Width="{Binding RelativeSource={RelativeSource AncestorType={x:Type c:LayerTreeControl}}, Path=ColumnWidth2, Mode=TwoWay}"/>
+                                    <ColumnDefinition Width="0"/>
+                                    <ColumnDefinition Width="{Binding RelativeSource={RelativeSource AncestorType={x:Type c:LayerTreeControl}}, Path=ColumnWidth4, Mode=TwoWay}"/>
+                                </Grid.ColumnDefinitions>
+                                <Rectangle Grid.Column="1" Width="1" Fill="{DynamicResource ABrush.Tone6.Border.Static}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
+                                <Rectangle Grid.Column="3" Width="1" Fill="{DynamicResource ABrush.Tone6.Border.Static}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
+                            </Grid>
+                            <DockPanel>
+                                <Border DockPanel.Dock="Top" Background="{DynamicResource ABrush.Tone5.Background.Static}"
+                                        BorderBrush="{DynamicResource ABrush.Tone1.Border.Static}" BorderThickness="0,0,0,1">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="{Binding RelativeSource={RelativeSource AncestorType={x:Type c:LayerTreeControl}}, Path=ColumnWidth0, Mode=TwoWay}" MinWidth="100"/>
+                                            <ColumnDefinition Width="0"/>
+                                            <ColumnDefinition Width="{Binding RelativeSource={RelativeSource AncestorType={x:Type c:LayerTreeControl}}, Path=ColumnWidth2, Mode=TwoWay}"/>
+                                            <ColumnDefinition Width="0"/>
+                                            <ColumnDefinition Width="{Binding RelativeSource={RelativeSource AncestorType={x:Type c:LayerTreeControl}}, Path=ColumnWidth4, Mode=TwoWay}"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="Name" Grid.Column="0" Padding="5,1,0,1" HorizontalAlignment="Stretch"/>
+                                        <TextBlock Text="State" Grid.Column="2" Padding="5,1,0,1" HorizontalAlignment="Stretch"/>
+                                        <TextBlock Text="Extras" Grid.Column="4" Padding="5,1,0,1" HorizontalAlignment="Stretch"/>
+                                        <Border Background="{DynamicResource ABrush.Tone1.Border.Static}" Grid.Column="1" Width="1"/>
+                                        <Border Background="{DynamicResource ABrush.Tone1.Border.Static}" Grid.Column="3" Width="1"/>
+                                        <GridSplitter ResizeDirection="Columns" Grid.Column="1" Margin="-4,0" Background="Transparent"/>
+                                        <GridSplitter ResizeDirection="Columns" Grid.Column="3" Margin="-4,0" Background="Transparent"/>
+                                    </Grid>
+                                </Border>
                                 <c:LayerObjectTreeView x:Name="PART_TreeView"
                                                        Background="Transparent"
                                                        BorderBrush="Transparent"
                                                        BorderThickness="0"/>
-                            </ScrollViewer>
-                        </DockPanel>
-                    </Panel>
-
+                            </DockPanel>
+                        </Panel>
+                    </ScrollViewer>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>

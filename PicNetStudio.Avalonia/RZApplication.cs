@@ -19,6 +19,7 @@
 
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using PicNetStudio.Avalonia.CommandSystem;
 using PicNetStudio.Avalonia.PicNet.Commands;
 using PicNetStudio.Avalonia.PicNet.Tools.Core;
@@ -128,12 +129,12 @@ public abstract class RZApplication {
     }
 
     private class DummyMessageDialogService : IMessageDialogService {
-        public MessageBoxResult ShowMessage(string caption, string message, MessageBoxButton buttons = MessageBoxButton.OK) {
-            return MessageBoxResult.None;
+        public Task<MessageBoxResult> ShowMessage(string caption, string message, MessageBoxButton buttons = MessageBoxButton.OK) {
+            return default;
         }
 
-        public MessageBoxResult ShowMessage(string caption, string header, string message, MessageBoxButton buttons = MessageBoxButton.OK) {
-            return MessageBoxResult.None;
+        public Task<MessageBoxResult> ShowMessage(string caption, string header, string message, MessageBoxButton buttons = MessageBoxButton.OK) {
+            return default;
         }
     }
 

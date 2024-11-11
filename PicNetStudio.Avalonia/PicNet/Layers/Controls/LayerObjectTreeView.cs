@@ -19,6 +19,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.InteropServices.JavaScript;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -39,27 +41,92 @@ public class LayerObjectTreeView : TreeView {
     private readonly Dictionary<BaseLayerTreeObject, LayerObjectTreeViewItem> modelToControl;
     internal readonly Stack<LayerObjectTreeViewItem> itemCache;
     private IDisposable? collectionChangeListener;
+    private bool ignoreTreeSelectionChangeEvent;
+    private bool ignoreManagerSelectionChangeEvent;
 
     public LayerObjectTreeView() {
         this.controlToModel = new Dictionary<LayerObjectTreeViewItem, BaseLayerTreeObject>();
         this.modelToControl = new Dictionary<BaseLayerTreeObject, LayerObjectTreeViewItem>();
         this.itemCache = new Stack<LayerObjectTreeViewItem>();
-        this.SelectionChanged += OnSelectionChanged;
-    }
-
-    private void OnSelectionChanged(object? sender, SelectionChangedEventArgs e) {
-        if (this.Canvas is Canvas canvas && e.AddedItems.Count > 0) {
-            LayerObjectTreeViewItem item = (LayerObjectTreeViewItem) e.AddedItems[e.AddedItems.Count - 1]!;
-            canvas.ActiveLayerTreeObject = item.LayerObject;
-        }
+        this.SelectionChanged += this.OnTreeSelectionChanged;
     }
 
     static LayerObjectTreeView() {
         CanvasProperty.Changed.AddClassHandler<LayerObjectTreeView, Canvas?>((o, e) => o.OnCanvasChanged(e));
     }
 
-    protected override void OnApplyTemplate(TemplateAppliedEventArgs e) {
-        base.OnApplyTemplate(e);
+    private void OnTreeSelectionChanged(object? sender, SelectionChangedEventArgs e) {
+        if (this.ignoreTreeSelectionChangeEvent) {
+            return;
+        }
+
+        if (this.Canvas is Canvas canvas) {
+            // #pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type.
+            //             List<BaseLayerTreeObject>? removedList = e.RemovedItems.Count > 0 ? e.RemovedItems.Cast<LayerObjectTreeViewItem>().Select(x => x.LayerObject).Where(x => x != null).ToList() : null;
+            //             List<BaseLayerTreeObject>? addedList = e.AddedItems.Count > 0 ? e.AddedItems.Cast<LayerObjectTreeViewItem>().Select(x => x.LayerObject).Where(x => x != null).ToList() : null;
+            // #pragma warning restore CS8619 // Nullability of reference types in value doesn't match target type.
+            //
+            //             try {
+            //                 this.ignoreManagerSelectionChangeEvent = true;
+            //                 if (removedList != null) {
+            //                     canvas.LayerSelectionManager.Unselect(removedList);
+            //                 }
+            //             
+            //                 if (addedList != null) {
+            //                     canvas.LayerSelectionManager.Select(addedList);
+            //                 }
+            //             }
+            //             finally {
+            //                 this.ignoreManagerSelectionChangeEvent = false;
+            //             }
+
+#pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type.
+            List<BaseLayerTreeObject>? selection = this.SelectedItems.Count > 0 ? this.SelectedItems.Cast<LayerObjectTreeViewItem>().Select(x => x.LayerObject).Where(x => x != null).ToList() : null;
+#pragma warning restore CS8619 // Nullability of reference types in value doesn't match target type.
+            if (selection != null && selection.Count > 0) {
+                try {
+                    this.ignoreManagerSelectionChangeEvent = true;
+                    canvas.LayerSelectionManager.SetSelection(selection);
+                }
+                finally {
+                    this.ignoreManagerSelectionChangeEvent = false;
+                }
+            }
+        }
+    }
+
+
+    private void OnLayerSelectionChanged(SelectionManager<BaseLayerTreeObject> sender, IList<BaseLayerTreeObject>? olditems, IList<BaseLayerTreeObject>? newitems) {
+        if (this.ignoreManagerSelectionChangeEvent && this.SelectedItems.Count == sender.Selection.Count) {
+            return;
+        }
+
+        try {
+            this.ignoreTreeSelectionChangeEvent = true;
+            if (newitems == null || newitems.Count == 0) {
+                this.UnselectAll();
+            }
+            else {
+                List<LayerObjectTreeViewItem> controls = new List<LayerObjectTreeViewItem>();
+                foreach (BaseLayerTreeObject layer in newitems) {
+                    if (this.modelToControl.TryGetValue(layer, out LayerObjectTreeViewItem? control)) {
+                        controls.Add(control);
+                    }
+                }
+
+                if (this.SelectedItems.CollectionEquals(controls)) {
+                    return;
+                }
+
+                this.SelectedItems.Clear();
+                foreach (LayerObjectTreeViewItem control in controls) {
+                    this.SelectedItems.Add(control);
+                }
+            }
+        }
+        finally {
+            this.ignoreTreeSelectionChangeEvent = false;
+        }
     }
 
     public LayerObjectTreeViewItem GetNodeAt(int index) {
@@ -98,12 +165,14 @@ public class LayerObjectTreeView : TreeView {
     private void OnCanvasChanged(AvaloniaPropertyChangedEventArgs<Canvas?> e) {
         this.collectionChangeListener?.Dispose();
         if (e.TryGetOldValue(out Canvas? oldCanvas)) {
+            oldCanvas.LayerSelectionManager.SelectionChanged -= this.OnLayerSelectionChanged;
             for (int i = this.Items.Count - 1; i >= 0; i--) {
                 this.RemoveNode(i);
             }
         }
 
         if (e.TryGetNewValue(out Canvas? newCanvas)) {
+            newCanvas.LayerSelectionManager.SelectionChanged += this.OnLayerSelectionChanged;
             this.collectionChangeListener = ObservableItemProcessor.MakeIndexable(newCanvas.Layers, this.OnCanvasLayerAdded, this.OnCanvasLayerRemoved, this.OnCanvasLayerIndexMoved);
             int i = 0;
             foreach (BaseLayerTreeObject layer in newCanvas.Layers) {

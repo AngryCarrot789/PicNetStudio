@@ -47,7 +47,7 @@ public class CompositeLayer : BaseVisualLayer {
             throw new ArgumentException("Layer already exists in another timeline. It must be removed first");
 
         this.items.Insert(index, layer);
-        InternalOnAddedToCompositionLayer(layer, this);
+        InternalOnAddedToLayer(layer, this);
         this.Canvas?.RaiseRenderInvalidated();
     }
 
@@ -61,8 +61,9 @@ public class CompositeLayer : BaseVisualLayer {
 
     public void RemoveLayerAt(int index) {
         BaseLayerTreeObject layer = this.items[index];
+        InternalOnPreRemoveFromOwner(layer);
         this.items.RemoveAt(index);
-        InternalOnRemovedFromCompositionLayer(layer, this);
+        InternalOnRemovedFromLayer(layer, this);
         this.Canvas?.RaiseRenderInvalidated();
     }
 

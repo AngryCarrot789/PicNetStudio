@@ -143,7 +143,7 @@ public abstract class BaseBinder<TModel> : IBinder<TModel> where TModel : class 
         if (!this.IsFullyAttached)
             throw new Exception("Not fully attached");
 
-        this.TryDetatchInternal();
+        this.TryDetachInternal();
         this.myModel = null;
         this.myControl = null;
     }
@@ -152,7 +152,7 @@ public abstract class BaseBinder<TModel> : IBinder<TModel> where TModel : class 
         if (this.myControl == null)
             throw new InvalidOperationException("No control is attached");
 
-        this.TryDetatchInternal();
+        this.TryDetachInternal();
         this.myControl = null;
     }
 
@@ -160,7 +160,7 @@ public abstract class BaseBinder<TModel> : IBinder<TModel> where TModel : class 
         if (this.myModel == null)
             throw new InvalidOperationException("No model is attached");
 
-        this.TryDetatchInternal();
+        this.TryDetachInternal();
         this.myModel = null;
     }
 
@@ -196,7 +196,7 @@ public abstract class BaseBinder<TModel> : IBinder<TModel> where TModel : class 
         this.UpdateControl();
     }
 
-    private void TryDetatchInternal() {
+    private void TryDetachInternal() {
         if (this.IsFullyAttached) {
             this.OnDetached();
             this.IsFullyAttached = false;
