@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:avalonia="clr-namespace:PicNetStudio.Avalonia.Shortcuts.Avalonia"
+             xmlns:aa="clr-namespace:PicNetStudio.Avalonia.Shortcuts.Avalonia"
              xmlns:controls="clr-namespace:PicNetStudio.Avalonia.PicNet.Controls"
              xmlns:controls1="clr-namespace:PicNetStudio.Avalonia.PicNet.Toolbars.Controls"
              xmlns:c2="clr-namespace:PicNetStudio.Avalonia.PicNet.Layers.Controls"
@@ -14,7 +14,7 @@
              xmlns:commands="clr-namespace:PicNetStudio.Avalonia.PicNet.Commands"
              mc:Ignorable="d" Width="1280" Height="720"
              Title="PicNet Studio"
-             avalonia:UIInputManager.FocusPath="Application/EditorWindow"
+             aa:UIInputManager.FocusPath="Application/EditorWindow"
              Background="{DynamicResource PanelBackground1}"
              TitleBarBrush="{DynamicResource ABrush.Tone7.Background.Static}"
              BorderBrush="{DynamicResource ABrush.Tone1.Border.Static}" BorderThickness="1"
@@ -25,7 +25,7 @@
                                     HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                                     Background="Transparent" BorderBrush="{DynamicResource ABrush.Tone1.Border.Static}"
                                     Focusable="True" BorderThickness="1,1,1,0"
-                                    avalonia:UIInputManager.FocusPath="Application/EditorWindow/Canvas">
+                                    aa:UIInputManager.FocusPath="Application/EditorWindow/Canvas">
                 <controls:CanvasControl.Styles>
                     <Style Selector="controls|CanvasControl[IsFocused=false]">
                         <Setter Property="BorderBrush" Value="{DynamicResource PanelBorderBrush}"/>
@@ -40,7 +40,7 @@
             </Border>
             <Border Grid.Column="3" Grid.Row="1" Background="{DynamicResource PanelBackground3}">
                 <Grid RowDefinitions="*,1,*">
-                    <DockPanel Grid.Row="0">
+                    <DockPanel Grid.Row="0" aa:UIInputManager.FocusPath="Application/EditorWindow/LayerTree">
                         <Border DockPanel.Dock="Top" Background="{DynamicResource ABrush.Tone5.Background.Static}" BorderBrush="{DynamicResource ABrush.Tone1.Border.Static}" BorderThickness="0,1,0,1"
                                 ToolTip.Tip="These are the layers that are drawn. They are drawn bottom to top">
                             <TextBlock Text="Layers" Padding="8,4" HorizontalAlignment="Left"/>
@@ -57,7 +57,7 @@
                                 <Border Background="{DynamicResource ABrush.Tone3.Border.Static}" Width="1"/>
                                 <Button Content="COMP" Background="Transparent" BorderThickness="0" Width="48"
                                         ToolTip.Tip="Places your selection into a composition layer (aka a group/folder)"
-                                        u:CommandUsageManager.SimpleButtonCommandId="command.layertree.GroupSelectionIntoComposition"/>
+                                        u:CommandUsageManager.UsageClassType="{x:Type commands:GroupSelectionIntoCompositionCommandUsage}"/>
                                 <Border Background="{DynamicResource ABrush.Tone3.Border.Static}" Width="1"/>
                             </StackPanel>
                         </Border>

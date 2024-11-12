@@ -17,6 +17,8 @@
 // along with PicNetStudio. If not, see <https://www.gnu.org/licenses/>.
 // 
 
+using System;
+using System.Collections.Generic;
 using PicNetStudio.Avalonia.PicNet.Layers;
 using PicNetStudio.Avalonia.Utils.Collections.Observable;
 
@@ -33,4 +35,18 @@ public interface ILayerContainer {
     bool RemoveLayer(BaseLayerTreeObject layer);
     void RemoveLayerAt(int index);
     int IndexOf(BaseLayerTreeObject layer);
+}
+
+public static class LayerContainerExtension {
+    public static int LowestIndexOf(this ILayerContainer container, IEnumerable<BaseLayerTreeObject> items) {
+        int minIndex = int.MaxValue;
+        foreach (BaseLayerTreeObject layer in items) {
+            int index = container.IndexOf(layer);
+            if (index != -1) {
+                minIndex = Math.Min(minIndex, index);
+            }
+        }
+
+        return minIndex == int.MaxValue ? -1 : minIndex;
+    }
 }

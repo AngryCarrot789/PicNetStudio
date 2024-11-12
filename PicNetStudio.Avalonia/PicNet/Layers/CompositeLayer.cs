@@ -41,11 +41,11 @@ public class CompositeLayer : BaseVisualLayer, ILayerContainer {
     public void InsertLayer(int index, BaseLayerTreeObject layer) {
         if (layer == null)
             throw new ArgumentNullException(nameof(layer), "Cannot add a null layer");
-        if (layer.ParentLayer == this)
-            throw new ArgumentException("Layer already exists in this layer. It must be removed first");
-        if (layer.ParentLayer != null)
-            throw new ArgumentException("Layer already exists in another layer. It must be removed first");
-
+        if (layer.ParentContainer == this)
+            throw new InvalidOperationException("Layer already exists in this layer. It must be removed first");
+        if (layer.ParentContainer != null)
+            throw new InvalidOperationException("Layer already exists in another container. It must be removed first");
+        
         this.layers.Insert(index, layer);
         InternalOnAddedToLayer(layer, this);
         this.Canvas?.RaiseRenderInvalidated();

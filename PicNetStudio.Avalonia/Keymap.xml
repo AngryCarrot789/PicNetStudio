@@ -21,6 +21,14 @@
                     <KeyStroke Key="OemOpenBrackets"/>
                 </Shortcut>
             </Group>
+            <Group Name="LayerTree">
+                <Shortcut Name="GroupSelection" CommandId="command.layertree.GroupSelectionIntoComposition">
+                    <KeyStroke Mods="CTRL" Key="G"/>
+                </Shortcut>
+                <Shortcut Name="DeleteSelection" CommandId="command.layertree.DeleteSelectedLayers">
+                    <KeyStroke Key="Delete"/>
+                </Shortcut>
+            </Group>
         </Group>
     </Group>
 </KeyMap>

@@ -31,11 +31,36 @@ public class DeleteSelectedLayersCommand : DocumentCommand {
     }
     
     protected override void Execute(Editor editor, Document document, CommandEventArgs e) {
-        List<BaseLayerTreeObject> list = document.Canvas.LayerSelectionManager.Selection.ToList();
+        SelectionManager<BaseLayerTreeObject> manager = document.Canvas.LayerSelectionManager;
+        List<BaseLayerTreeObject> list = manager.Selection.ToList();
         if (list.Count > 0) {
-            document.Canvas.LayerSelectionManager.Clear();
-            foreach (BaseLayerTreeObject layer in list) {
-                BaseLayerTreeObject.RemoveFromTree(layer);
+            if (BaseLayerTreeObject.CheckHaveParentsAndAllMatch(manager, out ILayerContainer? sameParent)) {
+                List<int> indices = manager.Selection.Select(x => sameParent.IndexOf(x)).OrderBy(index => index).ToList();
+                int minIndex = indices[0];
+                manager.Clear();
+
+                int count = 0;
+                foreach (int indexOfLayer in indices) {
+                    sameParent.RemoveLayerAt(indexOfLayer - count);
+                    count++;
+                }
+
+                if (sameParent.Layers.Count > 0) {
+                    if (minIndex >= sameParent.Layers.Count) {
+                        minIndex = sameParent.Layers.Count - 1;
+                    }
+                    
+                    manager.Select(sameParent.Layers[minIndex]);
+                }
+                else if (sameParent is BaseLayerTreeObject parentLayer) {
+                    manager.Select(parentLayer);
+                }
+            }
+            else {
+                manager.Clear();
+                foreach (BaseLayerTreeObject layer in list) {
+                    layer.ParentContainer?.RemoveLayer(layer);
+                }
             }
         }
     }

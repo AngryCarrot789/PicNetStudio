@@ -17,12 +17,74 @@
 // along with PicNetStudio. If not, see <https://www.gnu.org/licenses/>.
 // 
 
+using System.Collections.Generic;
+using System.Linq;
 using PicNetStudio.Avalonia.CommandSystem;
+using PicNetStudio.Avalonia.PicNet.Layers;
 
 namespace PicNetStudio.Avalonia.PicNet.Commands;
 
 public class GroupSelectionIntoCompositionCommand : DocumentCommand {
+    protected override Executability CanExecute(Editor editor, Document document, CommandEventArgs e) {
+        IReadOnlySet<BaseLayerTreeObject> selection = document.Canvas.LayerSelectionManager.Selection;
+        if (selection.Count < 1) {
+            return Executability.ValidButCannotExecute;
+        }
+
+        if (selection.Count == 1) {
+            return Executability.Valid;
+        }
+
+        return BaseLayerTreeObject.CheckHaveParentsAndAllMatch(document.Canvas.LayerSelectionManager, out _) ? Executability.Valid : Executability.ValidButCannotExecute;
+    }
+
     protected override void Execute(Editor editor, Document document, CommandEventArgs e) {
+        SelectionManager<BaseLayerTreeObject> selectionManager = document.Canvas.LayerSelectionManager;
+        IReadOnlySet<BaseLayerTreeObject> selection = selectionManager.Selection;
+        if (selection.Count < 1) {
+            return;
+        }
+
+        CompositeLayer newCompositionLayer;
+        ILayerContainer? theParent;
+        if (selection.Count == 1) {
+            BaseLayerTreeObject theLayer = selection.First();
+            if ((theParent = theLayer.ParentContainer) != null) {
+                int index = theParent.IndexOf(theLayer);
+                theParent.RemoveLayerAt(index);
+
+                newCompositionLayer = new CompositeLayer();
+                newCompositionLayer.AddLayer(theLayer);
+                theParent.InsertLayer(index, newCompositionLayer);
+            }
+
+
+            return;
+        }
+
+        if (!BaseLayerTreeObject.CheckHaveParentsAndAllMatch(selectionManager, out theParent)) {
+            return;
+        }
         
+        List<int> indices = selection.Select(x => theParent.IndexOf(x)).OrderBy(index => index).ToList();
+        selectionManager.Clear();
+        int minIndex = indices[0];
+
+        int count = 0;
+        newCompositionLayer = new CompositeLayer();
+        foreach (int indexOfLayer in indices) {
+            int actualIndex = indexOfLayer - count; 
+            BaseLayerTreeObject theLayer = theParent.Layers[actualIndex];
+            theParent.RemoveLayerAt(actualIndex);
+            newCompositionLayer.AddLayer(theLayer);
+            count++;
+        }
+        
+        theParent.InsertLayer(minIndex, newCompositionLayer);
+    }
+}
+
+public class GroupSelectionIntoCompositionCommandUsage : SelectionBasedCommandUsage {
+    public GroupSelectionIntoCompositionCommandUsage() : base("command.layertree.GroupSelectionIntoComposition") {
     }
 }

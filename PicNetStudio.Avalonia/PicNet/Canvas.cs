@@ -129,16 +129,15 @@ public class Canvas : ILayerContainer {
     }
 
     public void InsertLayer(int index, BaseLayerTreeObject layer) {
-        if (layer.Canvas == this)
-            throw new InvalidOperationException("Layer already added");
-
+        if (layer == null)
+            throw new ArgumentNullException(nameof(layer), "Cannot add a null layer");
+        if (layer.ParentContainer == this)
+            throw new InvalidOperationException("Layer already exists in this canvas as a top level layer. It must be removed first");
+        if (layer.ParentContainer != null)
+            throw new InvalidOperationException("Layer already exists in another container. It must be removed first");
+        
         this.layers.Insert(index, layer);
         BaseLayerTreeObject.InternalOnAddedAsTopLevelLayer(layer, this);
-
-        // Select first layer for now
-        if (this.layers.Count == 1)
-            this.ActiveLayerTreeObject = layer;
-
         this.RaiseRenderInvalidated();
     }
 
@@ -165,7 +164,8 @@ public class Canvas : ILayerContainer {
 
         BaseLayerTreeObject.InternalOnPreRemoveFromOwner(layer);
         this.layers.RemoveAt(index);
-        BaseLayerTreeObject.InternalOnRemovedAsTopLevelLayer(layer, null);
+        BaseLayerTreeObject.InternalOnRemovedAsTopLevelLayer(layer, this);
+        this.RaiseRenderInvalidated();
     }
 
     public int IndexOf(BaseLayerTreeObject layer) {

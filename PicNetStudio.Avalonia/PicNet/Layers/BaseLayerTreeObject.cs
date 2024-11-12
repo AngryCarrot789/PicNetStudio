@@ -17,8 +17,10 @@
 // along with PicNetStudio. If not, see <https://www.gnu.org/licenses/>.
 // 
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using PicNetStudio.Avalonia.DataTransfer;
 
 namespace PicNetStudio.Avalonia.PicNet.Layers;
@@ -306,16 +308,21 @@ public abstract class BaseLayerTreeObject : ITransferableData {
 
     #endregion
 
-    /// <summary>
-    /// Helper method to remove the layer from its parent or canvas
-    /// </summary>
-    /// <param name="layer"></param>
-    public static void RemoveFromTree(BaseLayerTreeObject layer) {
-        if (layer.parentLayer != null) {
-            layer.parentLayer.RemoveLayer(layer);
-        }
-        else if (layer.Canvas != null) {
-            layer.Canvas.RemoveLayer(layer);
+    public static bool CheckHaveParentsAndAllMatch(SelectionManager<BaseLayerTreeObject> manager, [NotNullWhen(true)] out ILayerContainer? sameParent) {
+        using (IEnumerator<BaseLayerTreeObject> enumerator = manager.Selection.GetEnumerator()) {
+            if (!enumerator.MoveNext())
+                throw new InvalidOperationException("Expected items to contain at least 1 item");
+            
+            if ((sameParent = enumerator.Current.ParentContainer) == null)
+                return false;
+
+            while (enumerator.MoveNext()) {
+                if (!ReferenceEquals(enumerator.Current.ParentContainer, sameParent)) {
+                    return false;
+                }
+            }
+
+            return true;
         }
     }
 }

@@ -73,7 +73,7 @@ public class SelectionBasedCommandUsage : CommandUsage {
         base.OnContextChanged();
     }
 
-    private void OnCanvasSelectionChanged(SelectionManager<BaseLayerTreeObject> sender, IList<BaseLayerTreeObject>? olditems, IList<BaseLayerTreeObject>? newitems) {
+    protected virtual void OnCanvasSelectionChanged(SelectionManager<BaseLayerTreeObject> sender, IList<BaseLayerTreeObject>? oldItems, IList<BaseLayerTreeObject>? newItems) {
         this.UpdateCanExecuteLater();
     }
 }

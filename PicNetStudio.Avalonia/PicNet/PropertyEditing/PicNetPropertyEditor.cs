@@ -21,7 +21,6 @@ using System.Collections.Generic;
 using PicNetStudio.Avalonia.PicNet.Layers;
 using PicNetStudio.Avalonia.PicNet.PropertyEditing.Core;
 using PicNetStudio.Avalonia.PicNet.PropertyEditing.DataTransfer;
-using PicNetStudio.Avalonia.Utils;
 using PicNetStudio.Avalonia.Utils.RDA;
 
 namespace PicNetStudio.Avalonia.PicNet.PropertyEditing;
