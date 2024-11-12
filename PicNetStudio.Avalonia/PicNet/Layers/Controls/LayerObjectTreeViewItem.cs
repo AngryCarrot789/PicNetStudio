@@ -56,20 +56,24 @@ public class LayerObjectTreeViewItem : TreeViewItem {
         this.LayerTree = tree;
         this.ParentNode = parentNode;
         this.LayerObject = layer;
-        DragDrop.SetAllowDrop(this, layer is CompositeLayer);
+        DragDrop.SetAllowDrop(this, layer is ILayerContainer);
     }
 
     public void OnAdded() {
-        if (this.LayerObject is CompositeLayer folder) {
-            this.compositeListener = ObservableItemProcessor.MakeIndexable(folder.Items, this.OnLayerAdded, this.OnLayerRemoved, this.OnLayerMoved);
+        if (this.LayerObject is ILayerContainer folder) {
+            this.compositeListener = ObservableItemProcessor.MakeIndexable(folder.Layers, this.OnLayerAdded, this.OnLayerRemoved, this.OnLayerMoved);
             int i = 0;
-            foreach (BaseLayerTreeObject item in folder.Items) {
+            foreach (BaseLayerTreeObject item in folder.Layers) {
                 this.InsertNode(item, i++);
             }
         }
 
         this.displayNameBinder.Attach(this, this.LayerObject!);
         this.stateModifierListBoxHelper.SetModel(this.LayerObject);
+        if (this.LayerObject!.Canvas?.LayerSelectionManager.IsSelected(this.LayerObject) ?? false) {
+            this.IsSelected = true;
+        }
+        
         DataManager.SetContextData(this, new ContextData().Set(DataKeys.LayerObjectKey, this.LayerObject));
     }
 

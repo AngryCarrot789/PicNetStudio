@@ -23,7 +23,6 @@ using System.Diagnostics;
 using System.Linq;
 using Avalonia;
 using PicNetStudio.Avalonia.PicNet.Layers;
-using PicNetStudio.Avalonia.PicNet.PropertyEditing;
 using PicNetStudio.Avalonia.Utils.Collections.Observable;
 using SkiaSharp;
 
@@ -40,7 +39,7 @@ public delegate void CanvasSizeChangedEventHandler(Canvas canvas, PixelSize oldS
 /// <summary>
 /// Represents the canvas for a document. This contains layer information among other data
 /// </summary>
-public class Canvas {
+public class Canvas : ILayerContainer {
     private readonly SuspendableObservableList<BaseLayerTreeObject> layers;
     private PixelSize size;
     private BaseLayerTreeObject? activeLayerTreeObject;
@@ -66,7 +65,8 @@ public class Canvas {
 
             this.activeLayerTreeObject = value;
             this.ActiveLayerChanged?.Invoke(this, oldActiveLayerTreeObject, value);
-            PicNetPropertyEditor.Instance.UpdateSelectedLayerSelection(this);
+            if (value != null)
+                this.LayerSelectionManager.Select(value);
         }
     }
 

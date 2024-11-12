@@ -17,11 +17,12 @@
 // along with PicNetStudio. If not, see <https://www.gnu.org/licenses/>.
 // 
 
-using System.Threading;
+using System.Collections.Generic;
 using PicNetStudio.Avalonia.PicNet.Layers;
 using PicNetStudio.Avalonia.PicNet.PropertyEditing.Core;
 using PicNetStudio.Avalonia.PicNet.PropertyEditing.DataTransfer;
 using PicNetStudio.Avalonia.Utils;
+using PicNetStudio.Avalonia.Utils.RDA;
 
 namespace PicNetStudio.Avalonia.PicNet.PropertyEditing;
 
@@ -31,15 +32,15 @@ namespace PicNetStudio.Avalonia.PicNet.PropertyEditing;
 public class PicNetPropertyEditor : BasePropertyEditor {
     public static PicNetPropertyEditor Instance { get; } = new PicNetPropertyEditor();
 
-    private volatile int isUpdateClipSelectionScheduled;
-    private volatile int isUpdateTrackSelectionScheduled;
-
+    private RapidDispatchAction? delayedUpdate;
+    private Document? activeDocument;
+    
     public SimplePropertyEditorGroup BaseLayerObjectGroup { get; }
 
     private PicNetPropertyEditor() {
         {
             this.BaseLayerObjectGroup = new SimplePropertyEditorGroup(typeof(BaseLayerTreeObject)) {
-                DisplayName = "Base Layer", IsExpanded = true
+                DisplayName = "Layer", IsExpanded = true
             };
 
             this.BaseLayerObjectGroup.AddItem(new LayerNamePropertyEditorSlot());
@@ -51,37 +52,29 @@ public class PicNetPropertyEditor : BasePropertyEditor {
         this.Root.AddItem(this.BaseLayerObjectGroup);
     }
 
-    public void UpdateLayerSelection(Editor? editor) {
-        if (editor == null || Interlocked.CompareExchange(ref this.isUpdateClipSelectionScheduled, 1, 0) != 0) {
+    public void UpdateSelectedLayerSelection() {
+        if (this.activeDocument == null)
             return;
-        }
-
-        RZApplication.Instance.Dispatcher.InvokeAsync(() => {
-            Canvas? canvas = editor.ActiveDocument?.Canvas;
-            if (canvas == null)
-                return;
-
-            try {
-                this.UpdateSelectedLayerSelection(canvas);
-            }
-            finally {
-                this.isUpdateClipSelectionScheduled = 0;
-            }
-        }, DispatchPriority.Background);
+        
+        (this.delayedUpdate ??= new RapidDispatchAction(() => {
+            if (this.activeDocument != null)
+                this.BaseLayerObjectGroup.SetupHierarchyState(new List<object>(this.activeDocument.Canvas.LayerSelectionManager.Selection));
+        })).InvokeAsync();
     }
 
-    public void UpdateSelectedLayerSelection(Canvas canvas) {
-        if (new SingletonList<BaseLayerTreeObject>(canvas.ActiveLayerTreeObject).CollectionEquals(this.BaseLayerObjectGroup.Handlers)) {
-            return;
-        }
+    public void OnActiveDocumentChanged(Document? oldDocument, Document? newDocument) {
+        if (oldDocument != null)
+            oldDocument.Canvas.LayerSelectionManager.SelectionChanged -= this.LayerSelectionManagerOnSelectionChanged;
+        if (newDocument != null)
+            newDocument.Canvas.LayerSelectionManager.SelectionChanged += this.LayerSelectionManagerOnSelectionChanged;
 
-        this.BaseLayerObjectGroup.SetupHierarchyState(new SingletonReadOnlyList<BaseLayerTreeObject>(canvas.ActiveLayerTreeObject));
-        // if (selection.Count == 1) {
-        // if (true) {
-        //     this.BaseLayerObjectGroup.SetupHierarchyState(new SingletonReadOnlyList<BaseLayerTreeObject>(canvas.ActiveLayerTreeObject));
-        // }
-        // else {
-        //     this.BaseLayerObjectGroup.ClearHierarchy();
-        // }
+        this.activeDocument = newDocument;
+        if (newDocument != null)
+            this.UpdateSelectedLayerSelection();
+    }
+
+    private void LayerSelectionManagerOnSelectionChanged(SelectionManager<BaseLayerTreeObject> sender, IList<BaseLayerTreeObject>? olditems, IList<BaseLayerTreeObject>? newitems) {
+        if (this.activeDocument != null)
+            this.UpdateSelectedLayerSelection();
     }
 }

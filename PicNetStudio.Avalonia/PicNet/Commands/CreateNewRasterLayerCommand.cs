@@ -24,6 +24,11 @@ using PicNetStudio.Avalonia.PicNet.Layers;
 namespace PicNetStudio.Avalonia.PicNet.Commands;
 
 public class CreateNewRasterLayerCommand : DocumentCommand {
+    protected override Executability CanExecute(Editor editor, Document document, CommandEventArgs e) {
+        int count = document.Canvas.LayerSelectionManager.Selection.Count;
+        return count > 1 ? Executability.ValidButCannotExecute : Executability.Valid;
+    }
+
     protected override void Execute(Editor editor, Document document, CommandEventArgs e) {
         int count = document.Canvas.LayerSelectionManager.Selection.Count;
         if (count > 1) {
@@ -47,7 +52,12 @@ public class CreateNewRasterLayerCommand : DocumentCommand {
         else {
             document.Canvas.InsertLayer(0, raster);
         }
-        
+
         document.Canvas.LayerSelectionManager.SetSelection(raster);
+    }
+}
+
+public class CreateNewRasterLayerCommandUsage : SelectionBasedCommandUsage {
+    public CreateNewRasterLayerCommandUsage() : base("command.layertree.CreateNewRasterLayer") {
     }
 }

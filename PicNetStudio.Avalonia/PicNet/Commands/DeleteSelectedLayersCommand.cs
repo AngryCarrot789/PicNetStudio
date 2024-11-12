@@ -25,6 +25,11 @@ using PicNetStudio.Avalonia.PicNet.Layers;
 namespace PicNetStudio.Avalonia.PicNet.Commands;
 
 public class DeleteSelectedLayersCommand : DocumentCommand {
+    protected override Executability CanExecute(Editor editor, Document document, CommandEventArgs e) {
+        int count = document.Canvas.LayerSelectionManager.Selection.Count;
+        return count > 0 ? Executability.Valid : Executability.ValidButCannotExecute;
+    }
+    
     protected override void Execute(Editor editor, Document document, CommandEventArgs e) {
         List<BaseLayerTreeObject> list = document.Canvas.LayerSelectionManager.Selection.ToList();
         if (list.Count > 0) {
@@ -33,5 +38,10 @@ public class DeleteSelectedLayersCommand : DocumentCommand {
                 BaseLayerTreeObject.RemoveFromTree(layer);
             }
         }
+    }
+}
+
+public class DeleteSelectedLayersCommandUsage : SelectionBasedCommandUsage {
+    public DeleteSelectedLayersCommandUsage() : base("command.layertree.DeleteSelectedLayers") {
     }
 }

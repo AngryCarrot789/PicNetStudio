@@ -91,7 +91,9 @@ public class SelectionManager<TModel> {
         this.items.Clear();
         this.items.UnionWith(list);
 
-        this.SelectionChanged?.Invoke(this, oldItems.AsReadOnly(), newItems.AsReadOnly());
+        if (oldItems.Count > 0 || newItems.Count > 0) {
+            this.SelectionChanged?.Invoke(this, oldItems.AsReadOnly(), newItems.AsReadOnly());
+        }
     }
 
     public void Select(TModel item) {

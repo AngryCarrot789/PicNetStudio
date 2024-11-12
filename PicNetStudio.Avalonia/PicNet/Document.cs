@@ -17,6 +17,8 @@
 // along with PicNetStudio. If not, see <https://www.gnu.org/licenses/>.
 // 
 
+using PicNetStudio.Avalonia.PicNet.Layers;
+
 namespace PicNetStudio.Avalonia.PicNet;
 
 public delegate void EditorChangedEventHandler(Document document, Editor? oldEditor, Editor? newEditor);
@@ -25,6 +27,8 @@ public delegate void EditorChangedEventHandler(Document document, Editor? oldEdi
 /// Represents an document which contains the canvas, file information, etc.
 /// </summary>
 public class Document {
+    private BaseLayerTreeObject? activeLayerTreeObject;
+    
     /// <summary>
     /// The editor that this document exists in
     /// </summary>
@@ -36,6 +40,11 @@ public class Document {
     public event EditorChangedEventHandler? EditorChanged;
 
     public Canvas Canvas { get; }
+    
+    /// <summary>
+    /// Gets this canvas' layer selection manager, which stores which layers are selected
+    /// </summary>
+    public SelectionManager<BaseLayerTreeObject> LayerSelectionManager { get; }
 
     public Document() {
         this.Canvas = new Canvas(this);

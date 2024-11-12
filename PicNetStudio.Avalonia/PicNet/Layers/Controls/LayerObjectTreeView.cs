@@ -81,14 +81,17 @@ public class LayerObjectTreeView : TreeView {
 #pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type.
             List<BaseLayerTreeObject>? selection = this.SelectedItems.Count > 0 ? this.SelectedItems.Cast<LayerObjectTreeViewItem>().Select(x => x.LayerObject).Where(x => x != null).ToList() : null;
 #pragma warning restore CS8619 // Nullability of reference types in value doesn't match target type.
-            if (selection != null && selection.Count > 0) {
-                try {
-                    this.ignoreManagerSelectionChangeEvent = true;
+            try {
+                this.ignoreManagerSelectionChangeEvent = true;
+                if (selection != null && selection.Count > 0) {
                     canvas.LayerSelectionManager.SetSelection(selection);
                 }
-                finally {
-                    this.ignoreManagerSelectionChangeEvent = false;
+                else {
+                    canvas.LayerSelectionManager.Clear();
                 }
+            }
+            finally {
+                this.ignoreManagerSelectionChangeEvent = false;
             }
         }
     }

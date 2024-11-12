@@ -51,7 +51,7 @@ public class LayerRenderer {
         
         SKPaint? transparency = null;
         if (layer is CompositeLayer compositeLayer) {
-            ReadOnlyObservableList<BaseLayerTreeObject> layers = compositeLayer.Items;
+            ReadOnlyObservableList<BaseLayerTreeObject> layers = compositeLayer.Layers;
             for (int i = layers.Count - 1; i >= 0; i--) {
                 if (layers[i] is BaseVisualLayer visualLayer)
                     this.DrawLayer(ctx, visualLayer);

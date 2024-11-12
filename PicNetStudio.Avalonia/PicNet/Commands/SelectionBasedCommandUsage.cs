@@ -1,5 +1,5 @@
-// 
-// Copyright (c) 2024-2024 REghZy
+﻿// 
+// Copyright (c) 2023-2024 REghZy
 // 
 // This file is part of PicNetStudio.
 // 
@@ -18,15 +18,22 @@
 // 
 
 using System;
+using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using PicNetStudio.Avalonia.CommandSystem;
+using PicNetStudio.Avalonia.CommandSystem.Usages;
 using PicNetStudio.Avalonia.Interactivity.Contexts;
+using PicNetStudio.Avalonia.PicNet.Layers;
 
-namespace PicNetStudio.Avalonia.CommandSystem.Usages;
+namespace PicNetStudio.Avalonia.PicNet.Commands;
 
-public class BasicButtonCommandUsage : CommandUsage {
-    public BasicButtonCommandUsage(string commandId) : base(commandId) { }
-
+public class SelectionBasedCommandUsage : CommandUsage {
+    private Document? referencedDocument;
+    
+    public SelectionBasedCommandUsage(string commandId) : base(commandId) {
+    }
+    
     protected override void OnConnected() {
         base.OnConnected();
         if (!(this.Control is Button))
@@ -49,5 +56,24 @@ public class BasicButtonCommandUsage : CommandUsage {
 
     protected override void OnUpdateForCanExecuteState(Executability state) {
         ((Button) this.Control!).IsEnabled = state == Executability.Valid;
+    }
+
+    protected override void OnContextChanged() {
+        IContextData? data = this.GetContextData();
+
+        if (data != null && DataKeys.DocumentKey.TryGetContext(data, out Document? document)) {
+            this.referencedDocument = document;
+            this.referencedDocument.Canvas.LayerSelectionManager.SelectionChanged += this.OnCanvasSelectionChanged;
+        }
+        else if (this.referencedDocument != null) {
+            this.referencedDocument.Canvas.LayerSelectionManager.SelectionChanged -= this.OnCanvasSelectionChanged;
+            this.referencedDocument = null;
+        }
+        
+        base.OnContextChanged();
+    }
+
+    private void OnCanvasSelectionChanged(SelectionManager<BaseLayerTreeObject> sender, IList<BaseLayerTreeObject>? olditems, IList<BaseLayerTreeObject>? newitems) {
+        this.UpdateCanExecuteLater();
     }
 }

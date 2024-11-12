@@ -17,9 +17,12 @@
 // along with PicNetStudio. If not, see <https://www.gnu.org/licenses/>.
 // 
 
+using System.Collections.Generic;
+using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Input;
 using PicNetStudio.Avalonia.Bindings;
 using PicNetStudio.Avalonia.Utils;
 
@@ -45,6 +48,17 @@ public class LayerTreeControl : TemplatedControl {
 
     public LayerTreeControl() {
         this.canvasBinder = new PropertyBinder<Canvas?>(this, CanvasProperty, LayerObjectTreeView.CanvasProperty);
+    }
+
+    protected override void OnPointerPressed(PointerPressedEventArgs e) {
+        base.OnPointerPressed(e);
+        if (e.Handled || this.PART_TreeView == null)
+            return;
+
+        List<LayerObjectTreeViewItem> list = this.PART_TreeView.SelectedItems.Cast<LayerObjectTreeViewItem>().ToList();
+        for (int i = list.Count - 1; i >= 0; i--) {
+            list[i].IsSelected = false;
+        }
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e) {

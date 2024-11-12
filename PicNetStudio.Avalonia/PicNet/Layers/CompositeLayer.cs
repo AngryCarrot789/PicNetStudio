@@ -26,33 +26,33 @@ namespace PicNetStudio.Avalonia.PicNet.Layers;
 /// <summary>
 /// A composition layer contains its own layer hierarchy which can be rendered like a raster layer
 /// </summary>
-public class CompositeLayer : BaseVisualLayer {
-    private readonly ObservableList<BaseLayerTreeObject> items;
+public class CompositeLayer : BaseVisualLayer, ILayerContainer {
+    private readonly ObservableList<BaseLayerTreeObject> layers;
 
-    public ReadOnlyObservableList<BaseLayerTreeObject> Items { get; }
+    public ReadOnlyObservableList<BaseLayerTreeObject> Layers { get; }
 
     public CompositeLayer() {
-        this.items = new ObservableList<BaseLayerTreeObject>();
-        this.Items = new ReadOnlyObservableList<BaseLayerTreeObject>(this.items);
+        this.layers = new ObservableList<BaseLayerTreeObject>();
+        this.Layers = new ReadOnlyObservableList<BaseLayerTreeObject>(this.layers);
     }
 
-    public void AddLayer(BaseLayerTreeObject layer) => this.InsertLayer(this.items.Count, layer);
+    public void AddLayer(BaseLayerTreeObject layer) => this.InsertLayer(this.layers.Count, layer);
 
     public void InsertLayer(int index, BaseLayerTreeObject layer) {
         if (layer == null)
             throw new ArgumentNullException(nameof(layer), "Cannot add a null layer");
         if (layer.ParentLayer == this)
-            throw new ArgumentException("Layer already exists in this timeline. It must be removed first");
+            throw new ArgumentException("Layer already exists in this layer. It must be removed first");
         if (layer.ParentLayer != null)
-            throw new ArgumentException("Layer already exists in another timeline. It must be removed first");
+            throw new ArgumentException("Layer already exists in another layer. It must be removed first");
 
-        this.items.Insert(index, layer);
+        this.layers.Insert(index, layer);
         InternalOnAddedToLayer(layer, this);
         this.Canvas?.RaiseRenderInvalidated();
     }
 
     public bool RemoveLayer(BaseLayerTreeObject layer) {
-        int index = this.items.IndexOf(layer);
+        int index = this.layers.IndexOf(layer);
         if (index == -1)
             return false;
         this.RemoveLayerAt(index);
@@ -60,16 +60,16 @@ public class CompositeLayer : BaseVisualLayer {
     }
 
     public void RemoveLayerAt(int index) {
-        BaseLayerTreeObject layer = this.items[index];
+        BaseLayerTreeObject layer = this.layers[index];
         InternalOnPreRemoveFromOwner(layer);
-        this.items.RemoveAt(index);
+        this.layers.RemoveAt(index);
         InternalOnRemovedFromLayer(layer, this);
         this.Canvas?.RaiseRenderInvalidated();
     }
 
     public void MoveTrackIndex(int oldIndex, int newIndex) {
         if (oldIndex != newIndex) {
-            this.items.Move(oldIndex, newIndex);
+            this.layers.Move(oldIndex, newIndex);
             this.Canvas?.RaiseRenderInvalidated();
         }
     }
@@ -79,6 +79,6 @@ public class CompositeLayer : BaseVisualLayer {
     }
 
     public int IndexOf(BaseLayerTreeObject layer) {
-        return this.items.IndexOf(layer);
+        return this.layers.IndexOf(layer);
     }
 }

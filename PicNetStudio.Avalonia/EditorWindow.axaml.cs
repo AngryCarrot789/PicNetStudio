@@ -48,19 +48,15 @@ public partial class EditorWindow : WindowEx {
         document.Canvas.Size = new PixelSize(800, 400);
 
 
-        void MakeLayer(SKColor fill, string name, CompositeLayer? parent = null) {
+        void MakeLayer(SKColor fill, string name, ILayerContainer? parent = null) {
             RasterLayer layer = new RasterLayer() {
                 Name = name
             };
+            
             layer.Bitmap.InitialiseBitmap(document.Canvas.Size);
             layer.Bitmap.Canvas!.Clear(fill);
 
-            if (parent != null) {
-                parent.AddLayer(layer);
-            }
-            else {
-                document.Canvas.AddLayer(layer);
-            }
+            (parent ?? document.Canvas).AddLayer(layer);
         }
 
         CompositeLayer MakeCompLayer(string name) {
@@ -97,6 +93,7 @@ public partial class EditorWindow : WindowEx {
         this.PART_LayerTreeControl.Canvas = newactivedocument?.Canvas;
 
         this.contextData.Set(DataKeys.DocumentKey, newactivedocument);
+        PicNetPropertyEditor.Instance.OnActiveDocumentChanged(oldactivedocument, newactivedocument);
         DataManager.InvalidateInheritedContext(this);
     }
 

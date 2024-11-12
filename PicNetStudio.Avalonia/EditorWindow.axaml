@@ -11,6 +11,7 @@
              xmlns:c4="clr-namespace:PicNetStudio.Avalonia.Themes.Controls"
              xmlns:nd="clr-namespace:PicNetStudio.Avalonia.PicNet.Controls.Dragger"
              xmlns:u="clr-namespace:PicNetStudio.Avalonia.CommandSystem.Usages"
+             xmlns:commands="clr-namespace:PicNetStudio.Avalonia.PicNet.Commands"
              mc:Ignorable="d" Width="1280" Height="720"
              Title="PicNet Studio"
              avalonia:UIInputManager.FocusPath="Application/EditorWindow"
@@ -48,11 +49,11 @@
                             <StackPanel Orientation="Horizontal">
                                 <Button Content="+" Background="Transparent" BorderThickness="0" Width="24"
                                         ToolTip.Tip="Add a new layer above the selected layer"
-                                        u:CommandUsageManager.SimpleButtonCommandId="command.layertree.CreateNewRasterLayer"/>
+                                        u:CommandUsageManager.UsageClassType="{x:Type commands:CreateNewRasterLayerCommandUsage}"/>
                                 <Border Background="{DynamicResource ABrush.Tone3.Border.Static}" Width="1"/>
                                 <Button Content="-" Background="Transparent" BorderThickness="0" Width="24"
                                         ToolTip.Tip="Delete the selected layer(s)"
-                                        u:CommandUsageManager.SimpleButtonCommandId="command.layertree.DeleteSelectedLayers"/>
+                                        u:CommandUsageManager.UsageClassType="{x:Type commands:DeleteSelectedLayersCommandUsage}"/>
                                 <Border Background="{DynamicResource ABrush.Tone3.Border.Static}" Width="1"/>
                                 <Button Content="COMP" Background="Transparent" BorderThickness="0" Width="48"
                                         ToolTip.Tip="Places your selection into a composition layer (aka a group/folder)"
@@ -61,6 +62,7 @@
                             </StackPanel>
                         </Border>
                         <c2:LayerTreeControl x:Name="PART_LayerTreeControl"
+                                             Background="Transparent"
                                              BorderBrush="Transparent"
                                              BorderThickness="0"/>
                     </DockPanel>
