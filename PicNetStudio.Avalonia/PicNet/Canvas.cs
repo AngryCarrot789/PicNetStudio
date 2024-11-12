@@ -167,4 +167,8 @@ public class Canvas {
         this.layers.RemoveAt(index);
         BaseLayerTreeObject.InternalOnRemovedAsTopLevelLayer(layer, null);
     }
+
+    public int IndexOf(BaseLayerTreeObject layer) {
+        return this.layers.IndexOf(layer);
+    }
 }

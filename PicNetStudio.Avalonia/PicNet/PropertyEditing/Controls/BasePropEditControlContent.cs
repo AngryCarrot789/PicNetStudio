@@ -21,9 +21,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Avalonia.Controls.Primitives;
-using PicNetStudio.Avalonia.PicNet.PropertyEditing.BasicEditors;
-using PicNetStudio.Avalonia.PicNet.PropertyEditing.BasicEditors.Controls;
+using PicNetStudio.Avalonia.PicNet.PropertyEditing.Controls.Core;
 using PicNetStudio.Avalonia.PicNet.PropertyEditing.Controls.DataTransfer;
+using PicNetStudio.Avalonia.PicNet.PropertyEditing.Core;
 using PicNetStudio.Avalonia.PicNet.PropertyEditing.DataTransfer;
 
 namespace PicNetStudio.Avalonia.PicNet.PropertyEditing.Controls;
@@ -42,6 +42,7 @@ public abstract class BasePropEditControlContent : TemplatedControl {
         Constructors = new Dictionary<Type, Func<BasePropEditControlContent>>();
         // specific case editors
         RegisterType(typeof(DisplayNamePropertyEditorSlot), () => new DisplayNamePropertyEditorControl());
+        RegisterType(typeof(LayerNamePropertyEditorSlot), () => new LayerNamePropertyEditorControl());
 
         // standard editors
         RegisterType(typeof(DataParameterLongPropertyEditorSlot), () => new DataParameterLongPropertyEditorControl());

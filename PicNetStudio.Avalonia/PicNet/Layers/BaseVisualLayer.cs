@@ -17,7 +17,6 @@
 // along with PicNetStudio. If not, see <https://www.gnu.org/licenses/>.
 // 
 
-using System.Net.Security;
 using PicNetStudio.Avalonia.DataTransfer;
 using PicNetStudio.Avalonia.Utils.Accessing;
 

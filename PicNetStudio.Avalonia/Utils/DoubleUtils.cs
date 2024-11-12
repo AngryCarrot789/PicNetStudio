@@ -25,12 +25,11 @@ namespace PicNetStudio.Avalonia.Utils;
 
 public static class DoubleUtils {
     internal const double DBL_EPSILON = 2.22044604925031E-16;
-    internal const float FLT_MIN = 1.175494E-38f;
 
     public static bool AreClose(double a, double b) {
         if (a == b)
             return true;
-        double x = (Math.Abs(a) + Math.Abs(b) + 10.0) * 2.22044604925031E-16;
+        double x = (Math.Abs(a) + Math.Abs(b) + 10.0) * DBL_EPSILON;
         double y = a - b;
         return -x < y && x > y;
     }

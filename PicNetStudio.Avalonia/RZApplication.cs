@@ -107,6 +107,9 @@ public abstract class RZApplication {
         manager.Register("command.tool.BrushTool.IncreaseBrushSize", new IncreaseBrushSizeCommand());
         manager.Register("command.tool.BrushTool.DecreaseBrushSize", new DecreaseBrushSizeCommand());
         manager.Register("command.generic.ExportImage", new ExportImageCommand());
+        manager.Register("command.layertree.CreateNewRasterLayer", new CreateNewRasterLayerCommand());
+        manager.Register("command.layertree.DeleteSelectedLayers", new DeleteSelectedLayersCommand());
+        manager.Register("command.layertree.GroupSelectionIntoComposition", new GroupSelectionIntoCompositionCommand());
     }
 
     internal static void InternalPreInititalise(RZApplication application) {

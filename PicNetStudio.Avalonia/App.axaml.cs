@@ -22,7 +22,6 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
@@ -37,11 +36,11 @@ public partial class App : Application {
 
     static App() {
         DummyCanvas.Size = new PixelSize(300, 150);
-        DummyCanvas.AddLayer(new RasterLayer() {DisplayName = "Raster 1"});
-        DummyCanvas.AddLayer(new CompositeLayer() {DisplayName = "Composite 1"});
+        DummyCanvas.AddLayer(new RasterLayer() {Name = "Raster 1"});
+        DummyCanvas.AddLayer(new CompositeLayer() {Name = "Composite 1"});
         // (DummyCanvas.Layers[0] as RasterLayer).Bitmap.InitialiseBitmap(DummyCanvas.Size);
 
-        ((CompositeLayer) DummyCanvas.Layers[1]).AddLayer(new RasterLayer() {DisplayName = "Raster 2 in composite"});
+        ((CompositeLayer) DummyCanvas.Layers[1]).AddLayer(new RasterLayer() {Name = "Raster 2 in composite"});
     }
     
     public App() {

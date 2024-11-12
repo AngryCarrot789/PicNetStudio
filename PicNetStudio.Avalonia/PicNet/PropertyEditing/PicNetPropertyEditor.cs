@@ -19,7 +19,7 @@
 
 using System.Threading;
 using PicNetStudio.Avalonia.PicNet.Layers;
-using PicNetStudio.Avalonia.PicNet.PropertyEditing.BasicEditors;
+using PicNetStudio.Avalonia.PicNet.PropertyEditing.Core;
 using PicNetStudio.Avalonia.PicNet.PropertyEditing.DataTransfer;
 using PicNetStudio.Avalonia.Utils;
 
@@ -42,7 +42,7 @@ public class PicNetPropertyEditor : BasePropertyEditor {
                 DisplayName = "Base Layer", IsExpanded = true
             };
 
-            this.BaseLayerObjectGroup.AddItem(new DisplayNamePropertyEditorSlot());
+            this.BaseLayerObjectGroup.AddItem(new LayerNamePropertyEditorSlot());
             this.BaseLayerObjectGroup.AddItem(new DataParameterBooleanPropertyEditorSlot(BaseVisualLayer.IsRenderVisibleParameter, typeof(BaseVisualLayer), "Is Render Visible"));
             this.BaseLayerObjectGroup.AddItem(new DataParameterBooleanPropertyEditorSlot(BaseVisualLayer.IsExportVisibleParameter, typeof(BaseVisualLayer), "Is Export Visible"));
             this.BaseLayerObjectGroup.AddItem(new DataParameterFloatPropertyEditorSlot(BaseVisualLayer.OpacityParameter, typeof(BaseVisualLayer), "Opacity", DragStepProfile.UnitOne));

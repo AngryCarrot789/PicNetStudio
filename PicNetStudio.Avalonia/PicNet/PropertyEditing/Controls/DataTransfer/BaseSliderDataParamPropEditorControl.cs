@@ -19,7 +19,6 @@
 
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
-using PicNetStudio.Avalonia.PicNet.Controls.Dragger;
 using PicNetStudio.Avalonia.Utils;
 
 namespace PicNetStudio.Avalonia.PicNet.PropertyEditing.Controls.DataTransfer;

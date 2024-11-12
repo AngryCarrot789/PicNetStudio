@@ -17,27 +17,24 @@
 // along with PicNetStudio. If not, see <https://www.gnu.org/licenses/>.
 // 
 
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using Avalonia.Controls;
 using PicNetStudio.Avalonia.DataTransfer;
 
 namespace PicNetStudio.Avalonia.PicNet.Layers;
 
 public delegate void BaseLayerTreeObjectParentLayerChangedEventHandler(BaseLayerTreeObject sender, CompositeLayer? oldParentLayer, CompositeLayer? newParentLayer);
-
 public delegate void BaseLayerTreeObjectCanvasChangedEventHandler(BaseLayerTreeObject sender, Canvas? oldCanvas, Canvas? newCanvas);
-
 public delegate void BaseLayerTreeObjectEventHandler(BaseLayerTreeObject sender);
+public delegate void BaseLayerTreeObjectNameChangedEventHandler(BaseLayerTreeObject sender);
 
 /// <summary>
 /// The base class for an object in the layer hierarchy for a canvas
 /// </summary>
-public abstract class BaseLayerTreeObject : ITransferableData, IDisplayName {
+public abstract class BaseLayerTreeObject : ITransferableData {
     private CompositeLayer? parentLayer;
-    private string displayName = "Layer Object";
+    private string name = "Layer Object";
 
     /// <summary>
     /// Gets the canvas this layer currently exists in
@@ -49,19 +46,18 @@ public abstract class BaseLayerTreeObject : ITransferableData, IDisplayName {
     /// </summary>
     public CompositeLayer? ParentLayer => this.parentLayer;
 
-    public string DisplayName {
-        get => this.displayName;
+    public TransferableData TransferableData { get; }
+
+    public string Name {
+        get => this.name;
         set {
-            if (this.displayName == value)
+            if (this.name == value)
                 return;
 
-            string oldName = this.displayName;
-            this.displayName = value;
-            this.DisplayNameChanged?.Invoke(this, oldName, value);
+            this.name = value;
+            this.NameChanged?.Invoke(this);
         }
     }
-
-    public TransferableData TransferableData { get; }
 
     /// <summary>
     /// An event fired when our <see cref="ParentLayer"/> property changes.
@@ -69,14 +65,14 @@ public abstract class BaseLayerTreeObject : ITransferableData, IDisplayName {
     /// after this event is fired (see <see cref="CanvasChanged"/>)
     /// </summary>
     public event BaseLayerTreeObjectParentLayerChangedEventHandler? ParentLayerChanged;
-    
+
     /// <summary>
     /// An event fired when our <see cref="Canvas"/> property changes due to canvas attachment or detachment.
     /// When caused by layer arrangement changes, this is fired AFTER <see cref="ParentLayerChanged"/> 
     /// </summary>
     public event BaseLayerTreeObjectCanvasChangedEventHandler? CanvasChanged;
     
-    public event DisplayNameChangedEventHandler? DisplayNameChanged;
+    public event BaseLayerTreeObjectNameChangedEventHandler? NameChanged;
 
     protected BaseLayerTreeObject() {
         this.TransferableData = new TransferableData(this);
@@ -87,7 +83,6 @@ public abstract class BaseLayerTreeObject : ITransferableData, IDisplayName {
     /// before our child layers have their <see cref="OnHierarchicalParentAddedToLayer"/> method invoked
     /// </summary>
     protected virtual void OnAddedToLayer() {
-        
     }
 
     /// <summary>
@@ -96,7 +91,6 @@ public abstract class BaseLayerTreeObject : ITransferableData, IDisplayName {
     /// </summary>
     /// <param name="oldParent">The layer that we previously existed in</param>
     protected virtual void OnRemovedFromLayer(CompositeLayer oldParent) {
-
     }
 
     /// <summary>
@@ -105,7 +99,6 @@ public abstract class BaseLayerTreeObject : ITransferableData, IDisplayName {
     /// </summary>
     /// <param name="origin">The parent that was actually added. It may equal this layer's parent layer</param>
     protected virtual void OnHierarchicalParentAddedToLayer(BaseLayerTreeObject origin) {
-
     }
 
     /// <summary>
@@ -115,7 +108,6 @@ public abstract class BaseLayerTreeObject : ITransferableData, IDisplayName {
     /// <param name="origin">The parent that was actually removed. It may equal this layer's parent layer</param>
     /// <param name="oldLayer">The layer that the parent previously existed in</param>
     protected virtual void OnHierarchicalParentRemovedFromLayer(BaseLayerTreeObject origin, CompositeLayer oldLayer) {
-
     }
 
     /// <summary>
@@ -130,7 +122,6 @@ public abstract class BaseLayerTreeObject : ITransferableData, IDisplayName {
     /// or being added into a composition layer that exists in a canvas). May equal the current instance
     /// </param>
     protected virtual void OnAttachedToCanvas(BaseLayerTreeObject origin) {
-
     }
 
     /// <summary>
@@ -146,7 +137,6 @@ public abstract class BaseLayerTreeObject : ITransferableData, IDisplayName {
     /// </param>
     /// <param name="oldCanvas">The canvas that we previously existed in</param>
     protected virtual void OnDetachedFromCanvas(BaseLayerTreeObject origin, Canvas oldCanvas) {
-
     }
 
     internal void DeselectRecursive() {
@@ -156,7 +146,7 @@ public abstract class BaseLayerTreeObject : ITransferableData, IDisplayName {
             this.Canvas.LayerSelectionManager.Unselect(list);
         }
     }
-    
+
     internal static void CollectTreeInternal(BaseLayerTreeObject layer, List<BaseLayerTreeObject> list) {
         list.Add(layer);
         if (layer is CompositeLayer) {
@@ -165,7 +155,7 @@ public abstract class BaseLayerTreeObject : ITransferableData, IDisplayName {
             }
         }
     }
-    
+
     internal static void InternalOnPreRemoveFromOwner(BaseLayerTreeObject layer) {
         layer.DeselectRecursive();
     }
@@ -185,8 +175,9 @@ public abstract class BaseLayerTreeObject : ITransferableData, IDisplayName {
         }
 
         // Not passing the new canvas in this recurse function as it saves stack memory ^-^
-        
+
         return;
+
         static void RecurseChildren(BaseLayerTreeObject child, BaseLayerTreeObject origin) {
             child.OnAttachedToCanvas(origin);
             child.CanvasChanged?.Invoke(child, null, child.Canvas);
@@ -212,6 +203,7 @@ public abstract class BaseLayerTreeObject : ITransferableData, IDisplayName {
         }
 
         return;
+
         static void RecurseChildren(BaseLayerTreeObject child, BaseLayerTreeObject origin, Canvas originOldCanvas) {
             child.OnDetachedFromCanvas(origin, originOldCanvas);
             child.CanvasChanged?.Invoke(child, originOldCanvas, null);
@@ -246,6 +238,7 @@ public abstract class BaseLayerTreeObject : ITransferableData, IDisplayName {
         }
 
         return;
+
         static void RecurseChildren(BaseLayerTreeObject child, BaseLayerTreeObject origin) {
             child.OnHierarchicalParentAddedToLayer(origin);
             if (origin.Canvas != null) {
@@ -273,7 +266,7 @@ public abstract class BaseLayerTreeObject : ITransferableData, IDisplayName {
             layer.OnDetachedFromCanvas(layer, oldCanvas);
             layer.CanvasChanged?.Invoke(layer, oldCanvas, null);
         }
-        
+
         layer.parentLayer = null;
         layer.OnRemovedFromLayer(oldParent);
         layer.ParentLayerChanged?.Invoke(layer, oldParent, null);
@@ -285,6 +278,7 @@ public abstract class BaseLayerTreeObject : ITransferableData, IDisplayName {
         }
 
         return;
+
         static void RecurseChildren(BaseLayerTreeObject child, BaseLayerTreeObject origin, CompositeLayer originOldParent, Canvas? oldCanvas) {
             // Detach from canvas first, then notify hierarchical parent removed from layer
             if (child.Canvas != null) {
@@ -305,4 +299,17 @@ public abstract class BaseLayerTreeObject : ITransferableData, IDisplayName {
     }
 
     #endregion
+
+    /// <summary>
+    /// Helper method to remove the layer from its parent or canvas
+    /// </summary>
+    /// <param name="layer"></param>
+    public static void RemoveFromTree(BaseLayerTreeObject layer) {
+        if (layer.parentLayer != null) {
+            layer.parentLayer.RemoveLayer(layer);
+        }
+        else if (layer.Canvas != null) {
+            layer.Canvas.RemoveLayer(layer);
+        }
+    }
 }

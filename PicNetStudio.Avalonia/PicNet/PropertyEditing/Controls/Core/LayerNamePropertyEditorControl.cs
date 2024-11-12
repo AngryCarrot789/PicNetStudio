@@ -20,19 +20,19 @@
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using PicNetStudio.Avalonia.Bindings;
-using PicNetStudio.Avalonia.PicNet.PropertyEditing.Controls;
+using PicNetStudio.Avalonia.PicNet.PropertyEditing.Core;
 using PicNetStudio.Avalonia.Utils;
 
-namespace PicNetStudio.Avalonia.PicNet.PropertyEditing.BasicEditors.Controls;
+namespace PicNetStudio.Avalonia.PicNet.PropertyEditing.Controls.Core;
 
-public class DisplayNamePropertyEditorControl : BasePropEditControlContent {
-    public new DisplayNamePropertyEditorSlot SlotModel => (DisplayNamePropertyEditorSlot) base.SlotControl.Model;
+public class LayerNamePropertyEditorControl : BasePropEditControlContent {
+    public new LayerNamePropertyEditorSlot SlotModel => (LayerNamePropertyEditorSlot) base.SlotControl.Model;
 
     private TextBox displayNameBox;
 
-    private readonly GetSetAutoUpdateAndEventPropertyBinder<DisplayNamePropertyEditorSlot> displayNameBinder = new GetSetAutoUpdateAndEventPropertyBinder<DisplayNamePropertyEditorSlot>(TextBox.TextProperty, nameof(DisplayNamePropertyEditorSlot.DisplayNameChanged), binder => binder.Model.DisplayName, (binder, v) => binder.Model.SetValue((string) v));
+    private readonly GetSetAutoUpdateAndEventPropertyBinder<LayerNamePropertyEditorSlot> displayNameBinder = new GetSetAutoUpdateAndEventPropertyBinder<LayerNamePropertyEditorSlot>(TextBox.TextProperty, nameof(LayerNamePropertyEditorSlot.NameChanged), binder => binder.Model.Name, (binder, v) => binder.Model.SetValue((string) v));
 
-    public DisplayNamePropertyEditorControl() {
+    public LayerNamePropertyEditorControl() {
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e) {

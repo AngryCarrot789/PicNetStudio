@@ -77,4 +77,8 @@ public class CompositeLayer : BaseVisualLayer {
     public override void RenderLayer(RenderContext ctx) {
         Debugger.Break(); // should not be rendered directly
     }
+
+    public int IndexOf(BaseLayerTreeObject layer) {
+        return this.items.IndexOf(layer);
+    }
 }

@@ -20,10 +20,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices.JavaScript;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
 using PicNetStudio.Avalonia.Utils;
 using PicNetStudio.Avalonia.Utils.Collections.Observable;
 

@@ -10,6 +10,7 @@
              xmlns:c3="clr-namespace:PicNetStudio.Avalonia.PicNet.PropertyEditing.Controls"
              xmlns:c4="clr-namespace:PicNetStudio.Avalonia.Themes.Controls"
              xmlns:nd="clr-namespace:PicNetStudio.Avalonia.PicNet.Controls.Dragger"
+             xmlns:u="clr-namespace:PicNetStudio.Avalonia.CommandSystem.Usages"
              mc:Ignorable="d" Width="1280" Height="720"
              Title="PicNet Studio"
              avalonia:UIInputManager.FocusPath="Application/EditorWindow"
@@ -42,6 +43,22 @@
                         <Border DockPanel.Dock="Top" Background="{DynamicResource ABrush.Tone5.Background.Static}" BorderBrush="{DynamicResource ABrush.Tone1.Border.Static}" BorderThickness="0,1,0,1"
                                 ToolTip.Tip="These are the layers that are drawn. They are drawn bottom to top">
                             <TextBlock Text="Layers" Padding="8,4" HorizontalAlignment="Left"/>
+                        </Border>
+                        <Border DockPanel.Dock="Bottom" BorderBrush="{DynamicResource ABrush.Tone3.Border.Static}" BorderThickness="0,1,0,0" Height="24">
+                            <StackPanel Orientation="Horizontal">
+                                <Button Content="+" Background="Transparent" BorderThickness="0" Width="24"
+                                        ToolTip.Tip="Add a new layer above the selected layer"
+                                        u:CommandUsageManager.SimpleButtonCommandId="command.layertree.CreateNewRasterLayer"/>
+                                <Border Background="{DynamicResource ABrush.Tone3.Border.Static}" Width="1"/>
+                                <Button Content="-" Background="Transparent" BorderThickness="0" Width="24"
+                                        ToolTip.Tip="Delete the selected layer(s)"
+                                        u:CommandUsageManager.SimpleButtonCommandId="command.layertree.DeleteSelectedLayers"/>
+                                <Border Background="{DynamicResource ABrush.Tone3.Border.Static}" Width="1"/>
+                                <Button Content="COMP" Background="Transparent" BorderThickness="0" Width="48"
+                                        ToolTip.Tip="Places your selection into a composition layer (aka a group/folder)"
+                                        u:CommandUsageManager.SimpleButtonCommandId="command.layertree.GroupSelectionIntoComposition"/>
+                                <Border Background="{DynamicResource ABrush.Tone3.Border.Static}" Width="1"/>
+                            </StackPanel>
                         </Border>
                         <c2:LayerTreeControl x:Name="PART_LayerTreeControl"
                                              BorderBrush="Transparent"

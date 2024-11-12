@@ -17,7 +17,6 @@
 // along with PicNetStudio. If not, see <https://www.gnu.org/licenses/>.
 // 
 
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Avalonia;

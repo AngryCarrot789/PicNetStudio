@@ -21,12 +21,10 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Media;
-using PicNetStudio.Avalonia.Bindings;
 using PicNetStudio.Avalonia.Interactivity.Contexts;
 using PicNetStudio.Avalonia.PicNet;
 using PicNetStudio.Avalonia.PicNet.Layers;
 using PicNetStudio.Avalonia.PicNet.PropertyEditing;
-using PicNetStudio.Avalonia.PicNet.Tools.Core;
 using PicNetStudio.Avalonia.Themes.Controls;
 using SkiaSharp;
 
@@ -52,7 +50,7 @@ public partial class EditorWindow : WindowEx {
 
         void MakeLayer(SKColor fill, string name, CompositeLayer? parent = null) {
             RasterLayer layer = new RasterLayer() {
-                DisplayName = name
+                Name = name
             };
             layer.Bitmap.InitialiseBitmap(document.Canvas.Size);
             layer.Bitmap.Canvas!.Clear(fill);
@@ -67,7 +65,7 @@ public partial class EditorWindow : WindowEx {
 
         CompositeLayer MakeCompLayer(string name) {
             CompositeLayer layer = new CompositeLayer() {
-                DisplayName = name
+                Name = name
             };
             document.Canvas.AddLayer(layer);
             return layer;
