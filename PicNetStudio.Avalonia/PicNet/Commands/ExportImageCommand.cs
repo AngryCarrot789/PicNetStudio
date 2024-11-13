@@ -56,8 +56,9 @@ public class ExportImageCommand : AsyncCommand {
 
         using SKPixmap pixmap = new SKPixmap(bitmap.Bitmap!.Info, bitmap.ColourData);
         using SKSurface skSurface = SKSurface.Create(pixmap);
-        LayerRenderer.Instance.Render(skSurface, document.Canvas, true);
-        using SKImage? image = skSurface.Snapshot();
+        RenderContext args = new RenderContext(document.Canvas, skSurface, true);
+        LayerRenderer.RenderCanvas(ref args);
+        using SKImage image = skSurface.Snapshot();
 
         SKEncodedImageFormat type = SKEncodedImageFormat.Png;
         string fileName = file.Name.ToUpperInvariant();
@@ -83,7 +84,7 @@ public class ExportImageCommand : AsyncCommand {
             }   
         }
         
-        using SKData? data = image.Encode(type, 80);
+        using SKData data = image.Encode(type, 80);
         await using Stream stream = await file.OpenWriteAsync();
         
         // save the data to a stream

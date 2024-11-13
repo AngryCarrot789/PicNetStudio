@@ -19,6 +19,7 @@
 
 using PicNetStudio.Avalonia.DataTransfer;
 using PicNetStudio.Avalonia.Utils.Accessing;
+using SkiaSharp;
 
 namespace PicNetStudio.Avalonia.PicNet.Layers;
 
@@ -29,10 +30,12 @@ public abstract class BaseVisualLayer : BaseLayerTreeObject {
     public static readonly DataParameterFloat OpacityParameter = DataParameter.Register(new DataParameterFloat(typeof(BaseVisualLayer), nameof(Opacity), 1.0f, 0.0f, 1.0f, ValueAccessors.Reflective<float>(typeof(BaseVisualLayer), nameof(opacity))));
     public static readonly DataParameterBool IsRenderVisibleParameter =DataParameter.Register(new DataParameterBool(typeof(BaseVisualLayer), nameof(IsVisible), true, ValueAccessors.Reflective<bool>(typeof(BaseVisualLayer), nameof(isVisible))));
     public static readonly DataParameterBool IsExportVisibleParameter =DataParameter.Register(new DataParameterBool(typeof(BaseVisualLayer), nameof(IsExportVisible), true, ValueAccessors.Reflective<bool>(typeof(BaseVisualLayer), nameof(isExportVisible))));
+    public static readonly DataParameter<SKBlendMode> BlendModeParameter = DataParameter.Register(new DataParameter<SKBlendMode>(typeof(BaseVisualLayer), nameof(BlendMode), SKBlendMode.SrcOver, ValueAccessors.Reflective<SKBlendMode>(typeof(BaseVisualLayer), nameof(blendMode))));
 
     private float opacity = OpacityParameter.DefaultValue;
     private bool isVisible = IsRenderVisibleParameter.DefaultValue;
     private bool isExportVisible = IsExportVisibleParameter.DefaultValue;
+    private SKBlendMode blendMode = BlendModeParameter.DefaultValue;
     
     /// <summary>
     /// Gets or sets the opacity of this layer
@@ -57,6 +60,14 @@ public abstract class BaseVisualLayer : BaseLayerTreeObject {
         get => this.isExportVisible;
         set => DataParameter.SetValueHelper(this, IsExportVisibleParameter, ref this.isExportVisible, value);
     }
+    
+    /// <summary>
+    /// Gets or sets the blending mode used for rendering. This is a blend between the currently rendered composition
+    /// </summary>
+    public SKBlendMode BlendMode {
+        get => this.blendMode;
+        set => DataParameter.SetValueHelper(this, BlendModeParameter, ref this.blendMode, value);
+    }
 
     /// <summary>
     /// Returns true if this layer type handles its own opacity calculations in order for a more
@@ -68,7 +79,7 @@ public abstract class BaseVisualLayer : BaseLayerTreeObject {
     }
 
     static BaseVisualLayer() {
-        DataParameter.AddMultipleHandlers(OnDataParameterChangedToInvalidateVisual, OpacityParameter, IsRenderVisibleParameter);
+        DataParameter.AddMultipleHandlers(OnDataParameterChangedToInvalidateVisual, OpacityParameter, IsRenderVisibleParameter, BlendModeParameter);
     }
 
     protected static void OnDataParameterChangedToInvalidateVisual(DataParameter parameter, ITransferableData owner) {
@@ -79,5 +90,5 @@ public abstract class BaseVisualLayer : BaseLayerTreeObject {
     /// Draws this layer
     /// </summary>
     /// <param name="ctx">Render context</param>
-    public abstract void RenderLayer(RenderContext ctx);
+    public abstract void RenderLayer(ref RenderContext ctx);
 }

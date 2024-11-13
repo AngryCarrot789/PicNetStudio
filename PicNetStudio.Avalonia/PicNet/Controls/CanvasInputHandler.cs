@@ -31,7 +31,7 @@ namespace PicNetStudio.Avalonia.PicNet.Controls;
 /// and also handle keyboard inputs and so on
 /// </summary>
 public class CanvasInputHandler {
-    private readonly CanvasControl control;
+    private readonly CanvasViewPortControl control;
     private Point? lastMouseMove;
     private EnumCursorType myCursors;
 
@@ -40,7 +40,7 @@ public class CanvasInputHandler {
     /// </summary>
     public EnumCursorType CursorButtons => this.myCursors;
 
-    public CanvasInputHandler(CanvasControl control) {
+    public CanvasInputHandler(CanvasViewPortControl control) {
         this.control = control;
         this.control.PointerPressed += this.OnControlPointerPressed;
         this.control.PointerReleased += this.OnControlPointerReleased;

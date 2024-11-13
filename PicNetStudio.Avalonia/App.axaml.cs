@@ -36,11 +36,11 @@ public partial class App : Application {
 
     static App() {
         DummyCanvas.Size = new PixelSize(300, 150);
-        DummyCanvas.AddLayer(new RasterLayer() {Name = "Raster 1"});
-        DummyCanvas.AddLayer(new CompositeLayer() {Name = "Composite 1"});
+        DummyCanvas.RootComposition.AddLayer(new RasterLayer() {Name = "Raster 1"});
+        DummyCanvas.RootComposition.AddLayer(new CompositionLayer() {Name = "Composite 1"});
         // (DummyCanvas.Layers[0] as RasterLayer).Bitmap.InitialiseBitmap(DummyCanvas.Size);
 
-        ((CompositeLayer) DummyCanvas.Layers[1]).AddLayer(new RasterLayer() {Name = "Raster 2 in composite"});
+        ((CompositionLayer) DummyCanvas.RootComposition.Layers[1]).AddLayer(new RasterLayer() {Name = "Raster 2 in composite"});
     }
     
     public App() {

@@ -151,7 +151,7 @@ public abstract class PropertyEditorSlot : BasePropertyEditorItem {
     /// </param>
     /// <typeparam name="T">Type of object to get</typeparam>
     /// <returns>True if there is 1 object, or more than 1 and they have the same value, otherwise false</returns>
-    public static bool GetEqualValue<T>(IReadOnlyList<object> objects, Func<object, T> getter, out T equal) {
+    public static bool GetEqualValue<T>(IReadOnlyList<object>? objects, Func<object, T> getter, out T? equal) {
         int count;
         if (objects == null || (count = objects.Count) < 1) {
             equal = default;

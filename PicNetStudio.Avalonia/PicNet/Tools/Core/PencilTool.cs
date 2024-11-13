@@ -1,5 +1,5 @@
 ﻿// 
-// Copyright (c) 2024-2024 REghZy
+// Copyright (c) 2023-2024 REghZy
 // 
 // This file is part of PicNetStudio.
 // 
@@ -21,11 +21,8 @@ using SkiaSharp;
 
 namespace PicNetStudio.Avalonia.PicNet.Tools.Core;
 
-/// <summary>
-/// The brush tool, which lets you draw circular arrangement of pixels on the canvas, with an adjustable diameter
-/// </summary>
-public class BrushTool : BaseDiameterTool {
-    public BrushTool() {
+public class PencilTool : BaseDiameterTool {
+    public PencilTool() {
         this.CanDrawSecondaryColour = true;
     }
 
@@ -35,7 +32,11 @@ public class BrushTool : BaseDiameterTool {
 
         using SKPaint paint = new SKPaint();
         paint.Color = isPrimaryColour ? document.Editor!.PrimaryColour : document.Editor!.SecondaryColour;
-        paint.IsAntialias = true;
-        bitmap.Canvas.DrawCircle((float) x, (float) y, this.Diameter, paint);
+
+        double diameter = this.Diameter;
+        double realX = x - (diameter / 2);
+        double realY = y - (diameter / 2);
+        
+        bitmap.Canvas.DrawRect((float) realX, (float) realY, (float) diameter, (float) diameter, paint);
     }
 }

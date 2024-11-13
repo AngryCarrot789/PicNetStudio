@@ -21,29 +21,38 @@
              FontFamily="{StaticResource FontOxanium}">
     <Grid RowDefinitions="Auto,1,*">
         <Grid Grid.Row="2" ColumnDefinitions="50,*,0,300" RowDefinitions="30,*">
-            <controls:CanvasControl x:Name="PART_Canvas" Grid.Column="1" Grid.Row="1"
+            <controls:CanvasViewPortControl x:Name="PART_Canvas" Grid.Column="1" Grid.Row="1"
                                     HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                                     Background="Transparent" BorderBrush="{DynamicResource ABrush.Tone1.Border.Static}"
                                     Focusable="True" BorderThickness="1,1,1,0"
                                     aa:UIInputManager.FocusPath="Application/EditorWindow/Canvas">
-                <controls:CanvasControl.Styles>
-                    <Style Selector="controls|CanvasControl[IsFocused=false]">
+                <controls:CanvasViewPortControl.Styles>
+                    <Style Selector="controls|CanvasViewPortControl[IsFocused=false]">
                         <Setter Property="BorderBrush" Value="{DynamicResource PanelBorderBrush}"/>
                     </Style>
-                    <Style Selector="controls|CanvasControl[IsFocused=true]">
+                    <Style Selector="controls|CanvasViewPortControl[IsFocused=true]">
                         <Setter Property="BorderBrush" Value="DodgerBlue"/>
                     </Style>
-                </controls:CanvasControl.Styles>
-            </controls:CanvasControl>
+                </controls:CanvasViewPortControl.Styles>
+            </controls:CanvasViewPortControl>
             <Border Grid.Column="0" Grid.Row="1" Background="{DynamicResource PanelBackground3}">
                 <controls1:ToolBarItemListBox x:Name="PART_ToolBar" Margin="0" Padding="1,0"/>
             </Border>
             <Border Grid.Column="3" Grid.Row="1" Background="{DynamicResource PanelBackground3}">
                 <Grid RowDefinitions="*,1,*">
                     <DockPanel Grid.Row="0" aa:UIInputManager.FocusPath="Application/EditorWindow/LayerTree">
-                        <Border DockPanel.Dock="Top" Background="{DynamicResource ABrush.Tone5.Background.Static}" BorderBrush="{DynamicResource ABrush.Tone1.Border.Static}" BorderThickness="0,1,0,1"
-                                ToolTip.Tip="These are the layers that are drawn. They are drawn bottom to top">
-                            <TextBlock Text="Layers" Padding="8,4" HorizontalAlignment="Left"/>
+                        <Border DockPanel.Dock="Top" Background="{DynamicResource ABrush.Tone5.Background.Static}" BorderBrush="{DynamicResource ABrush.Tone1.Border.Static}" BorderThickness="0,1,0,1">
+                            <ToolTip.Tip>
+                                <TextBlock>
+                                    <Run Text="This is the layer tree. Each layer is rendered bottom to top"/>
+                                    <LineBreak/>
+                                    <Run Text="Composition (folder) layers treat blending modes of child layers relative to that said composition layer, so advanced blending composition can be used"/>
+                                </TextBlock>
+                            </ToolTip.Tip>
+                            <DockPanel LastChildFill="False">
+                                <TextBlock Text="Layers" Padding="8,4" HorizontalAlignment="Left" DockPanel.Dock="Left"/>
+                                <TextBlock Text="?" DockPanel.Dock="Right" Padding="8,0" VerticalAlignment="Center"/>
+                            </DockPanel>
                         </Border>
                         <Border DockPanel.Dock="Bottom" BorderBrush="{DynamicResource ABrush.Tone3.Border.Static}" BorderThickness="0,1,0,0" Height="24">
                             <StackPanel Orientation="Horizontal">

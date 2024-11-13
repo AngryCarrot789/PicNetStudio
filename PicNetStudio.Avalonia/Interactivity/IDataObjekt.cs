@@ -1,5 +1,5 @@
 ﻿// 
-// Copyright (c) 2024-2024 REghZy
+// Copyright (c) 2023-2024 REghZy
 // 
 // This file is part of PicNetStudio.
 // 
@@ -17,25 +17,16 @@
 // along with PicNetStudio. If not, see <https://www.gnu.org/licenses/>.
 // 
 
-using SkiaSharp;
+using System.Collections.Generic;
 
-namespace PicNetStudio.Avalonia.PicNet.Layers;
+namespace PicNetStudio.Avalonia.Interactivity;
 
-public class RasterLayer : BaseVisualLayer {
-    public PNBitmap Bitmap { get; }
-    
-    public RasterLayer() {
-        this.Bitmap = new PNBitmap();
-        this.UsesCustomOpacityCalculation = true;
-    }
+public interface IDataObjekt {
+    object? GetData(string format);
 
-    public override void RenderLayer(ref RenderContext ctx) {
-        if (this.Bitmap.HasPixels) {
-            SKColor colour = RenderUtils.BlendAlpha(SKColors.White, this.Opacity);
-            using SKPaint paint = new SKPaint();
-            paint.Color = colour;
-            paint.BlendMode = this.BlendMode;
-            ctx.Canvas.DrawBitmap(this.Bitmap.Bitmap, 0, 0, paint);
-        }
-    }
+    bool GetDataPresent(string format);
+
+    IEnumerable<string> GetFormats();
+
+    void SetData(string format, object data);
 }

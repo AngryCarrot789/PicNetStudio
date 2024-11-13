@@ -14,10 +14,10 @@
             </Shortcut>
 
             <Group Name="Canvas">
-                <Shortcut Name="IncreaseBrushSize" CommandId="command.tool.BrushTool.IncreaseBrushSize">
+                <Shortcut Name="IncreaseBrushSize" CommandId="command.tool.BaseDiameterTool.IncreaseBrushSize">
                     <KeyStroke Key="OemCloseBrackets"/>
                 </Shortcut>
-                <Shortcut Name="DecreaseBrushSize" CommandId="command.tool.BrushTool.DecreaseBrushSize">
+                <Shortcut Name="DecreaseBrushSize" CommandId="command.tool.BaseDiameterTool.DecreaseBrushSize">
                     <KeyStroke Key="OemOpenBrackets"/>
                 </Shortcut>
             </Group>

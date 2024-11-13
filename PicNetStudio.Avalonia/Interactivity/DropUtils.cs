@@ -17,32 +17,25 @@
 // along with PicNetStudio. If not, see <https://www.gnu.org/licenses/>.
 // 
 
+using Avalonia.Input;
+
 namespace PicNetStudio.Avalonia.Interactivity;
 
 public static class DropUtils {
-    private const int None = 0;
-    private const int LeftMouseButton = 1;
-    private const int RightMouseButton = 2;
-    private const int ShiftKey = 4;
-    private const int ControlKey = 8;
-    private const int MiddleMouseButton = 16;
-    private const int AltKey = 32;
+    private const KeyModifiers ControlShift = KeyModifiers.Control | KeyModifiers.Shift;
 
-    private const int ControlShift = ControlKey | ShiftKey;
-    private const int MouseButtons = LeftMouseButton | RightMouseButton | MiddleMouseButton;
-
-    public static EnumDropType GetDropAction(int keyStates, EnumDropType effects) {
-        keyStates &= ~MouseButtons; // remove mouse buttons
+    public static EnumDropType GetDropAction(KeyModifiers keyStates, EnumDropType effects) {
+        // keyStates &= ~MouseButtons; // remove mouse buttons
         if ((keyStates & ControlShift) == ControlShift && (effects & EnumDropType.Link) == EnumDropType.Link) {
             return EnumDropType.Link; // Hold CTRL + SHIFT to create link
         }
-        else if ((keyStates & AltKey) == AltKey && (effects & EnumDropType.Link) == EnumDropType.Link) {
+        else if ((keyStates & KeyModifiers.Alt) == KeyModifiers.Alt && (effects & EnumDropType.Link) == EnumDropType.Link) {
             return EnumDropType.Link; // Hold ALT to create link
         }
-        else if ((keyStates & ShiftKey) == ShiftKey && (effects & EnumDropType.Move) == EnumDropType.Move) {
+        else if ((keyStates & KeyModifiers.Shift) == KeyModifiers.Shift && (effects & EnumDropType.Move) == EnumDropType.Move) {
             return EnumDropType.Move; // Hold SHIFT to move.
         }
-        else if ((keyStates & ControlKey) == ControlKey && (effects & EnumDropType.Copy) == EnumDropType.Copy) {
+        else if ((keyStates & KeyModifiers.Control) == KeyModifiers.Control && (effects & EnumDropType.Copy) == EnumDropType.Copy) {
             return EnumDropType.Copy; // Hold CTRL to top
         }
         else if ((effects & EnumDropType.Move) == EnumDropType.Move) {

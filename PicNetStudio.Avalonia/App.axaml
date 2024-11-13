@@ -30,13 +30,13 @@
                 <MergeResourceInclude Source="/PicNet/PropertyEditing/Controls/PropertyEditorSlotContentStyles.axaml"/>
             </ResourceDictionary.MergedDictionaries>
 
-            <ControlTheme x:Key="{x:Type c:CanvasControl}" TargetType="{x:Type c:CanvasControl}">
+            <ControlTheme x:Key="{x:Type c:CanvasViewPortControl}" TargetType="{x:Type c:CanvasViewPortControl}">
                 <Setter Property="Background" Value="Transparent"/>
                 <Setter Property="BorderBrush" Value="{DynamicResource Button.Static.Border}"/>
                 <Setter Property="Foreground" Value="{DynamicResource Button.Static.Foreground}"/>
                 <Setter Property="UseLayoutRounding" Value="False"/>
                 <Setter Property="Template">
-                    <ControlTemplate TargetType="{x:Type c:CanvasControl}">
+                    <ControlTemplate TargetType="{x:Type c:CanvasViewPortControl}">
                         <Grid>
                             <c:FreeMoveViewPortV2 x:Name="PART_FreeMoveViewPort"
                                                   UseLayoutRounding="False"

@@ -17,36 +17,7 @@
 // along with PicNetStudio. If not, see <https://www.gnu.org/licenses/>.
 // 
 
-using System;
-using System.Collections.Generic;
-using PicNetStudio.Avalonia.PicNet.Layers;
-using PicNetStudio.Avalonia.Utils.Collections.Observable;
-
 namespace PicNetStudio.Avalonia.PicNet;
 
-/// <summary>
-/// An interface for an object that stores a collection of child layers. This will be a canvas or composition layer
-/// </summary>
-public interface ILayerContainer {
-    ReadOnlyObservableList<BaseLayerTreeObject> Layers { get; }
-
-    void AddLayer(BaseLayerTreeObject layer);
-    void InsertLayer(int index, BaseLayerTreeObject layer);
-    bool RemoveLayer(BaseLayerTreeObject layer);
-    void RemoveLayerAt(int index);
-    int IndexOf(BaseLayerTreeObject layer);
-}
-
 public static class LayerContainerExtension {
-    public static int LowestIndexOf(this ILayerContainer container, IEnumerable<BaseLayerTreeObject> items) {
-        int minIndex = int.MaxValue;
-        foreach (BaseLayerTreeObject layer in items) {
-            int index = container.IndexOf(layer);
-            if (index != -1) {
-                minIndex = Math.Min(minIndex, index);
-            }
-        }
-
-        return minIndex == int.MaxValue ? -1 : minIndex;
-    }
 }

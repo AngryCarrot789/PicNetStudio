@@ -48,7 +48,7 @@ public partial class EditorWindow : WindowEx {
         document.Canvas.Size = new PixelSize(800, 400);
 
 
-        void MakeLayer(SKColor fill, string name, ILayerContainer? parent = null) {
+        RasterLayer MakeLayer(SKColor fill, string name, CompositionLayer? parent = null) {
             RasterLayer layer = new RasterLayer() {
                 Name = name
             };
@@ -56,21 +56,22 @@ public partial class EditorWindow : WindowEx {
             layer.Bitmap.InitialiseBitmap(document.Canvas.Size);
             layer.Bitmap.Canvas!.Clear(fill);
 
-            (parent ?? document.Canvas).AddLayer(layer);
+            (parent ?? document.Canvas.RootComposition).AddLayer(layer);
+            return layer;
         }
 
-        CompositeLayer MakeCompLayer(string name) {
-            CompositeLayer layer = new CompositeLayer() {
+        CompositionLayer MakeCompLayer(string name) {
+            CompositionLayer layer = new CompositionLayer() {
                 Name = name
             };
-            document.Canvas.AddLayer(layer);
+            document.Canvas.RootComposition.AddLayer(layer);
             return layer;
         }
         
-        MakeLayer(SKColors.Transparent, "Layer 1");
+        RasterLayer firstLayer = MakeLayer(SKColors.Transparent, "Layer 1");
         MakeLayer(SKColors.Transparent, "Layer 2");
         
-        CompositeLayer comp = MakeCompLayer("A composition layer");
+        CompositionLayer comp = MakeCompLayer("A composition layer");
         MakeLayer(SKColors.Transparent, "Layer 1 in comp", comp);
         MakeLayer(SKColors.Transparent, "Layer 2 in comp", comp);
         
@@ -78,6 +79,7 @@ public partial class EditorWindow : WindowEx {
         MakeLayer(SKColors.White, "Background Base Layer");
 
         this.Editor.AddDocument(document);
+        document.Canvas.LayerSelectionManager.Select(firstLayer);
     }
 
     protected override void OnLoaded(RoutedEventArgs e) {

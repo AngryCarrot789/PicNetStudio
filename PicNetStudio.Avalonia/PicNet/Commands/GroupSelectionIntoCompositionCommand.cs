@@ -45,15 +45,15 @@ public class GroupSelectionIntoCompositionCommand : DocumentCommand {
             return;
         }
 
-        CompositeLayer newCompositionLayer;
-        ILayerContainer? theParent;
+        CompositionLayer newCompositionLayer;
+        CompositionLayer? theParent;
         if (selection.Count == 1) {
             BaseLayerTreeObject theLayer = selection.First();
-            if ((theParent = theLayer.ParentContainer) != null) {
+            if ((theParent = theLayer.ParentLayer) != null) {
                 int index = theParent.IndexOf(theLayer);
                 theParent.RemoveLayerAt(index);
 
-                newCompositionLayer = new CompositeLayer();
+                newCompositionLayer = new CompositionLayer();
                 newCompositionLayer.AddLayer(theLayer);
                 theParent.InsertLayer(index, newCompositionLayer);
             }
@@ -71,7 +71,7 @@ public class GroupSelectionIntoCompositionCommand : DocumentCommand {
         int minIndex = indices[0];
 
         int count = 0;
-        newCompositionLayer = new CompositeLayer();
+        newCompositionLayer = new CompositionLayer();
         foreach (int indexOfLayer in indices) {
             int actualIndex = indexOfLayer - count; 
             BaseLayerTreeObject theLayer = theParent.Layers[actualIndex];

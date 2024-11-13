@@ -21,6 +21,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Avalonia.Controls.Primitives;
+using PicNetStudio.Avalonia.PicNet.Layers.CustomParameters.BlendMode;
 using PicNetStudio.Avalonia.PicNet.PropertyEditing.Controls.Core;
 using PicNetStudio.Avalonia.PicNet.PropertyEditing.Controls.DataTransfer;
 using PicNetStudio.Avalonia.PicNet.PropertyEditing.Core;
@@ -31,10 +32,12 @@ namespace PicNetStudio.Avalonia.PicNet.PropertyEditing.Controls;
 public abstract class BasePropEditControlContent : TemplatedControl {
     private static readonly Dictionary<Type, Func<BasePropEditControlContent>> Constructors;
 
-    public PropertyEditorSlotControl SlotControl { get; private set; }
+    public PropertyEditorSlotControl? SlotControl { get; private set; }
 
-    public PropertyEditorSlot? SlotModel => this.SlotControl.Model;
+    public PropertyEditorSlot? SlotModel => this.SlotControl!.Model;
 
+    public bool IsConnected => this.SlotControl != null;
+    
     protected BasePropEditControlContent() {
     }
 
@@ -50,6 +53,7 @@ public abstract class BasePropEditControlContent : TemplatedControl {
         RegisterType(typeof(DataParameterFloatPropertyEditorSlot), () => new DataParameterFloatPropertyEditorControl());
         RegisterType(typeof(DataParameterBooleanPropertyEditorSlot), () => new DataParameterBooleanPropertyEditorControl());
         RegisterType(typeof(DataParameterStringPropertyEditorSlot), () => new DataParameterStringPropertyEditorControl());
+        RegisterType(typeof(DataParameterBlendModePropertyEditorSlot), () => new DataParameterBlendModePropertyEditorControl());
     }
 
     public static void RegisterType<T>(Type slotType, Func<T> func) where T : BasePropEditControlContent {

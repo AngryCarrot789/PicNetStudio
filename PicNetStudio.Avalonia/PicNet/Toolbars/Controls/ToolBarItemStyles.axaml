@@ -104,4 +104,13 @@
             </ControlTemplate>
         </Setter>
     </ControlTheme>
+    <ControlTheme x:Key="{x:Type tb:ToolBarItemControlContent_PencilTool}"
+                  TargetType="{x:Type tb:ToolBarItemControlContent_PencilTool}"
+                  BasedOn="{StaticResource {x:Type tb:ToolBarItemControlContentSingleTool}}">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <TextBlock Text="PENCIL" FontSize="9"/>
+            </ControlTemplate>
+        </Setter>
+    </ControlTheme>
 </ResourceDictionary>

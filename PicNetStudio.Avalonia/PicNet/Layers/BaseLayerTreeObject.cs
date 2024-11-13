@@ -25,7 +25,7 @@ using PicNetStudio.Avalonia.DataTransfer;
 
 namespace PicNetStudio.Avalonia.PicNet.Layers;
 
-public delegate void BaseLayerTreeObjectParentLayerChangedEventHandler(BaseLayerTreeObject sender, CompositeLayer? oldParentLayer, CompositeLayer? newParentLayer);
+public delegate void BaseLayerTreeObjectParentLayerChangedEventHandler(BaseLayerTreeObject sender, CompositionLayer? oldParentLayer, CompositionLayer? newParentLayer);
 public delegate void BaseLayerTreeObjectCanvasChangedEventHandler(BaseLayerTreeObject sender, Canvas? oldCanvas, Canvas? newCanvas);
 public delegate void BaseLayerTreeObjectEventHandler(BaseLayerTreeObject sender);
 public delegate void BaseLayerTreeObjectNameChangedEventHandler(BaseLayerTreeObject sender);
@@ -34,7 +34,7 @@ public delegate void BaseLayerTreeObjectNameChangedEventHandler(BaseLayerTreeObj
 /// The base class for an object in the layer hierarchy for a canvas
 /// </summary>
 public abstract class BaseLayerTreeObject : ITransferableData {
-    private CompositeLayer? parentLayer;
+    private CompositionLayer? parentLayer;
     private string name = "Layer Object";
 
     /// <summary>
@@ -45,7 +45,7 @@ public abstract class BaseLayerTreeObject : ITransferableData {
     /// <summary>
     /// Gets or sets the composition layer that is a direct parent to this layer
     /// </summary>
-    public CompositeLayer? ParentLayer => this.parentLayer;
+    public CompositionLayer? ParentLayer => this.parentLayer;
 
     public TransferableData TransferableData { get; }
 
@@ -57,17 +57,6 @@ public abstract class BaseLayerTreeObject : ITransferableData {
 
             this.name = value;
             this.NameChanged?.Invoke(this);
-        }
-    }
-
-    /// <summary>
-    /// Gets the container object that this layer is currently placed in
-    /// </summary>
-    public ILayerContainer? ParentContainer {
-        get {
-            if (this.parentLayer != null)
-                return this.parentLayer;
-            return this.Canvas;
         }
     }
 
@@ -99,7 +88,7 @@ public abstract class BaseLayerTreeObject : ITransferableData {
     /// </summary>
     /// <param name="oldParent">The previous parent (non-null when removing or moving)</param>
     /// <param name="newParent">The new parent (non-null when adding or moving)</param>
-    protected virtual void OnParentChanged(ILayerContainer? oldParent, ILayerContainer? newParent) {
+    protected virtual void OnParentChanged(CompositionLayer? oldParent, CompositionLayer? newParent) {
     }
 
     /// <summary>
@@ -110,12 +99,12 @@ public abstract class BaseLayerTreeObject : ITransferableData {
     /// Even if the old/new parent object is a canvas, this is invoked before <see cref="OnAttachedToCanvas"/> or <see cref="OnDetachedFromCanvas"/>
     /// </para>
     /// <para>
-    /// The origin's new parent will equal its <see cref="ParentContainer"/>
+    /// The origin's new parent will equal its <see cref="ParentLayer"/>
     /// </para>
     /// </summary>
     /// <param name="origin">The parent that was actually added. It may equal this layer's parent layer</param>
     /// <param name="oldParent">The origin's previous parent (non-null when removing or moving)</param>
-    protected virtual void OnHierarchicalParentChanged(BaseLayerTreeObject origin, ILayerContainer? originOldParent) {
+    protected virtual void OnHierarchicalParentChanged(BaseLayerTreeObject origin, CompositionLayer? originOldParent) {
     }
 
     /// <summary>
@@ -157,8 +146,8 @@ public abstract class BaseLayerTreeObject : ITransferableData {
 
     internal static void CollectTreeInternal(BaseLayerTreeObject layer, List<BaseLayerTreeObject> list) {
         list.Add(layer);
-        if (layer is CompositeLayer) {
-            foreach (BaseLayerTreeObject child in ((CompositeLayer) layer).Layers) {
+        if (layer is CompositionLayer) {
+            foreach (BaseLayerTreeObject child in ((CompositionLayer) layer).Layers) {
                 CollectTreeInternal(child, list);
             }
         }
@@ -167,15 +156,19 @@ public abstract class BaseLayerTreeObject : ITransferableData {
     internal static void InternalOnPreRemoveFromOwner(BaseLayerTreeObject layer) {
         layer.DeselectRecursive();
     }
+    
+    internal static void InternalSetCanvas(BaseLayerTreeObject layer, Canvas canvas) {
+        layer.Canvas = canvas;
+    }
 
     #region fucking nightmare fuel
-
+    
     // User deleted top-level layer
     internal static void InternalOnAddedAsTopLevelLayer(BaseLayerTreeObject layer, Canvas canvas) {
         layer.Canvas = canvas;
         layer.OnAttachedToCanvas(layer);
         layer.CanvasChanged?.Invoke(layer, null, canvas);
-        if (layer is CompositeLayer asComposition) {
+        if (layer is CompositionLayer asComposition) {
             foreach (BaseLayerTreeObject child in asComposition.Layers) {
                 child.Canvas = canvas;
                 RecurseChildren(child, layer);
@@ -189,7 +182,7 @@ public abstract class BaseLayerTreeObject : ITransferableData {
         static void RecurseChildren(BaseLayerTreeObject child, BaseLayerTreeObject origin) {
             child.OnAttachedToCanvas(origin);
             child.CanvasChanged?.Invoke(child, null, child.Canvas);
-            if (child is CompositeLayer asComposition) {
+            if (child is CompositionLayer asComposition) {
                 foreach (BaseLayerTreeObject nextChild in asComposition.Layers) {
                     nextChild.Canvas = child.Canvas;
                     RecurseChildren(nextChild, origin);
@@ -203,7 +196,7 @@ public abstract class BaseLayerTreeObject : ITransferableData {
         layer.Canvas = null;
         layer.OnDetachedFromCanvas(layer, oldCanvas);
         layer.CanvasChanged?.Invoke(layer, oldCanvas, null);
-        if (layer is CompositeLayer asComposition) {
+        if (layer is CompositionLayer asComposition) {
             foreach (BaseLayerTreeObject child in asComposition.Layers) {
                 child.Canvas = null;
                 RecurseChildren(child, layer, oldCanvas);
@@ -215,7 +208,7 @@ public abstract class BaseLayerTreeObject : ITransferableData {
         static void RecurseChildren(BaseLayerTreeObject child, BaseLayerTreeObject origin, Canvas originOldCanvas) {
             child.OnDetachedFromCanvas(origin, originOldCanvas);
             child.CanvasChanged?.Invoke(child, originOldCanvas, null);
-            if (child is CompositeLayer asComposition) {
+            if (child is CompositionLayer asComposition) {
                 foreach (BaseLayerTreeObject nextChild in asComposition.Layers) {
                     nextChild.Canvas = null;
                     RecurseChildren(nextChild, origin, originOldCanvas);
@@ -225,7 +218,7 @@ public abstract class BaseLayerTreeObject : ITransferableData {
     }
 
     // User added some layer into composition layer
-    internal static void InternalOnAddedToLayer(BaseLayerTreeObject layer, CompositeLayer newParent) {
+    internal static void InternalOnAddedToLayer(BaseLayerTreeObject layer, CompositionLayer newParent) {
         Debug.Assert(layer.ParentLayer == null, "Did not expect layer to be in a composition layer when adding it to another");
         Debug.Assert(layer.Canvas == null, "Did not expect layer to be in a canvas when adding to a composition layer");
 
@@ -239,7 +232,7 @@ public abstract class BaseLayerTreeObject : ITransferableData {
             layer.CanvasChanged?.Invoke(layer, null, layer.Canvas);
         }
 
-        if (layer is CompositeLayer asComposition) {
+        if (layer is CompositionLayer asComposition) {
             foreach (BaseLayerTreeObject child in asComposition.Layers) {
                 RecurseChildren(child, layer);
             }
@@ -255,7 +248,7 @@ public abstract class BaseLayerTreeObject : ITransferableData {
                 child.CanvasChanged?.Invoke(child, null, child.Canvas);
             }
 
-            if (child is CompositeLayer childAsComposition) {
+            if (child is CompositionLayer childAsComposition) {
                 foreach (BaseLayerTreeObject nextChild in childAsComposition.Layers) {
                     RecurseChildren(nextChild, origin);
                 }
@@ -264,7 +257,7 @@ public abstract class BaseLayerTreeObject : ITransferableData {
     }
 
     // User deleted some layer from composition layer
-    internal static void InternalOnRemovedFromLayer(BaseLayerTreeObject layer, CompositeLayer oldParent) {
+    internal static void InternalOnRemovedFromLayer(BaseLayerTreeObject layer, CompositionLayer oldParent) {
         Debug.Assert(layer.ParentLayer != null, "Did not expect layer to not be in a composition layer when removing it from another");
 
         // While child layers are notified of canvas detachment first, should we do the same here???
@@ -279,7 +272,7 @@ public abstract class BaseLayerTreeObject : ITransferableData {
         layer.OnParentChanged(oldParent, null);
         layer.ParentLayerChanged?.Invoke(layer, oldParent, null);
 
-        if (layer is CompositeLayer asComposition) {
+        if (layer is CompositionLayer asComposition) {
             foreach (BaseLayerTreeObject child in asComposition.Layers) {
                 RecurseChildren(child, layer, oldParent, oldCanvas);
             }
@@ -287,7 +280,7 @@ public abstract class BaseLayerTreeObject : ITransferableData {
 
         return;
 
-        static void RecurseChildren(BaseLayerTreeObject child, BaseLayerTreeObject origin, CompositeLayer originOldParent, Canvas? oldCanvas) {
+        static void RecurseChildren(BaseLayerTreeObject child, BaseLayerTreeObject origin, CompositionLayer originOldParent, Canvas? oldCanvas) {
             // Detach from canvas first, then notify hierarchical parent removed from layer
             if (child.Canvas != null) {
                 Debug.Assert(oldCanvas == child.Canvas, "Expected oldCanvas and our canvas to match");
@@ -298,7 +291,7 @@ public abstract class BaseLayerTreeObject : ITransferableData {
             }
 
             child.OnHierarchicalParentChanged(origin, originOldParent);
-            if (child is CompositeLayer layer) {
+            if (child is CompositionLayer layer) {
                 foreach (BaseLayerTreeObject nextChild in layer.Layers) {
                     RecurseChildren(nextChild, origin, originOldParent, oldCanvas);
                 }
@@ -308,16 +301,16 @@ public abstract class BaseLayerTreeObject : ITransferableData {
 
     #endregion
 
-    public static bool CheckHaveParentsAndAllMatch(SelectionManager<BaseLayerTreeObject> manager, [NotNullWhen(true)] out ILayerContainer? sameParent) {
+    public static bool CheckHaveParentsAndAllMatch(SelectionManager<BaseLayerTreeObject> manager, [NotNullWhen(true)] out CompositionLayer? sameParent) {
         using (IEnumerator<BaseLayerTreeObject> enumerator = manager.Selection.GetEnumerator()) {
             if (!enumerator.MoveNext())
                 throw new InvalidOperationException("Expected items to contain at least 1 item");
             
-            if ((sameParent = enumerator.Current.ParentContainer) == null)
+            if ((sameParent = enumerator.Current.ParentLayer) == null)
                 return false;
 
             while (enumerator.MoveNext()) {
-                if (!ReferenceEquals(enumerator.Current.ParentContainer, sameParent)) {
+                if (!ReferenceEquals(enumerator.Current.ParentLayer, sameParent)) {
                     return false;
                 }
             }

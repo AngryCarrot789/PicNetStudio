@@ -20,47 +20,55 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using PicNetStudio.Avalonia.PicNet.Layers;
 using PicNetStudio.Avalonia.Utils;
+using PicNetStudio.Avalonia.Utils.RDA;
 using SkiaSharp;
 
 namespace PicNetStudio.Avalonia.PicNet.Controls;
 
-public class CanvasControl : TemplatedControl {
-    public static readonly StyledProperty<Document?> DocumentProperty = AvaloniaProperty.Register<CanvasControl, Document?>(nameof(Document));
-    public static readonly StyledProperty<double> ZoomScaleProperty = FreeMoveViewPortV2.ZoomScaleProperty.AddOwner<CanvasControl>();
-    public static readonly StyledProperty<bool> IsDrawingWithPointerProperty = AvaloniaProperty.Register<CanvasControl, bool>(nameof(IsDrawingWithPointer));
+/// <summary>
+/// A view port that manages the rendering of a canvas
+/// </summary>
+public class CanvasViewPortControl : TemplatedControl {
+    public static readonly StyledProperty<Document?> DocumentProperty = AvaloniaProperty.Register<CanvasViewPortControl, Document?>(nameof(Document));
+    public static readonly StyledProperty<double> ZoomScaleProperty = FreeMoveViewPortV2.ZoomScaleProperty.AddOwner<CanvasViewPortControl>();
 
+    /// <summary>
+    /// Gets or sets the document that this canvas control will draw and watch the states of
+    /// </summary>
     public Document? Document {
         get => this.GetValue(DocumentProperty);
         set => this.SetValue(DocumentProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the zoom factor. Does not reset translation
+    /// </summary>
     public double ZoomScale {
         get => this.GetValue(ZoomScaleProperty);
         set => this.SetValue(ZoomScaleProperty, value);
     }
 
-    public bool IsDrawingWithPointer {
-        get => this.GetValue(IsDrawingWithPointerProperty);
-        set => this.SetValue(IsDrawingWithPointerProperty, value);
-    }
-
     public FreeMoveViewPortV2? PART_FreeMoveViewPort;
     public SKAsyncViewPort? PART_SkiaViewPort;
-    private readonly CanvasInputHandler tracker;
+    private readonly CanvasInputHandler inptHandler;
+    private readonly RapidDispatchAction rdaInvalidateRender;
 
-    static CanvasControl() {
+    static CanvasViewPortControl() {
         AffectsRender<Image>(DocumentProperty);
         AffectsMeasure<Image>(DocumentProperty);
-        DocumentProperty.Changed.AddClassHandler<CanvasControl, Document?>(OnPicNetBitmapChanged);
+        DocumentProperty.Changed.AddClassHandler<CanvasViewPortControl, Document?>(OnDocumentChanged);
     }
 
-    public CanvasControl() {
+    public CanvasViewPortControl() {
         this.Loaded += this.OnLoaded;
-        this.tracker = new CanvasInputHandler(this);
+        this.inptHandler = new CanvasInputHandler(this);
+        this.rdaInvalidateRender = new RapidDispatchAction(this.RenderCanvas, "RDAInvalidateRender");
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e) {
@@ -74,13 +82,14 @@ public class CanvasControl : TemplatedControl {
         }
 
         if (this.Document is Document document) {
-            this.UpdatePnbSize(document.Canvas.Size);
+            this.UpdateViewPortSize(document.Canvas.Size);
         }
     }
 
-    public void InvalidateRender() {
+    public void RenderCanvas() {
         if (this.PART_SkiaViewPort != null && this.Document is Document document) {
             if (this.PART_SkiaViewPort.BeginRender(out SKSurface surface)) {
+                surface.Canvas.Clear(SKColor.Empty);
                 document.Canvas.Render(surface);
                 this.PART_SkiaViewPort.EndRender();
             }
@@ -89,33 +98,48 @@ public class CanvasControl : TemplatedControl {
 
     private void OnLoaded(object? sender, RoutedEventArgs e) {
         this.Loaded -= this.OnLoaded;
-        this.InvalidateRender();
+        this.RenderCanvas();
     }
 
     private void OnCanvasRenderInvalidated(Canvas canvas) {
         if (this.Document?.Canvas == canvas) {
-            RZApplication.Instance.Dispatcher.InvokeAsync(this.InvalidateRender);
+            this.rdaInvalidateRender.InvokeAsync();
         }
     }
 
-    private static void OnPicNetBitmapChanged(CanvasControl control, AvaloniaPropertyChangedEventArgs<Document?> e) {
+    private static void OnDocumentChanged(CanvasViewPortControl control, AvaloniaPropertyChangedEventArgs<Document?> e) {
         if (e.TryGetOldValue(out Document? oldDocument)) {
             oldDocument.Canvas.SizeChanged -= control.OnResolutionChanged;
             oldDocument.Canvas.RenderInvalidated -= control.OnCanvasRenderInvalidated;
+            oldDocument.Canvas.ActiveLayerChanged -= control.OnActiveLayerChanged;
         }
 
         if (e.TryGetNewValue(out Document? newDocument)) {
             newDocument.Canvas.SizeChanged += control.OnResolutionChanged;
             newDocument.Canvas.RenderInvalidated += control.OnCanvasRenderInvalidated;
-            control.UpdatePnbSize(newDocument.Canvas.Size);
+            newDocument.Canvas.ActiveLayerChanged += control.OnActiveLayerChanged;
+            control.UpdateViewPortSize(newDocument.Canvas.Size);
+            control.UpdateCursorForActiveLayer(newDocument.Canvas.ActiveLayerTreeObject);
+        }
+        else {
+            control.UpdateViewPortSize(new PixelSize(1, 1));
         }
     }
 
-    private void OnResolutionChanged(Canvas canvas, PixelSize oldSize, PixelSize newSize) {
-        this.UpdatePnbSize(newSize);
+    private void OnActiveLayerChanged(Canvas canvas, BaseLayerTreeObject? oldactivelayertreeobject, BaseLayerTreeObject? newactivelayertreeobject) {
+        this.UpdateCursorForActiveLayer(newactivelayertreeobject);
     }
 
-    private void UpdatePnbSize(PixelSize size) {
+    private void UpdateCursorForActiveLayer(BaseLayerTreeObject? layer) {
+        if (this.PART_SkiaViewPort != null)
+            this.PART_SkiaViewPort.Cursor = new Cursor(!(layer is RasterLayer) ? StandardCursorType.No : StandardCursorType.Cross);
+    }
+
+    private void OnResolutionChanged(Canvas canvas, PixelSize oldSize, PixelSize newSize) {
+        this.UpdateViewPortSize(newSize);
+    }
+
+    private void UpdateViewPortSize(PixelSize size) {
         if (this.PART_SkiaViewPort == null)
             return;
 

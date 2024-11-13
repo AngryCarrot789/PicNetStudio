@@ -40,17 +40,11 @@ public class CreateNewRasterLayerCommand : DocumentCommand {
 
         if (count == 1) {
             BaseLayerTreeObject selection = document.Canvas.LayerSelectionManager.Selection.First();
-            if (selection.ParentLayer == null) {
-                int index = document.Canvas.IndexOf(selection);
-                document.Canvas.InsertLayer(index, raster);
-            }
-            else {
-                int index = selection.ParentLayer.IndexOf(selection);
-                selection.ParentLayer.InsertLayer(index, raster);
-            }
+            CompositionLayer target = selection.ParentLayer ?? document.Canvas.RootComposition;
+            target.InsertLayer(target.IndexOf(selection), raster);
         }
         else {
-            document.Canvas.InsertLayer(0, raster);
+            document.Canvas.RootComposition.InsertLayer(0, raster);
         }
 
         document.Canvas.LayerSelectionManager.SetSelection(raster);

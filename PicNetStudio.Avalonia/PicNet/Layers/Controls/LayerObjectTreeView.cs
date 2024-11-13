@@ -22,6 +22,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Threading;
+using PicNetStudio.Avalonia.Interactivity;
 using PicNetStudio.Avalonia.Utils;
 using PicNetStudio.Avalonia.Utils.Collections.Observable;
 
@@ -29,10 +32,16 @@ namespace PicNetStudio.Avalonia.PicNet.Layers.Controls;
 
 public class LayerObjectTreeView : TreeView {
     public static readonly StyledProperty<Canvas?> CanvasProperty = AvaloniaProperty.Register<LayerObjectTreeView, Canvas?>("Canvas");
+    public static readonly StyledProperty<bool> IsDroppableTargetOverProperty = AvaloniaProperty.Register<LayerObjectTreeView, bool>("IsDroppableTargetOver");
 
     public Canvas? Canvas {
         get => this.GetValue(CanvasProperty);
         set => this.SetValue(CanvasProperty, value);
+    }
+
+    public bool IsDroppableTargetOver {
+        get => this.GetValue(IsDroppableTargetOverProperty);
+        set => this.SetValue(IsDroppableTargetOverProperty, value);
     }
 
     private readonly Dictionary<LayerObjectTreeViewItem, BaseLayerTreeObject> controlToModel;
@@ -41,16 +50,22 @@ public class LayerObjectTreeView : TreeView {
     private IDisposable? collectionChangeListener;
     private bool ignoreTreeSelectionChangeEvent;
     private bool ignoreManagerSelectionChangeEvent;
+    private bool isProcessingAsyncDrop;
 
     public LayerObjectTreeView() {
         this.controlToModel = new Dictionary<LayerObjectTreeViewItem, BaseLayerTreeObject>();
         this.modelToControl = new Dictionary<BaseLayerTreeObject, LayerObjectTreeViewItem>();
         this.itemCache = new Stack<LayerObjectTreeViewItem>();
         this.SelectionChanged += this.OnTreeSelectionChanged;
+        DragDrop.SetAllowDrop(this, true);
     }
 
     static LayerObjectTreeView() {
         CanvasProperty.Changed.AddClassHandler<LayerObjectTreeView, Canvas?>((o, e) => o.OnCanvasChanged(e));
+        DragDrop.DragEnterEvent.AddClassHandler<LayerObjectTreeView>((o, e) => o.OnDragEnter(e));
+        DragDrop.DragOverEvent.AddClassHandler<LayerObjectTreeView>((o, e) => o.OnDragOver(e));
+        DragDrop.DragLeaveEvent.AddClassHandler<LayerObjectTreeView>((o, e) => o.OnDragLeave(e));
+        DragDrop.DropEvent.AddClassHandler<LayerObjectTreeView>((o, e) => o.OnDrop(e));
     }
 
     private void OnTreeSelectionChanged(object? sender, SelectionChangedEventArgs e) {
@@ -105,7 +120,7 @@ public class LayerObjectTreeView : TreeView {
         try {
             this.ignoreTreeSelectionChangeEvent = true;
             if (newitems == null || newitems.Count == 0) {
-                this.UnselectAll();
+                this.ClearSelection();
             }
             else {
                 List<LayerObjectTreeViewItem> controls = new List<LayerObjectTreeViewItem>();
@@ -174,9 +189,9 @@ public class LayerObjectTreeView : TreeView {
 
         if (e.TryGetNewValue(out Canvas? newCanvas)) {
             newCanvas.LayerSelectionManager.SelectionChanged += this.OnLayerSelectionChanged;
-            this.collectionChangeListener = ObservableItemProcessor.MakeIndexable(newCanvas.Layers, this.OnCanvasLayerAdded, this.OnCanvasLayerRemoved, this.OnCanvasLayerIndexMoved);
+            this.collectionChangeListener = ObservableItemProcessor.MakeIndexable(newCanvas.RootComposition.Layers, this.OnCanvasLayerAdded, this.OnCanvasLayerRemoved, this.OnCanvasLayerIndexMoved);
             int i = 0;
-            foreach (BaseLayerTreeObject layer in newCanvas.Layers) {
+            foreach (BaseLayerTreeObject layer in newCanvas.RootComposition.Layers) {
                 this.InsertNode(layer, i++);
             }
         }
@@ -215,5 +230,52 @@ public class LayerObjectTreeView : TreeView {
         if (this.itemCache.Count < 128) {
             this.itemCache.Push(item);
         }
+    }
+
+    #region Drag drop
+
+    private void OnDragEnter(DragEventArgs e) {
+        this.OnDragOver(e);
+    }
+
+    private void OnDragOver(DragEventArgs e) {
+        if (this.Canvas != null)
+            this.IsDroppableTargetOver = LayerObjectTreeViewItem.ProcessCanDragOver(this.Canvas.RootComposition, e);
+    }
+
+    private void OnDragLeave(DragEventArgs e) {
+        Dispatcher.UIThread.Invoke(() => this.IsDroppableTargetOver = false, DispatcherPriority.Loaded);
+    }
+
+    private async void OnDrop(DragEventArgs e) {
+        e.Handled = true;
+        if (this.isProcessingAsyncDrop || this.Canvas == null) {
+            return;
+        }
+
+        try {
+            this.isProcessingAsyncDrop = true;
+            if (LayerObjectTreeViewItem.GetDropResourceListForEvent(e, out List<BaseLayerTreeObject>? list, out EnumDropType effects)) {
+                await ResourceDropRegistry.DropRegistry.OnDropped(this.Canvas.RootComposition, list, effects);
+            }
+            else if (!await ResourceDropRegistry.DropRegistry.OnDroppedNative(this.Canvas.RootComposition, new DataObjectWrapper(e.Data), effects)) {
+                await IoC.MessageService.ShowMessage("Unknown Data", "Unknown dropped item. Drop files here");
+            }
+        }
+        finally {
+            this.IsDroppableTargetOver = false;
+            this.isProcessingAsyncDrop = false;
+        }
+    }
+
+    #endregion
+
+    public void ClearSelection() {
+        this.SelectedItems.Clear();
+    }
+
+    public void SetSelection(LayerObjectTreeViewItem item) {
+        this.SelectedItems.Clear();
+        this.SelectedItems.Add(item);
     }
 }

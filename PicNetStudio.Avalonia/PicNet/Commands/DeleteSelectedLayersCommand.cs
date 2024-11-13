@@ -34,7 +34,7 @@ public class DeleteSelectedLayersCommand : DocumentCommand {
         SelectionManager<BaseLayerTreeObject> manager = document.Canvas.LayerSelectionManager;
         List<BaseLayerTreeObject> list = manager.Selection.ToList();
         if (list.Count > 0) {
-            if (BaseLayerTreeObject.CheckHaveParentsAndAllMatch(manager, out ILayerContainer? sameParent)) {
+            if (BaseLayerTreeObject.CheckHaveParentsAndAllMatch(manager, out CompositionLayer? sameParent)) {
                 List<int> indices = manager.Selection.Select(x => sameParent.IndexOf(x)).OrderBy(index => index).ToList();
                 int minIndex = indices[0];
                 manager.Clear();
@@ -59,7 +59,7 @@ public class DeleteSelectedLayersCommand : DocumentCommand {
             else {
                 manager.Clear();
                 foreach (BaseLayerTreeObject layer in list) {
-                    layer.ParentContainer?.RemoveLayer(layer);
+                    layer.ParentLayer?.RemoveLayer(layer);
                 }
             }
         }

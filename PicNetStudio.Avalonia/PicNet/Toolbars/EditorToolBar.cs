@@ -70,8 +70,7 @@ public class EditorToolBar {
         // RZApplication.Instance.Services.GetService<>()
 
         this.items.Add(new SingleToolBarItem(new BrushTool()));
-        this.items.Add(new SingleToolBarItem(new BrushTool()));
-        this.items.Add(new SingleToolBarItem(new BrushTool()));
+        this.items.Add(new SingleToolBarItem(new PencilTool()));
 
         this.ActiveToolItem = (SingleToolBarItem?) this.items[0];
     }

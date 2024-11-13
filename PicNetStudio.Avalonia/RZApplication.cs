@@ -104,8 +104,8 @@ public abstract class RZApplication {
 
     private void RegisterCommands(CommandManager manager) {
         // tools
-        manager.Register("command.tool.BrushTool.IncreaseBrushSize", new IncreaseBrushSizeCommand());
-        manager.Register("command.tool.BrushTool.DecreaseBrushSize", new DecreaseBrushSizeCommand());
+        manager.Register("command.tool.BaseDiameterTool.IncreaseBrushSize", new IncreaseBaseDiameterToolSizeCommand());
+        manager.Register("command.tool.BaseDiameterTool.DecreaseBrushSize", new DecreaseBaseDiameterToolSizeCommand());
         manager.Register("command.generic.ExportImage", new ExportImageCommand());
         manager.Register("command.layertree.CreateNewRasterLayer", new CreateNewRasterLayerCommand());
         manager.Register("command.layertree.DeleteSelectedLayers", new DeleteSelectedLayersCommand());

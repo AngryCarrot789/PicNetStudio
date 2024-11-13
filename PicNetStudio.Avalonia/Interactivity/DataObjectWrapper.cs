@@ -1,5 +1,5 @@
 ﻿// 
-// Copyright (c) 2024-2024 REghZy
+// Copyright (c) 2023-2024 REghZy
 // 
 // This file is part of PicNetStudio.
 // 
@@ -17,25 +17,31 @@
 // along with PicNetStudio. If not, see <https://www.gnu.org/licenses/>.
 // 
 
-using SkiaSharp;
+using System.Collections.Generic;
+using Avalonia.Input;
 
-namespace PicNetStudio.Avalonia.PicNet.Layers;
+namespace PicNetStudio.Avalonia.Interactivity;
 
-public class RasterLayer : BaseVisualLayer {
-    public PNBitmap Bitmap { get; }
-    
-    public RasterLayer() {
-        this.Bitmap = new PNBitmap();
-        this.UsesCustomOpacityCalculation = true;
+public class DataObjectWrapper : IDataObjekt {
+    private readonly IDataObject mObject;
+
+    public DataObjectWrapper(IDataObject mObject) {
+        this.mObject = mObject;
     }
 
-    public override void RenderLayer(ref RenderContext ctx) {
-        if (this.Bitmap.HasPixels) {
-            SKColor colour = RenderUtils.BlendAlpha(SKColors.White, this.Opacity);
-            using SKPaint paint = new SKPaint();
-            paint.Color = colour;
-            paint.BlendMode = this.BlendMode;
-            ctx.Canvas.DrawBitmap(this.Bitmap.Bitmap, 0, 0, paint);
-        }
+    public object? GetData(string format) {
+        return this.mObject.Get(format);
+    }
+
+    public bool GetDataPresent(string format) {
+        return this.mObject.Contains(format);
+    }
+
+    public IEnumerable<string> GetFormats() {
+        return this.mObject.GetDataFormats();
+    }
+
+    public void SetData(string format, object data) {
+        (this.mObject as DataObject)?.Set(format, data);
     }
 }

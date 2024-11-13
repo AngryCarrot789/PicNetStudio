@@ -27,60 +27,81 @@ namespace PicNetStudio.Avalonia.PicNet;
 /// <summary>
 /// The layer rendering engine
 /// </summary>
-public class LayerRenderer {
-    public static LayerRenderer Instance { get; } = new LayerRenderer();
-
-    public LayerRenderer() {
+public static class LayerRenderer {
+    public static void RenderCanvas(ref RenderContext context) {
+        RenderLayer(ref context, context.MyCanvas.RootComposition);
     }
 
-    public void Render(SKSurface target, Canvas canvas, bool isExport = false) {
-        target.Canvas.Clear(SKColors.Empty);
-        RenderContext ctx = new RenderContext(canvas, target, isExport);
-
-        ReadOnlyObservableList<BaseLayerTreeObject> layers = canvas.Layers;
-        for (int i = layers.Count - 1; i >= 0; i--) {
-            if (layers[i] is BaseVisualLayer visualLayer)
-                this.DrawLayer(ctx, visualLayer);
-        }
-    }
-
-    protected void DrawLayer(RenderContext ctx, BaseVisualLayer layer) {
+    /// <summary>
+    /// Main method for drawing layers
+    /// </summary>
+    /// <param name="ctx"></param>
+    /// <param name="layer"></param>
+    public static void RenderLayer(ref RenderContext ctx, BaseVisualLayer layer) {
         if ((ctx.IsExporting && !layer.IsExportVisible) || (!ctx.IsExporting && !layer.IsVisible) || DoubleUtils.AreClose(layer.Opacity, 0.0)) {
             return;
         }
         
-        SKPaint? transparency = null;
-        if (layer is CompositeLayer compositeLayer) {
+        SKPaint? layerPaint = null;
+        int restoreIndex;
+        if (layer is CompositionLayer compositeLayer) {
+            bool isUsingCustomBlend = compositeLayer.BlendMode != BaseVisualLayer.BlendModeParameter.DefaultValue;
+            bool isOpacityLayerReqd = IsOpacityLayerRequired(layer);
+            
+            if (isOpacityLayerReqd || isUsingCustomBlend) {
+                layerPaint = new SKPaint();
+                if (isOpacityLayerReqd)
+                    layerPaint.Color = new SKColor(255, 255, 255, RenderUtils.DoubleToByte255(layer.Opacity));
+                if (isUsingCustomBlend)
+                    layerPaint.BlendMode = compositeLayer.BlendMode;
+                restoreIndex = ctx.Canvas.SaveLayer(layerPaint);
+            }
+            else {
+                restoreIndex = ctx.Canvas.Save();
+            }
+            
             ReadOnlyObservableList<BaseLayerTreeObject> layers = compositeLayer.Layers;
             for (int i = layers.Count - 1; i >= 0; i--) {
                 if (layers[i] is BaseVisualLayer visualLayer)
-                    this.DrawLayer(ctx, visualLayer);
+                    RenderLayer(ref ctx, visualLayer);
             }
+
+            ctx.Canvas.RestoreToCount(restoreIndex);
+            layerPaint?.Dispose();
         }
         else {
-            int clipSaveCount = BeginOpacityLayer(ctx.Canvas, layer, ref transparency);
-            layer.RenderLayer(ctx);
-            EndOpacityLayer(ctx.Canvas, clipSaveCount, ref transparency);
+            restoreIndex = BeginOpacitySection(ctx.Canvas, layer, out layerPaint);
+            layer.RenderLayer(ref ctx);
+            EndOpacitySection(ctx.Canvas, restoreIndex, layerPaint);
         }
     }
 
-    public static int BeginOpacityLayer(SKCanvas canvas, BaseVisualLayer layer, ref SKPaint? paint) {
-        if (layer.UsesCustomOpacityCalculation || layer.Opacity >= 1.0) {
-            // check greater than just in case...
-            return canvas.Save();
-        }
-        else {
-            return canvas.SaveLayer(paint ??= new SKPaint {
+    /// <summary>
+    /// Pushes an opacity layer onto the canvas
+    /// </summary>
+    /// <returns>The restore count</returns>
+    public static int BeginOpacitySection(SKCanvas canvas, BaseVisualLayer layer, out SKPaint? paint) {
+        if (IsOpacityLayerRequired(layer)) {
+            return canvas.SaveLayer(paint = new SKPaint {
                 Color = new SKColor(255, 255, 255, RenderUtils.DoubleToByte255(layer.Opacity))
             });
         }
+        else {
+            // check greater than just in case...
+            paint = null;
+            return canvas.Save();
+        }
     }
 
-    public static void EndOpacityLayer(SKCanvas canvas, int count, ref SKPaint? paint) {
+    /// <summary>
+    /// Pops the opacity layer
+    /// </summary>
+    public static void EndOpacitySection(SKCanvas canvas, int count, SKPaint? paint) {
         canvas.RestoreToCount(count);
-        if (paint != null) {
-            paint.Dispose();
-            paint = null;
-        }
+        paint?.Dispose();
+    }
+
+    public static bool IsOpacityLayerRequired(BaseVisualLayer layer) {
+        return !layer.UsesCustomOpacityCalculation && layer.Opacity < 1.0;
     }
 }

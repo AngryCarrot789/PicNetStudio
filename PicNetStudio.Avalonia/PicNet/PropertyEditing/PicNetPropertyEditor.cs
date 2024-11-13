@@ -19,6 +19,7 @@
 
 using System.Collections.Generic;
 using PicNetStudio.Avalonia.PicNet.Layers;
+using PicNetStudio.Avalonia.PicNet.Layers.CustomParameters.BlendMode;
 using PicNetStudio.Avalonia.PicNet.PropertyEditing.Core;
 using PicNetStudio.Avalonia.PicNet.PropertyEditing.DataTransfer;
 using PicNetStudio.Avalonia.Utils.RDA;
@@ -45,6 +46,7 @@ public class PicNetPropertyEditor : BasePropertyEditor {
             this.BaseLayerObjectGroup.AddItem(new LayerNamePropertyEditorSlot());
             this.BaseLayerObjectGroup.AddItem(new DataParameterBooleanPropertyEditorSlot(BaseVisualLayer.IsRenderVisibleParameter, typeof(BaseVisualLayer), "Is Render Visible"));
             this.BaseLayerObjectGroup.AddItem(new DataParameterBooleanPropertyEditorSlot(BaseVisualLayer.IsExportVisibleParameter, typeof(BaseVisualLayer), "Is Export Visible"));
+            this.BaseLayerObjectGroup.AddItem(new DataParameterBlendModePropertyEditorSlot(BaseVisualLayer.BlendModeParameter, typeof(BaseVisualLayer)));
             this.BaseLayerObjectGroup.AddItem(new DataParameterFloatPropertyEditorSlot(BaseVisualLayer.OpacityParameter, typeof(BaseVisualLayer), "Opacity", DragStepProfile.UnitOne));
         }
 

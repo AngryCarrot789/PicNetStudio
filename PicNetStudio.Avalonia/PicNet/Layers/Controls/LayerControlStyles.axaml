@@ -58,6 +58,9 @@
                                                           ClipToBounds="True" Padding="1,0,0,0"/>
 
                             <Panel Grid.Column="4"/>
+                            <Border x:Name="PART_DropTargetOverBorder" Margin="0" BorderThickness="0" 
+                                    BorderBrush="{DynamicResource ABrush.ColourfulGlyph.Static}"
+                                    Grid.ColumnSpan="5"/>
                         </Grid>
                     </Border>
                     <ItemsPresenter x:Name="PART_ItemsPresenter"
@@ -95,6 +98,10 @@
 
         <Style Selector="^:empty /template/ ToggleButton#PART_ExpandCollapseChevron">
             <Setter Property="IsVisible" Value="False"/>
+        </Style>
+
+        <Style Selector="^[IsDroppableTargetOver=true] /template/ Border#PART_DropTargetOverBorder">
+            <Setter Property="BorderThickness" Value="1"/>
         </Style>
     </ControlTheme>
     <ControlTheme x:Key="{x:Type c:LayerTreeControl}" TargetType="{x:Type c:LayerTreeControl}">
