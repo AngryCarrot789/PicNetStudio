@@ -143,4 +143,8 @@ public class PNBitmap {
     // public unsafe void Fill(uint colour) {
     //     new Span<uint>((void*) this.hColourData, this.size.Width * this.size.Height).Fill(colour);
     // }
+    public void Paste(PNBitmap bitmap) {
+        if (bitmap.skBitmap != null)
+            this.Canvas?.DrawBitmap(bitmap.skBitmap, new SKPoint(0, 0));
+    }
 }

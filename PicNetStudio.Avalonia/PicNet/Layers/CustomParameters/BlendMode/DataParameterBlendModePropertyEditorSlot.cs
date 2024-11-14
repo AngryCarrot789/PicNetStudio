@@ -63,8 +63,8 @@ public class DataParameterBlendModePropertyEditorSlot : DataParameterEnumPropert
             SKBlendMode.Color,
             SKBlendMode.Luminosity
         };
-        
-        Dictionary<SKBlendMode, string> translationMap =new Dictionary<SKBlendMode, string> {
+
+        Dictionary<SKBlendMode, string> translationMap = new Dictionary<SKBlendMode, string> {
             [SKBlendMode.Clear] = "Clear",
             [SKBlendMode.Src] = "Source",
             [SKBlendMode.Dst] = "Destination",

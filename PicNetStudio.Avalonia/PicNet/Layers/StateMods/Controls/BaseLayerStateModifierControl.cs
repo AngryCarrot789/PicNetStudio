@@ -34,11 +34,10 @@ public abstract class BaseLayerStateModifierControl : TemplatedControl {
     public static readonly Dictionary<Type, List<(Type, Func<BaseLayerStateModifierControl>)>> RegisteredStateModifierControls;
 
     public LayerStateModifierListBox ListBox { get; private set; }
-    
+
     public BaseLayerTreeObject Layer { get; private set; }
 
     protected BaseLayerStateModifierControl() {
-        
     }
 
     static BaseLayerStateModifierControl() {
@@ -51,11 +50,9 @@ public abstract class BaseLayerStateModifierControl : TemplatedControl {
     }
 
     protected virtual void OnConnected() {
-        
     }
-    
+
     protected virtual void OnDisconnected() {
-        
     }
 
     public static List<BaseLayerStateModifierControl> ProvideStateModifiers(BaseLayerTreeObject layer) {
@@ -88,6 +85,5 @@ public abstract class BaseLayerStateModifierControl : TemplatedControl {
     }
 
     public void OnRemovedFromList() {
-        
     }
 }

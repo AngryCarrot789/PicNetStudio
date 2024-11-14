@@ -28,7 +28,7 @@ public delegate void EditorChangedEventHandler(Document document, Editor? oldEdi
 /// </summary>
 public class Document {
     private BaseLayerTreeObject? activeLayerTreeObject;
-    
+
     /// <summary>
     /// The editor that this document exists in
     /// </summary>
@@ -40,7 +40,7 @@ public class Document {
     public event EditorChangedEventHandler? EditorChanged;
 
     public Canvas Canvas { get; }
-    
+
     /// <summary>
     /// Gets this canvas' layer selection manager, which stores which layers are selected
     /// </summary>

@@ -54,7 +54,7 @@ public class Canvas {
     /// Gets this canvas' layer selection manager, which stores which layers are selected
     /// </summary>
     public SelectionManager<BaseLayerTreeObject> LayerSelectionManager { get; }
-    
+
     public BaseLayerTreeObject? ActiveLayerTreeObject {
         get => this.activeLayerTreeObject;
         set {

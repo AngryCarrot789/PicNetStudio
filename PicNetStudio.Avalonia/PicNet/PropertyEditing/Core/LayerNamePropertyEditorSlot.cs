@@ -75,7 +75,7 @@ public class LayerNamePropertyEditorSlot : PropertyEditorSlot {
     private void OnLayerNameChanged(BaseLayerTreeObject sender) {
         if (this.isProcessingValueChange)
             return;
-        
+
         if (this.Name != sender.Name) {
             this.Name = sender.Name;
             this.NameChanged?.Invoke(this);

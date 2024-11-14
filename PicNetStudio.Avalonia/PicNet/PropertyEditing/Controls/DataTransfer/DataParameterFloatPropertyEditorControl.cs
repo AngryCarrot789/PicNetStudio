@@ -49,7 +49,7 @@ public class DataParameterFloatPropertyEditorControl : BaseSliderDataParamPropEd
         // this.dragger.SmallChange = profile.SmallStep;
         // this.dragger.LargeChange = profile.NormalStep;
         // this.dragger.MassiveChange = profile.LargeStep;
-        
+
         DragStepProfile profile = slot.StepProfile;
         this.slider.SmallChange = Math.Max(profile.SmallStep, 1.0);
         this.slider.LargeChange = Math.Max(profile.NormalStep, 1.0);

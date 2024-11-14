@@ -45,7 +45,7 @@
             </Setter.Value>
         </Setter>
     </ControlTheme>
-    
+
     <ControlTheme x:Key="{x:Type ac:LayerNamePropertyEditorControl}" TargetType="{x:Type ac:LayerNamePropertyEditorControl}">
         <Setter Property="Template">
             <Setter.Value>
@@ -87,7 +87,7 @@
             </Setter.Value>
         </Setter>
     </ControlTheme>
-    
+
     <ControlTheme x:Key="{x:Type dt:BaseSliderDataParamPropEditorControl}" TargetType="{x:Type dt:BaseSliderDataParamPropEditorControl}">
         <Setter Property="Template">
             <Setter.Value>
@@ -144,7 +144,7 @@
             </Setter.Value>
         </Setter>
     </ControlTheme>
-    
+
     <ControlTheme x:Key="{x:Type bm:DataParameterBlendModePropertyEditorControl}" TargetType="{x:Type bm:DataParameterBlendModePropertyEditorControl}">
         <Setter Property="Template">
             <Setter.Value>
@@ -164,16 +164,16 @@
         </Setter>
     </ControlTheme>
 
-    <ControlTheme x:Key="{x:Type dt:DataParameterFloatPropertyEditorControl}" 
-                  TargetType="{x:Type dt:DataParameterFloatPropertyEditorControl}" 
+    <ControlTheme x:Key="{x:Type dt:DataParameterFloatPropertyEditorControl}"
+                  TargetType="{x:Type dt:DataParameterFloatPropertyEditorControl}"
                   BasedOn="{StaticResource {x:Type dt:BaseSliderDataParamPropEditorControl}}"/>
-    
-    <ControlTheme x:Key="{x:Type dt:DataParameterDoublePropertyEditorControl}" 
-                  TargetType="{x:Type dt:DataParameterDoublePropertyEditorControl}" 
+
+    <ControlTheme x:Key="{x:Type dt:DataParameterDoublePropertyEditorControl}"
+                  TargetType="{x:Type dt:DataParameterDoublePropertyEditorControl}"
                   BasedOn="{StaticResource {x:Type dt:BaseSliderDataParamPropEditorControl}}"/>
-    
-    <ControlTheme x:Key="{x:Type dt:DataParameterLongPropertyEditorControl}" 
-                  TargetType="{x:Type dt:DataParameterLongPropertyEditorControl}" 
+
+    <ControlTheme x:Key="{x:Type dt:DataParameterLongPropertyEditorControl}"
+                  TargetType="{x:Type dt:DataParameterLongPropertyEditorControl}"
                   BasedOn="{StaticResource {x:Type dt:BaseSliderDataParamPropEditorControl}}"/>
 
 </ResourceDictionary>

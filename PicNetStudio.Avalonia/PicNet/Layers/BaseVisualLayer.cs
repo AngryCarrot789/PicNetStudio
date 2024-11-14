@@ -28,15 +28,15 @@ namespace PicNetStudio.Avalonia.PicNet.Layers;
 /// </summary>
 public abstract class BaseVisualLayer : BaseLayerTreeObject {
     public static readonly DataParameterFloat OpacityParameter = DataParameter.Register(new DataParameterFloat(typeof(BaseVisualLayer), nameof(Opacity), 1.0f, 0.0f, 1.0f, ValueAccessors.Reflective<float>(typeof(BaseVisualLayer), nameof(opacity))));
-    public static readonly DataParameterBool IsRenderVisibleParameter =DataParameter.Register(new DataParameterBool(typeof(BaseVisualLayer), nameof(IsVisible), true, ValueAccessors.Reflective<bool>(typeof(BaseVisualLayer), nameof(isVisible))));
-    public static readonly DataParameterBool IsExportVisibleParameter =DataParameter.Register(new DataParameterBool(typeof(BaseVisualLayer), nameof(IsExportVisible), true, ValueAccessors.Reflective<bool>(typeof(BaseVisualLayer), nameof(isExportVisible))));
+    public static readonly DataParameterBool IsRenderVisibleParameter = DataParameter.Register(new DataParameterBool(typeof(BaseVisualLayer), nameof(IsVisible), true, ValueAccessors.Reflective<bool>(typeof(BaseVisualLayer), nameof(isVisible))));
+    public static readonly DataParameterBool IsExportVisibleParameter = DataParameter.Register(new DataParameterBool(typeof(BaseVisualLayer), nameof(IsExportVisible), true, ValueAccessors.Reflective<bool>(typeof(BaseVisualLayer), nameof(isExportVisible))));
     public static readonly DataParameter<SKBlendMode> BlendModeParameter = DataParameter.Register(new DataParameter<SKBlendMode>(typeof(BaseVisualLayer), nameof(BlendMode), SKBlendMode.SrcOver, ValueAccessors.Reflective<SKBlendMode>(typeof(BaseVisualLayer), nameof(blendMode))));
 
     private float opacity = OpacityParameter.DefaultValue;
     private bool isVisible = IsRenderVisibleParameter.DefaultValue;
     private bool isExportVisible = IsExportVisibleParameter.DefaultValue;
     private SKBlendMode blendMode = BlendModeParameter.DefaultValue;
-    
+
     /// <summary>
     /// Gets or sets the opacity of this layer
     /// </summary>
@@ -44,7 +44,7 @@ public abstract class BaseVisualLayer : BaseLayerTreeObject {
         get => this.opacity;
         set => DataParameter.SetValueHelper(this, OpacityParameter, ref this.opacity, value);
     }
-    
+
     /// <summary>
     /// Gets or sets if this layer is visible when rendering in the editor
     /// </summary>
@@ -60,7 +60,7 @@ public abstract class BaseVisualLayer : BaseLayerTreeObject {
         get => this.isExportVisible;
         set => DataParameter.SetValueHelper(this, IsExportVisibleParameter, ref this.isExportVisible, value);
     }
-    
+
     /// <summary>
     /// Gets or sets the blending mode used for rendering. This is a blend between the currently rendered composition
     /// </summary>
@@ -74,7 +74,7 @@ public abstract class BaseVisualLayer : BaseLayerTreeObject {
     /// efficient render. Returns false if it should be handled automatically using an offscreen buffer
     /// </summary>
     public bool UsesCustomOpacityCalculation { get; protected set; }
-    
+
     protected BaseVisualLayer() {
     }
 

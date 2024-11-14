@@ -71,7 +71,7 @@ public class DataParameterBlendModePropertyEditorControl : BaseDataParameterProp
         else {
             blendMode = slot.DefaultValue;
         }
-        
+
         slot.Value = blendMode;
     }
 
@@ -81,7 +81,7 @@ public class DataParameterBlendModePropertyEditorControl : BaseDataParameterProp
 
     protected override void OnConnected() {
         // Initialise list first so that UpdateControlValue has something to work on when base.OnConnected invokes it eventually 
-        
+
         ItemCollection list = this.comboBox.Items;
         list.Clear();
 
@@ -95,7 +95,7 @@ public class DataParameterBlendModePropertyEditorControl : BaseDataParameterProp
                 list.Add(blend);
             }
         }
-        
+
         base.OnConnected();
         this.comboBox.SelectionChanged += this.OnSelectionChanged;
     }

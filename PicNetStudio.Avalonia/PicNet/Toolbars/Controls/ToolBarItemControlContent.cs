@@ -74,4 +74,5 @@ public class ToolBarItemControlContent : TemplatedControl {
 public abstract class ToolBarItemControlContentSingleTool : ToolBarItemControlContent;
 
 public class ToolBarItemControlContent_BrushTool : ToolBarItemControlContentSingleTool;
+
 public class ToolBarItemControlContent_PencilTool : ToolBarItemControlContentSingleTool;

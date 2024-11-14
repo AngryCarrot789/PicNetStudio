@@ -38,7 +38,7 @@ public class LayerTreeControl : TemplatedControl {
         get => this.GetValue(CanvasProperty);
         set => this.SetValue(CanvasProperty, value);
     }
-    
+
     public GridLength ColumnWidth0 { get => this.GetValue(ColumnWidth0Property); set => this.SetValue(ColumnWidth0Property, value); }
     public GridLength ColumnWidth2 { get => this.GetValue(ColumnWidth2Property); set => this.SetValue(ColumnWidth2Property, value); }
     public GridLength ColumnWidth4 { get => this.GetValue(ColumnWidth4Property); set => this.SetValue(ColumnWidth4Property, value); }

@@ -244,7 +244,8 @@ public class LayerObjectTreeView : TreeView {
     }
 
     private void OnDragLeave(DragEventArgs e) {
-        Dispatcher.UIThread.Invoke(() => this.IsDroppableTargetOver = false, DispatcherPriority.Loaded);
+        if (!this.IsPointerOver)
+            this.IsDroppableTargetOver = false;
     }
 
     private async void OnDrop(DragEventArgs e) {
@@ -256,9 +257,9 @@ public class LayerObjectTreeView : TreeView {
         try {
             this.isProcessingAsyncDrop = true;
             if (LayerObjectTreeViewItem.GetDropResourceListForEvent(e, out List<BaseLayerTreeObject>? list, out EnumDropType effects)) {
-                await ResourceDropRegistry.DropRegistry.OnDropped(this.Canvas.RootComposition, list, effects);
+                await LayerDropRegistry.DropRegistry.OnDropped(this.Canvas.RootComposition, list, effects);
             }
-            else if (!await ResourceDropRegistry.DropRegistry.OnDroppedNative(this.Canvas.RootComposition, new DataObjectWrapper(e.Data), effects)) {
+            else if (!await LayerDropRegistry.DropRegistry.OnDroppedNative(this.Canvas.RootComposition, new DataObjectWrapper(e.Data), effects)) {
                 await IoC.MessageService.ShowMessage("Unknown Data", "Unknown dropped item. Drop files here");
             }
         }

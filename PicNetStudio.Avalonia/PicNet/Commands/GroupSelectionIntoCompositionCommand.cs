@@ -65,7 +65,7 @@ public class GroupSelectionIntoCompositionCommand : DocumentCommand {
         if (!BaseLayerTreeObject.CheckHaveParentsAndAllMatch(selectionManager, out theParent)) {
             return;
         }
-        
+
         List<int> indices = selection.Select(x => theParent.IndexOf(x)).OrderBy(index => index).ToList();
         selectionManager.Clear();
         int minIndex = indices[0];
@@ -73,13 +73,13 @@ public class GroupSelectionIntoCompositionCommand : DocumentCommand {
         int count = 0;
         newCompositionLayer = new CompositionLayer();
         foreach (int indexOfLayer in indices) {
-            int actualIndex = indexOfLayer - count; 
+            int actualIndex = indexOfLayer - count;
             BaseLayerTreeObject theLayer = theParent.Layers[actualIndex];
             theParent.RemoveLayerAt(actualIndex);
             newCompositionLayer.AddLayer(theLayer);
             count++;
         }
-        
+
         theParent.InsertLayer(minIndex, newCompositionLayer);
     }
 }

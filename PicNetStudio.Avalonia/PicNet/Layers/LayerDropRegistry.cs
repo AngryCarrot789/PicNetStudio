@@ -23,15 +23,15 @@ using System.Threading.Tasks;
 using PicNetStudio.Avalonia.Interactivity;
 
 namespace PicNetStudio.Avalonia.PicNet.Layers {
-    public static class ResourceDropRegistry {
+    public static class LayerDropRegistry {
         public static DragDropRegistry<BaseLayerTreeObject> DropRegistry { get; }
 
         /// <summary>
         /// The drag-drop identifier for a resource drag-drop
         /// </summary>
-        public const string ResourceDropType = "PFXResource_DropType";
+        public const string DropTypeText = "PicNetLayer_DropType";
 
-        static ResourceDropRegistry() {
+        static LayerDropRegistry() {
             DropRegistry = new DragDropRegistry<BaseLayerTreeObject>();
 
             DropRegistry.Register<CompositionLayer, List<BaseLayerTreeObject>>((target, items, dropType, c) => {
@@ -52,31 +52,27 @@ namespace PicNetStudio.Avalonia.PicNet.Layers {
                 }
 
                 return dropType;
-            }, (folder, resources, dropType, c) => {
+            }, (folder, layerList, dropType, c) => {
                 if (dropType != EnumDropType.Copy && dropType != EnumDropType.Move) {
                     return Task.CompletedTask;
                 }
 
-                List<BaseLayerTreeObject> items = new List<BaseLayerTreeObject>();
-                foreach (BaseLayerTreeObject resource in resources) {
-                    if (resource is CompositionLayer group && @group.IsParentInHierarchy(folder)) {
+                foreach (BaseLayerTreeObject layer in layerList) {
+                    if (layer is CompositionLayer composition && composition.IsParentInHierarchy(folder)) {
                         continue;
                     }
 
-                    // if (dropType == EnumDropType.Copy) {
-                    //     BaseLayerTreeObject clone = BaseLayerTreeObject.Clone(resource);
-                    //     if (!TextIncrement.GetIncrementableString(folder.IsNameFree, clone.DisplayName, out string name))
-                    //         name = clone.DisplayName;
-                    //     clone.DisplayName = name;
-                    //     folder.AddItem(clone);
-                    //     if (clone is ResourceItem)
-                    //         items.Add((ResourceItem) clone);
-                    // }
-                    /* else */ 
-                    if (resource.ParentLayer != null) {
-                        if (resource.ParentLayer != folder) {
+                    if (dropType == EnumDropType.Copy) {
+                        BaseLayerTreeObject clone = layer.Clone();
+                        if (!TextIncrement.GetIncrementableString((s => true), clone.Name, out string name))
+                            name = clone.Name;
+                        clone.Name = name;
+                        folder.AddLayer(clone);
+                    }
+                    else if (layer.ParentLayer != null) {
+                        if (layer.ParentLayer != folder) {
                             // drag dropped a resource into the same folder
-                            resource.ParentLayer.MoveItemTo(folder, resource);
+                            layer.ParentLayer.MoveItemTo(folder, layer);
                         }
                     }
                     else {

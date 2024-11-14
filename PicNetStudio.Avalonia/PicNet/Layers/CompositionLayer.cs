@@ -36,10 +36,18 @@ public class CompositionLayer : BaseVisualLayer {
     /// Helper to check if this layer is the root "folder" in a canvas. Must also check that <see cref="BaseLayerTreeObject.Canvas"/> is non-null too for a full check
     /// </summary>
     public bool IsRootLayer => this.ParentLayer == null;
-    
+
     public CompositionLayer() {
         this.layers = new ObservableList<BaseLayerTreeObject>();
         this.Layers = new ReadOnlyObservableList<BaseLayerTreeObject>(this.layers);
+    }
+
+    protected override void LoadDataIntoClone(BaseLayerTreeObject clone) {
+        base.LoadDataIntoClone(clone);
+        CompositionLayer compositionLayer = (CompositionLayer) clone;
+        foreach (BaseLayerTreeObject child in this.layers) {
+            compositionLayer.AddLayer(child.Clone());
+        }
     }
 
     public void AddLayer(BaseLayerTreeObject layer) => this.InsertLayer(this.layers.Count, layer);
@@ -106,7 +114,7 @@ public class CompositionLayer : BaseVisualLayer {
 
         return false;
     }
-    
+
     public int LowestIndexOf(IEnumerable<BaseLayerTreeObject> items) {
         int minIndex = int.MaxValue;
         foreach (BaseLayerTreeObject layer in items) {

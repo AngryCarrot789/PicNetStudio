@@ -34,7 +34,7 @@ public class LayerStateModifierListBox : ItemsControl {
         get => this.GetValue(LayerObjectProperty);
         set => this.SetValue(LayerObjectProperty, value);
     }
-    
+
     public LayerStateModifierListBox() {
     }
 
@@ -55,7 +55,7 @@ public class LayerStateModifierListBox : ItemsControl {
 
         if (e.TryGetNewValue(out BaseLayerTreeObject? newLayer)) {
             List<BaseLayerStateModifierControl> list = BaseLayerStateModifierControl.ProvideStateModifiers(newLayer);
-            
+
             int i = 0;
             foreach (BaseLayerStateModifierControl control in list) {
                 int index = i++;

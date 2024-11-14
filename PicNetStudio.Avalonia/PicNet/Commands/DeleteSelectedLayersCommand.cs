@@ -29,7 +29,7 @@ public class DeleteSelectedLayersCommand : DocumentCommand {
         int count = document.Canvas.LayerSelectionManager.Selection.Count;
         return count > 0 ? Executability.Valid : Executability.ValidButCannotExecute;
     }
-    
+
     protected override void Execute(Editor editor, Document document, CommandEventArgs e) {
         SelectionManager<BaseLayerTreeObject> manager = document.Canvas.LayerSelectionManager;
         List<BaseLayerTreeObject> list = manager.Selection.ToList();
@@ -49,7 +49,7 @@ public class DeleteSelectedLayersCommand : DocumentCommand {
                     if (minIndex >= sameParent.Layers.Count) {
                         minIndex = sameParent.Layers.Count - 1;
                     }
-                    
+
                     manager.Select(sameParent.Layers[minIndex]);
                 }
                 else if (sameParent is BaseLayerTreeObject parentLayer) {

@@ -50,7 +50,7 @@
 
     </ControlTheme>
 
-    
+
     <ControlTheme x:Key="EllipseToggleButton" TargetType="{x:Type ToggleButton}" BasedOn="{StaticResource {x:Type ToggleButton}}">
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="Foreground" Value="{DynamicResource Button.Static.Foreground}"/>

@@ -23,10 +23,21 @@ namespace PicNetStudio.Avalonia.PicNet.Layers;
 
 public class RasterLayer : BaseVisualLayer {
     public PNBitmap Bitmap { get; }
-    
+
     public RasterLayer() {
         this.Bitmap = new PNBitmap();
         this.UsesCustomOpacityCalculation = true;
+    }
+
+    protected override void LoadDataIntoClone(BaseLayerTreeObject clone) {
+        base.LoadDataIntoClone(clone);
+
+        RasterLayer raster = (RasterLayer) clone;
+        if (this.Bitmap.HasPixels) {
+            if (!raster.Bitmap.HasPixels || raster.Bitmap.Size != this.Bitmap.Size)
+                raster.Bitmap.InitialiseBitmap(this.Bitmap.Size);
+            raster.Bitmap.Paste(this.Bitmap);
+        }
     }
 
     public override void RenderLayer(ref RenderContext ctx) {

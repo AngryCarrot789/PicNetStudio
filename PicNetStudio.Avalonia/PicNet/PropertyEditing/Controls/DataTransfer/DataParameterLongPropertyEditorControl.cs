@@ -49,7 +49,7 @@ public class DataParameterLongPropertyEditorControl : BaseSliderDataParamPropEdi
         // this.dragger.SmallChange = Math.Max(profile.SmallStep, 1.0);
         // this.dragger.LargeChange = Math.Max(profile.NormalStep, 1.0);
         // this.dragger.MassiveChange = Math.Max(profile.LargeStep, 1.0);
-        
+
         DragStepProfile profile = slot.StepProfile;
         this.slider.SmallChange = Math.Max(profile.SmallStep, 1.0);
         this.slider.LargeChange = Math.Max(profile.NormalStep, 1.0);

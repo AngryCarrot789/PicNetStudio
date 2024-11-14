@@ -36,19 +36,19 @@ public class DataParameterEnumInfo<TEnum> where TEnum : Enum {
 
     public DataParameterEnumInfo() : this(typeof(TEnum).GetEnumValues().Cast<TEnum>()) {
     }
-    
+
     public DataParameterEnumInfo(IEnumerable<TEnum> allowedEnumValues) {
         Validate.NotNull(allowedEnumValues);
-        
+
         this.AllowedEnumList = allowedEnumValues.Select(x => (x, x.ToString())).ToList().AsReadOnly();
         this.EnumToText = new Dictionary<TEnum, string>(this.AllowedEnumList.Select(x => new KeyValuePair<TEnum, string>(x.Item1, x.Item2)));
         this.TextToEnum = new Dictionary<string, TEnum>(this.AllowedEnumList.Select(x => new KeyValuePair<string, TEnum>(x.Item2, x.Item1)));
     }
-    
+
     public DataParameterEnumInfo(IEnumerable<TEnum> allowedEnumValues, IReadOnlyDictionary<TEnum, string> enumToTextMap) {
         Validate.NotNull(allowedEnumValues);
         Validate.NotNull(enumToTextMap);
-        
+
         this.AllowedEnumList = allowedEnumValues.Select(x => (x, enumToTextMap.TryGetValue(x, out string? value) ? value : x.ToString())).ToList().AsReadOnly();
 
         // Generate missing translations
@@ -57,7 +57,7 @@ public class DataParameterEnumInfo<TEnum> where TEnum : Enum {
             if (!fullEnumToTextMap.ContainsKey(t.theEnum))
                 fullEnumToTextMap[t.theEnum] = t.theName;
         }
-        
+
         this.EnumToText = fullEnumToTextMap.AsReadOnly();
         this.TextToEnum = new Dictionary<string, TEnum>(this.EnumToText.Select(x => new KeyValuePair<string, TEnum>(x.Value, x.Key)));
     }
@@ -68,12 +68,12 @@ public class DataParameterEnumPropertyEditorSlot<TEnum> : DataParameterPropertyE
     public static readonly IReadOnlySet<TEnum> ValuesSet = new HashSet<TEnum>(Values);
 
     public readonly DataParameterEnumInfo<TEnum>? TranslationInfo;
-    
+
     /// <summary>
     /// An enumerable which returns the allowed enum values
     /// </summary>
     public ReadOnlyCollection<TEnum> ValueEnumerable { get; }
-    
+
     private TEnum value;
 
     public TEnum Value {
@@ -84,7 +84,7 @@ public class DataParameterEnumPropertyEditorSlot<TEnum> : DataParameterPropertyE
 
             if (EqualityComparer<TEnum>.Default.Equals(value, this.value))
                 return;
-            
+
             this.value = value;
             DataParameter<TEnum> parameter = this.Parameter;
             for (int i = 0, c = this.Handlers.Count; i < c; i++) {

@@ -67,17 +67,17 @@ public class SelectionManager<TModel> {
             this.Select(selection);
             return;
         }
-        
+
         IList<TModel> list = selection as IList<TModel> ?? selection.ToList();
         if (list.Count < 1) {
             return;
         }
-        
+
         HashSet<TModel> set1 = new HashSet<TModel>(list);
         HashSet<TModel> set2 = new HashSet<TModel>(this.items);
         List<TModel> oldItems = new List<TModel>();
         List<TModel> newItems = new List<TModel>();
-        
+
         foreach (TModel source in (IEnumerable<TModel>) this.items) {
             if (set1.Add(source))
                 oldItems.Add(source);

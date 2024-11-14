@@ -142,7 +142,7 @@ public class DragDropRegistry<THandler> where THandler : class {
     /// handled by specific drop targets (e.g. the frame, based on the mouse position, when dropping on a track)
     /// </param>
     /// <returns>True if a drop handler was called, otherwise false</returns>
-    public async Task<bool> OnDropped(THandler target, object value, EnumDropType dropType, IContextData context = null) {
+    public async Task<bool> OnDropped(THandler target, object value, EnumDropType dropType, IContextData? context = null) {
         if (context == null) {
             context = EmptyContext.Instance;
         }

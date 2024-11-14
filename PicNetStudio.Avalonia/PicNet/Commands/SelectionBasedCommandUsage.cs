@@ -30,10 +30,10 @@ namespace PicNetStudio.Avalonia.PicNet.Commands;
 
 public class SelectionBasedCommandUsage : CommandUsage {
     private Document? referencedDocument;
-    
+
     public SelectionBasedCommandUsage(string commandId) : base(commandId) {
     }
-    
+
     protected override void OnConnected() {
         base.OnConnected();
         if (!(this.Control is Button))
@@ -69,7 +69,7 @@ public class SelectionBasedCommandUsage : CommandUsage {
             this.referencedDocument.Canvas.LayerSelectionManager.SelectionChanged -= this.OnCanvasSelectionChanged;
             this.referencedDocument = null;
         }
-        
+
         base.OnContextChanged();
     }
 

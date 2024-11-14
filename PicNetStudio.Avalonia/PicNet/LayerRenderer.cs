@@ -41,13 +41,13 @@ public static class LayerRenderer {
         if ((ctx.IsExporting && !layer.IsExportVisible) || (!ctx.IsExporting && !layer.IsVisible) || DoubleUtils.AreClose(layer.Opacity, 0.0)) {
             return;
         }
-        
+
         SKPaint? layerPaint = null;
         int restoreIndex;
         if (layer is CompositionLayer compositeLayer) {
             bool isUsingCustomBlend = compositeLayer.BlendMode != BaseVisualLayer.BlendModeParameter.DefaultValue;
             bool isOpacityLayerReqd = IsOpacityLayerRequired(layer);
-            
+
             if (isOpacityLayerReqd || isUsingCustomBlend) {
                 layerPaint = new SKPaint();
                 if (isOpacityLayerReqd)
@@ -59,7 +59,7 @@ public static class LayerRenderer {
             else {
                 restoreIndex = ctx.Canvas.Save();
             }
-            
+
             ReadOnlyObservableList<BaseLayerTreeObject> layers = compositeLayer.Layers;
             for (int i = layers.Count - 1; i >= 0; i--) {
                 if (layers[i] is BaseVisualLayer visualLayer)

@@ -30,16 +30,16 @@ public class LayerVisibilityStateControl : BaseLayerStateModifierControl {
     private ToggleButton PART_ToggleRender;
     private ToggleButton PART_ToggleExport;
 
-    private readonly IBinder<BaseVisualLayer> renderVisibilityBinder = 
+    private readonly IBinder<BaseVisualLayer> renderVisibilityBinder =
         new AutoUpdateDataParameterPropertyBinder<BaseVisualLayer>(
             BaseVisualLayer.IsRenderVisibleParameter, ToggleButton.IsCheckedProperty,
-            obj => ((ToggleButton) obj.Control).IsChecked = obj.Model.IsVisible, 
+            obj => ((ToggleButton) obj.Control).IsChecked = obj.Model.IsVisible,
             obj => obj.Model.IsVisible = ((ToggleButton) obj.Control).IsChecked == true);
     
-    private readonly IBinder<BaseVisualLayer> exportVisibilityBinder = 
+    private readonly IBinder<BaseVisualLayer> exportVisibilityBinder =
         new AutoUpdateDataParameterPropertyBinder<BaseVisualLayer>(
             BaseVisualLayer.IsExportVisibleParameter, ToggleButton.IsCheckedProperty,
-            obj => ((ToggleButton) obj.Control).IsChecked = obj.Model.IsExportVisible, 
+            obj => ((ToggleButton) obj.Control).IsChecked = obj.Model.IsExportVisible,
             obj => obj.Model.IsExportVisible = ((ToggleButton) obj.Control).IsChecked == true);
 
     public new BaseVisualLayer Layer => (BaseVisualLayer) base.Layer;
@@ -61,7 +61,7 @@ public class LayerVisibilityStateControl : BaseLayerStateModifierControl {
         base.OnApplyTemplate(e);
         this.PART_ToggleRender = e.NameScope.GetTemplateChild<ToggleButton>(nameof(this.PART_ToggleRender));
         this.PART_ToggleExport = e.NameScope.GetTemplateChild<ToggleButton>(nameof(this.PART_ToggleExport));
-        
+
         this.renderVisibilityBinder.AttachControl(this.PART_ToggleRender);
         this.exportVisibilityBinder.AttachControl(this.PART_ToggleExport);
     }

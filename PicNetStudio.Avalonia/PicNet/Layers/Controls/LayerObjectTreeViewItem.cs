@@ -41,12 +41,12 @@ namespace PicNetStudio.Avalonia.PicNet.Layers.Controls;
 /// </summary>
 public class LayerObjectTreeViewItem : TreeViewItem {
     public static readonly StyledProperty<bool> IsDroppableTargetOverProperty = LayerObjectTreeView.IsDroppableTargetOverProperty.AddOwner<LayerObjectTreeView>();
-    
+
     public bool IsDroppableTargetOver {
         get => this.GetValue(IsDroppableTargetOverProperty);
         set => this.SetValue(IsDroppableTargetOverProperty, value);
     }
-    
+
     public LayerObjectTreeView? LayerTree { get; private set; }
     public LayerObjectTreeViewItem? ParentNode { get; private set; }
     public BaseLayerTreeObject? LayerObject { get; private set; }
@@ -200,7 +200,7 @@ public class LayerObjectTreeViewItem : TreeViewItem {
                     if (this.LayerTree != null && this.LayerTree.SelectedItems.Count < 2) {
                         this.LayerTree?.SetSelection(this);
                     }
-                    
+
                     // handle to stop tree view from selecting stuff
                     e.Handled = true;
                 }
@@ -254,7 +254,7 @@ public class LayerObjectTreeViewItem : TreeViewItem {
             try {
                 this.isDragDropping = true;
                 DataObject obj = new DataObject();
-                obj.Set(ResourceDropRegistry.ResourceDropType, list);
+                obj.Set(LayerDropRegistry.DropTypeText, list);
 
                 DragDrop.DoDragDrop(e, obj, DragDropEffects.Copy | DragDropEffects.Move | DragDropEffects.Link);
             }
@@ -277,7 +277,8 @@ public class LayerObjectTreeViewItem : TreeViewItem {
     }
 
     private void OnDragLeave(DragEventArgs e) {
-        this.IsDroppableTargetOver = false;
+        if (!this.IsPointerOver)
+            this.IsDroppableTargetOver = false;
     }
 
     private async void OnDrop(DragEventArgs e) {
@@ -289,9 +290,9 @@ public class LayerObjectTreeViewItem : TreeViewItem {
         try {
             this.isProcessingAsyncDrop = true;
             if (GetDropResourceListForEvent(e, out List<BaseLayerTreeObject>? list, out EnumDropType effects)) {
-                await ResourceDropRegistry.DropRegistry.OnDropped(layer, list, effects);
+                await LayerDropRegistry.DropRegistry.OnDropped(layer, list, effects);
             }
-            else if (!await ResourceDropRegistry.DropRegistry.OnDroppedNative(layer, new DataObjectWrapper(e.Data), effects)) {
+            else if (!await LayerDropRegistry.DropRegistry.OnDroppedNative(layer, new DataObjectWrapper(e.Data), effects)) {
                 await IoC.MessageService.ShowMessage("Unknown Data", "Unknown dropped item. Drop files here");
             }
         }
@@ -304,10 +305,10 @@ public class LayerObjectTreeViewItem : TreeViewItem {
     public static bool ProcessCanDragOver(BaseLayerTreeObject layer, DragEventArgs e) {
         e.Handled = true;
         if (GetDropResourceListForEvent(e, out List<BaseLayerTreeObject>? resources, out EnumDropType effects)) {
-            e.DragEffects = (DragDropEffects) ResourceDropRegistry.DropRegistry.CanDrop(layer, resources, effects);
+            e.DragEffects = (DragDropEffects) LayerDropRegistry.DropRegistry.CanDrop(layer, resources, effects);
         }
         else {
-            e.DragEffects = (DragDropEffects) ResourceDropRegistry.DropRegistry.CanDropNative(layer, new DataObjectWrapper(e.Data), effects);
+            e.DragEffects = (DragDropEffects) LayerDropRegistry.DropRegistry.CanDropNative(layer, new DataObjectWrapper(e.Data), effects);
         }
 
         return e.DragEffects != DragDropEffects.None;
@@ -323,8 +324,8 @@ public class LayerObjectTreeViewItem : TreeViewItem {
     /// <returns>True if there were resources available, otherwise false, meaning no resources are being dragged</returns>
     public static bool GetDropResourceListForEvent(DragEventArgs e, [NotNullWhen(true)] out List<BaseLayerTreeObject>? resources, out EnumDropType effects) {
         effects = DropUtils.GetDropAction(e.KeyModifiers, (EnumDropType) e.DragEffects);
-        if (e.Data.Contains(ResourceDropRegistry.ResourceDropType)) {
-            object? obj = e.Data.Get(ResourceDropRegistry.ResourceDropType);
+        if (e.Data.Contains(LayerDropRegistry.DropTypeText)) {
+            object? obj = e.Data.Get(LayerDropRegistry.DropTypeText);
             if ((resources = (obj as List<BaseLayerTreeObject>)) != null) {
                 return true;
             }

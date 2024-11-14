@@ -59,6 +59,8 @@ public abstract class BaseLayerTreeObject : ITransferableData {
             this.NameChanged?.Invoke(this);
         }
     }
+    
+    public string FactoryId => LayerTypeFactory.Instance.GetId(this.GetType());
 
     /// <summary>
     /// An event fired when our <see cref="ParentLayer"/> property changes.
@@ -72,11 +74,30 @@ public abstract class BaseLayerTreeObject : ITransferableData {
     /// When caused by layer arrangement changes, this is fired AFTER <see cref="ParentLayerChanged"/> 
     /// </summary>
     public event BaseLayerTreeObjectCanvasChangedEventHandler? CanvasChanged;
-    
+
     public event BaseLayerTreeObjectNameChangedEventHandler? NameChanged;
 
     protected BaseLayerTreeObject() {
         this.TransferableData = new TransferableData(this);
+    }
+
+    /// <summary>
+    /// Creates a new instance with the same data which will be completely unaffected by the current instance
+    /// </summary>
+    /// <returns></returns>
+    /// <exception cref="Exception"></exception>
+    public BaseLayerTreeObject Clone() {
+        string id = this.FactoryId;
+        BaseLayerTreeObject clone = LayerTypeFactory.Instance.NewInstance(id);
+        if (clone.GetType() != this.GetType())
+            throw new Exception("Cloned object type does not match the item type");
+
+        this.LoadDataIntoClone(clone);
+        return clone;
+    }
+
+    protected virtual void LoadDataIntoClone(BaseLayerTreeObject clone) {
+        clone.name = this.name;
     }
 
     /// <summary>
@@ -95,7 +116,6 @@ public abstract class BaseLayerTreeObject : ITransferableData {
     /// Invoked when one of our hierarchical parents is added to or removed from a parent object as a child to a layer as a child. 
     /// This method is just for clarity and most likely isn't needed
     /// <para>    /// <param name="newParent">The origin's new parent (non-null when adding or moving)</param>
-
     /// Even if the old/new parent object is a canvas, this is invoked before <see cref="OnAttachedToCanvas"/> or <see cref="OnDetachedFromCanvas"/>
     /// </para>
     /// <para>
@@ -156,13 +176,13 @@ public abstract class BaseLayerTreeObject : ITransferableData {
     internal static void InternalOnPreRemoveFromOwner(BaseLayerTreeObject layer) {
         layer.DeselectRecursive();
     }
-    
+
     internal static void InternalSetCanvas(BaseLayerTreeObject layer, Canvas canvas) {
         layer.Canvas = canvas;
     }
 
     #region fucking nightmare fuel
-    
+
     // User deleted top-level layer
     internal static void InternalOnAddedAsTopLevelLayer(BaseLayerTreeObject layer, Canvas canvas) {
         layer.Canvas = canvas;
@@ -305,7 +325,7 @@ public abstract class BaseLayerTreeObject : ITransferableData {
         using (IEnumerator<BaseLayerTreeObject> enumerator = manager.Selection.GetEnumerator()) {
             if (!enumerator.MoveNext())
                 throw new InvalidOperationException("Expected items to contain at least 1 item");
-            
+
             if ((sameParent = enumerator.Current.ParentLayer) == null)
                 return false;
 
