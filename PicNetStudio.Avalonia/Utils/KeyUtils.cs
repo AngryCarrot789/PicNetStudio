@@ -56,7 +56,7 @@ public static class KeyUtils {
 
         // Try parse F1-F24
         if (first == 'F' && input.Length <= 3 && int.TryParse(input.AsSpan(1), out int value) && value > 0 && value < 25) {
-            return (Key) (first - 1 + (int) Key.F1);
+            return Key.F1 + (value - 1);
         }
 
         switch (input.ToLower()) {

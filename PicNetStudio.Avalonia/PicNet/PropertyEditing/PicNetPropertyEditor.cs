@@ -34,7 +34,7 @@ public class PicNetPropertyEditor : BasePropertyEditor {
 
     private RapidDispatchAction? delayedUpdate;
     private Document? activeDocument;
-    
+
     public SimplePropertyEditorGroup BaseLayerObjectGroup { get; }
 
     private PicNetPropertyEditor() {
@@ -54,12 +54,8 @@ public class PicNetPropertyEditor : BasePropertyEditor {
     }
 
     public void UpdateSelectedLayerSelection(IEnumerable<BaseLayerTreeObject> selection) {
-        if (this.activeDocument == null)
-            return;
-        
         (this.delayedUpdate ??= new RapidDispatchAction(() => {
-            if (this.activeDocument != null)
-                this.BaseLayerObjectGroup.SetupHierarchyState(new List<object>(selection));
+            this.BaseLayerObjectGroup.SetupHierarchyState(new List<object>(selection));
         })).InvokeAsync();
     }
 }

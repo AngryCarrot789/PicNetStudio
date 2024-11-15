@@ -111,6 +111,7 @@ public abstract class RZApplication {
         manager.Register("command.layertree.CreateNewRasterLayer", new CreateNewRasterLayerCommand());
         manager.Register("command.layertree.DeleteSelectedLayers", new DeleteSelectedLayersCommand());
         manager.Register("command.layertree.GroupSelectionIntoComposition", new GroupSelectionIntoCompositionCommand());
+        manager.Register("command.layertree.item.EditLayerNameCommand", new EditLayerNameCommand());
     }
 
     internal static void InternalPreInititalise(RZApplication application) {

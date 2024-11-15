@@ -20,6 +20,7 @@
 using Avalonia.Controls;
 using PicNetStudio.Avalonia.PicNet;
 using PicNetStudio.Avalonia.PicNet.Layers;
+using PicNetStudio.Avalonia.PicNet.Layers.Controls;
 using PicNetStudio.Avalonia.PicNet.Toolbars;
 
 namespace PicNetStudio.Avalonia.Interactivity.Contexts;
@@ -30,5 +31,6 @@ public static class DataKeys {
     public static readonly DataKey<Document> DocumentKey = DataKey<Document>.Create("EditorDocument");
     public static readonly DataKey<BaseToolBarItem> ToolBarItemKey = DataKey<BaseToolBarItem>.Create("ToolBarItem");
     public static readonly DataKey<BaseLayerTreeObject> LayerObjectKey = DataKey<BaseLayerTreeObject>.Create("LayerObject");
+    public static readonly DataKey<ILayerNodeItem> LayerNodeKey = DataKey<ILayerNodeItem>.Create("LayerNodeObject");
     public static readonly DataKey<ISelectionManager<BaseLayerTreeObject>> LayerSelectionManagerKey = DataKey<ISelectionManager<BaseLayerTreeObject>>.Create("LayerSelectionManager");
 }

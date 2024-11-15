@@ -2,7 +2,8 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:c="clr-namespace:PicNetStudio.Avalonia.PicNet.Layers.Controls"
                     xmlns:avalonia="clr-namespace:PicNetStudio.Avalonia"
-                    xmlns:c2="clr-namespace:PicNetStudio.Avalonia.PicNet.Layers.StateMods.Controls">
+                    xmlns:c2="clr-namespace:PicNetStudio.Avalonia.PicNet.Layers.StateMods.Controls"
+                    xmlns:ui="clr-namespace:PicNetStudio.Avalonia.Shortcuts.Avalonia">
     <ControlTheme x:Key="{x:Type c:LayerObjectTreeView}" TargetType="{x:Type c:LayerObjectTreeView}" BasedOn="{StaticResource {x:Type TreeView}}">
         <Setter Property="SelectionMode" Value="Multiple"/>
     </ControlTheme>
@@ -11,6 +12,7 @@
         <Setter Property="Background" Value="{DynamicResource TreeViewItem.Static.Background}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource AColour.Tone2.Border.Static}"/>
         <Setter Property="Foreground" Value="{DynamicResource ABrush.Foreground.Static}"/>
+        <Setter Property="ui:UIInputManager.FocusPath" Value="Application/EditorWindow/LayerTree/Item"/>
         <Setter Property="BorderThickness" Value="0,0,0,1"/>
         <Setter Property="Padding" Value="0"/>
         <Setter Property="Template">
@@ -43,16 +45,14 @@
                                                   Theme="{StaticResource SimpleTreeViewItemToggleButtonTheme}"
                                                   VerticalAlignment="Center" HorizontalAlignment="Center"
                                                   Margin="0,0,0,0"/>
-                                    <ContentPresenter x:Name="PART_HeaderPresenter"
-                                                      VerticalAlignment="Center"
-                                                      HorizontalAlignment="Stretch"
-                                                      Grid.Column="2"
-                                                      Background="Transparent"
-                                                      Padding="{TemplateBinding Padding}"
-                                                      HorizontalContentAlignment="{TemplateBinding HorizontalAlignment}"
-                                                      Content="{TemplateBinding Header}"
-                                                      ContentTemplate="{TemplateBinding HeaderTemplate}"
-                                                      Focusable="False"/>
+                                    <Panel Grid.Column="2" VerticalAlignment="Center"
+                                           HorizontalAlignment="Left"
+                                           Background="Transparent"
+                                           Margin="{TemplateBinding Padding}"
+                                           Focusable="False">
+                                        <TextBlock x:Name="PART_HeaderTextBlock" Text="{TemplateBinding Header}"/>
+                                        <TextBox x:Name="PART_HeaderTextBox" Text="{TemplateBinding Header, Mode=TwoWay}" BorderThickness="0" Padding="0"/>
+                                    </Panel>
                                 </Grid>
                                 <c2:LayerStateModifierListBox x:Name="PART_StateModifierListBox"
                                                               Grid.Column="2" VerticalAlignment="Stretch"

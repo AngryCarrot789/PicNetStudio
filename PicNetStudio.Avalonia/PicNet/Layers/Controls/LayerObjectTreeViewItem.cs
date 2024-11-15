@@ -27,6 +27,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using PicNetStudio.Avalonia.Bindings;
 using PicNetStudio.Avalonia.Interactivity;
 using PicNetStudio.Avalonia.Interactivity.Contexts;
@@ -39,7 +40,7 @@ namespace PicNetStudio.Avalonia.PicNet.Layers.Controls;
 /// <summary>
 /// A tree view item that represents any type of layer
 /// </summary>
-public class LayerObjectTreeViewItem : TreeViewItem {
+public class LayerObjectTreeViewItem : TreeViewItem, ILayerNodeItem {
     public static readonly StyledProperty<bool> IsDroppableTargetOverProperty = LayerObjectTreeView.IsDroppableTargetOverProperty.AddOwner<LayerObjectTreeView>();
 
     public bool IsDroppableTargetOver {
@@ -57,10 +58,46 @@ public class LayerObjectTreeViewItem : TreeViewItem {
     private readonly PropertyAutoSetter<BaseLayerTreeObject, LayerStateModifierListBox> stateModifierListBoxHelper;
     private LayerStateModifierListBox? PART_StateModifierListBox => this.stateModifierListBoxHelper.TargetControl;
     private Border? PART_DragDropMoveBorder;
+    private bool isDragDropping;
+    private bool isDragActive;
+    private Point originMousePoint;
+    private bool isProcessingAsyncDrop;
+    private bool isEditingNameState;
+    private string? nameBeforeEditBegin;
+
+    private TextBlock? PART_HeaderTextBlock;
+    private TextBox? PART_HeaderTextBox;
+    private readonly ContextData contextData;
+
+    BaseLayerTreeObject ILayerNodeItem.Layer => this.LayerObject ?? throw new InvalidOperationException("No associated layer objet");
+    
+    public bool EditNameState {
+        get => this.isEditingNameState;
+        set {
+            if (this.PART_HeaderTextBox == null)
+                throw new InvalidOperationException("Too early to use this property. Let node to initialise first");
+            if (this.LayerObject == null)
+                throw new InvalidOperationException("Invalid node; no layer object");
+
+            if (value == this.isEditingNameState)
+                return;
+            
+            if (!this.isEditingNameState) {
+                this.nameBeforeEditBegin = this.LayerObject.Name;
+                this.isEditingNameState = true;
+            }
+            else {
+                this.isEditingNameState = false;
+            }
+            
+            this.UpdateHeaderEditorControls();
+        }
+    }
 
     public LayerObjectTreeViewItem() {
         this.stateModifierListBoxHelper = new PropertyAutoSetter<BaseLayerTreeObject, LayerStateModifierListBox>(LayerStateModifierListBox.LayerObjectProperty);
         DragDrop.SetAllowDrop(this, true);
+        DataManager.SetContextData(this, this.contextData = new ContextData().Set(DataKeys.LayerNodeKey, this));
     }
 
     static LayerObjectTreeViewItem() {
@@ -70,10 +107,56 @@ public class LayerObjectTreeViewItem : TreeViewItem {
         DragDrop.DropEvent.AddClassHandler<LayerObjectTreeViewItem>((o, e) => o.OnDrop(e));
     }
 
+    private void UpdateHeaderEditorControls() {
+        if (this.isEditingNameState) {
+            this.PART_HeaderTextBox!.IsVisible = true;
+            this.PART_HeaderTextBlock!.IsVisible = false;
+            this.PART_HeaderTextBox.Focus();
+            this.PART_HeaderTextBox.SelectAll();
+        }
+        else {
+            this.PART_HeaderTextBox!.IsVisible = false;
+            this.PART_HeaderTextBlock!.IsVisible = true;
+        }
+    }
+
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e) {
         base.OnApplyTemplate(e);
         this.stateModifierListBoxHelper.SetControl(e.NameScope.GetTemplateChild<LayerStateModifierListBox>("PART_StateModifierListBox"));
         this.PART_DragDropMoveBorder = e.NameScope.GetTemplateChild<Border>(nameof(this.PART_DragDropMoveBorder));
+        this.PART_HeaderTextBlock = e.NameScope.GetTemplateChild<TextBlock>(nameof(this.PART_HeaderTextBlock));
+        this.PART_HeaderTextBox = e.NameScope.GetTemplateChild<TextBox>(nameof(this.PART_HeaderTextBox));
+        this.PART_HeaderTextBox.KeyDown += this.PART_HeaderTextBoxOnKeyDown;
+        this.PART_HeaderTextBox.LostFocus += this.PART_HeaderTextBoxOnLostFocus;
+        this.UpdateHeaderEditorControls();
+    }
+
+    private void PART_HeaderTextBoxOnLostFocus(object? sender, RoutedEventArgs e) {
+        this.EditNameState = false;
+        if (this.LayerObject != null) {
+            this.LayerObject.Name = this.nameBeforeEditBegin ?? "Layer Object";
+        }
+    }
+
+    private void PART_HeaderTextBoxOnKeyDown(object? sender, KeyEventArgs e) {
+        if (this.EditNameState && (e.Key == Key.Escape || e.Key == Key.Enter)) {
+            string oldName = this.nameBeforeEditBegin ?? "Layer Object";
+            string newName = this.PART_HeaderTextBox!.Text ?? "Layer Object";
+            
+            this.EditNameState = false;
+            if (e.Key == Key.Escape) {
+                if (this.LayerObject != null)
+                    this.LayerObject.Name = oldName;
+            }
+            else {
+                if (this.LayerObject != null)
+                    this.LayerObject.Name = newName;
+            }
+
+            
+            this.Focus();
+            e.Handled = true;
+        }
     }
 
     public void OnAdding(LayerObjectTreeView tree, LayerObjectTreeViewItem parentNode, BaseLayerTreeObject layer) {
@@ -94,7 +177,8 @@ public class LayerObjectTreeViewItem : TreeViewItem {
 
         this.displayNameBinder.Attach(this, this.LayerObject!);
         this.stateModifierListBoxHelper.SetModel(this.LayerObject);
-        DataManager.SetContextData(this, new ContextData().Set(DataKeys.LayerObjectKey, this.LayerObject));
+        this.contextData.Set(DataKeys.LayerObjectKey, this.LayerObject);
+        DataManager.InvalidateInheritedContext(this);
     }
 
     public void OnRemoving() {
@@ -173,11 +257,6 @@ public class LayerObjectTreeViewItem : TreeViewItem {
     }
 
     #region Drag Drop
-
-    private bool isDragDropping;
-    private bool isDragActive;
-    private Point originMousePoint;
-    private bool isProcessingAsyncDrop;
 
     public static bool CanBeginDragDrop(KeyModifiers modifiers) {
         return (modifiers & (KeyModifiers.Control | KeyModifiers.Shift)) == 0;

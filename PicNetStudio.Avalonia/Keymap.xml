@@ -28,6 +28,14 @@
                 <Shortcut Name="DeleteSelection" CommandId="command.layertree.DeleteSelectedLayers">
                     <KeyStroke Key="Delete"/>
                 </Shortcut>
+                <Group Name="Item">
+                    <Shortcut Name="EditLayerName1" CommandId="command.layertree.item.EditLayerNameCommand">
+                        <KeyStroke Mods="CTRL" Key="R"/>
+                    </Shortcut>
+                    <Shortcut Name="EditLayerName2" CommandId="command.layertree.item.EditLayerNameCommand">
+                        <KeyStroke Key="F2"/>
+                    </Shortcut>
+                </Group>
             </Group>
         </Group>
     </Group>
