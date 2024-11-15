@@ -22,6 +22,7 @@ using System.Collections.Generic;
 namespace PicNetStudio.Avalonia.PicNet;
 
 public delegate void SelectionChangedEventHandler<T>(ISelectionManager<T> sender, IList<T>? oldItems, IList<T>? newItems);
+public delegate void SelectionClearedEventHandler<T>(ISelectionManager<T> sender);
 
 /// <summary>
 /// An interface for an object that manages the selection state of items
@@ -38,7 +39,15 @@ public interface ISelectionManager<T> {
     /// </summary>
     int Count { get; }
 
+    /// <summary>
+    /// An event fired when the selection changes (item added or removed)
+    /// </summary>
     public event SelectionChangedEventHandler<T>? SelectionChanged;
+    
+    /// <summary>
+    /// An event fired when the selection is cleared
+    /// </summary>
+    public event SelectionClearedEventHandler<T>? SelectionCleared;
 
     bool IsSelected(T item);
     void SetSelection(T item);

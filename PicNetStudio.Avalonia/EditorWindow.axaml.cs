@@ -93,8 +93,11 @@ public partial class EditorWindow : WindowEx {
 
         this.Editor.AddDocument(document);
         this.Editor.ActiveDocument = document;
-        DataKeys.LayerSelectionManagerKey.GetContext(this.contextData)!.SelectionChanged += this.OnSelectionChanged;
-        DataKeys.LayerSelectionManagerKey.GetContext(this.contextData)!.Select(firstLayer);
+
+        ISelectionManager<BaseLayerTreeObject> selectionManager = DataKeys.LayerSelectionManagerKey.GetContext(this.contextData)!;
+        selectionManager.SelectionChanged += this.OnSelectionChanged;
+        selectionManager.SelectionCleared += this.OnSelectionCleared;
+        selectionManager.Select(firstLayer);
         
         Dispatcher.UIThread.InvokeAsync(() => {
             this.PART_Canvas.RenderCanvas();
@@ -103,9 +106,13 @@ public partial class EditorWindow : WindowEx {
             }, DispatcherPriority.Background);
         }, DispatcherPriority.Background);
     }
-    
+
     private void OnSelectionChanged(ISelectionManager<BaseLayerTreeObject> sender, IList<BaseLayerTreeObject>? olditems, IList<BaseLayerTreeObject>? newitems) {
         PicNetPropertyEditor.Instance.UpdateSelectedLayerSelection(sender.SelectedItems);
+    }
+    
+    private void OnSelectionCleared(ISelectionManager<BaseLayerTreeObject> sender) {
+        PicNetPropertyEditor.Instance.UpdateSelectedLayerSelection(null);
     }
 
     private void OnActiveDocumentChanged(Editor sender, Document? oldactivedocument, Document? newactivedocument) {

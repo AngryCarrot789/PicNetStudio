@@ -31,12 +31,11 @@ namespace PicNetStudio.Avalonia.PicNet.PropertyEditing;
 /// </summary>
 public class PicNetPropertyEditor : BasePropertyEditor {
     public static PicNetPropertyEditor Instance { get; } = new PicNetPropertyEditor();
-
-    private RapidDispatchAction? delayedUpdate;
-    private Document? activeDocument;
-
+    
     public SimplePropertyEditorGroup BaseLayerObjectGroup { get; }
 
+    private RapidDispatchAction? delayedUpdate;
+    
     private PicNetPropertyEditor() {
         {
             this.BaseLayerObjectGroup = new SimplePropertyEditorGroup(typeof(BaseLayerTreeObject)) {
@@ -53,9 +52,14 @@ public class PicNetPropertyEditor : BasePropertyEditor {
         this.Root.AddItem(this.BaseLayerObjectGroup);
     }
 
-    public void UpdateSelectedLayerSelection(IEnumerable<BaseLayerTreeObject> selection) {
+    public void UpdateSelectedLayerSelection(IEnumerable<BaseLayerTreeObject>? selection) {
         (this.delayedUpdate ??= new RapidDispatchAction(() => {
-            this.BaseLayerObjectGroup.SetupHierarchyState(new List<object>(selection));
+            if (selection == null) {
+                this.BaseLayerObjectGroup.ClearHierarchy();
+            }
+            else {
+                this.BaseLayerObjectGroup.SetupHierarchyState(new List<object>(selection));
+            }
         })).InvokeAsync();
     }
 }

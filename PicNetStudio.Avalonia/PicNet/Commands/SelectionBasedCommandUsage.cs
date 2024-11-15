@@ -66,19 +66,25 @@ public class SelectionBasedCommandUsage : CommandUsage {
             this.referencedDocument = document;
             if (DataKeys.LayerSelectionManagerKey.TryGetContext(ctx, out this.selectionManager)) {
                 this.selectionManager.SelectionChanged += this.OnSelectionChanged;
+                this.selectionManager.SelectionCleared += this.OnSelectionCleared;
             }
         }
         else if (this.referencedDocument != null) {
-            if (this.selectionManager != null)
+            if (this.selectionManager != null) {
                 this.selectionManager.SelectionChanged -= this.OnSelectionChanged;
+                this.selectionManager.SelectionCleared -= this.OnSelectionCleared;
+            }
+
             this.selectionManager = null;
             this.referencedDocument = null;
         }
 
         base.OnContextChanged();
     }
-
+    
     private void OnSelectionChanged(ISelectionManager<BaseLayerTreeObject> sender, IList<BaseLayerTreeObject>? olditems, IList<BaseLayerTreeObject>? newitems) {
         this.UpdateCanExecuteLater();
     }
+    
+    private void OnSelectionCleared(ISelectionManager<BaseLayerTreeObject> sender) => this.UpdateCanExecuteLater();
 }

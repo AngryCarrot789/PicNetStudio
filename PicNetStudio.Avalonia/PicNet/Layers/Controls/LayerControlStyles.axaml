@@ -34,10 +34,15 @@
                                     <ColumnDefinition Width="0"/>
                                     <ColumnDefinition Width="{Binding RelativeSource={RelativeSource AncestorType={x:Type c:LayerTreeControl}}, Path=ColumnWidth4, Mode=TwoWay}"/>
                                 </Grid.ColumnDefinitions>
+                                <c2:LayerStateModifierListBox x:Name="PART_StateModifierListBox"
+                                                              Grid.Column="2" VerticalAlignment="Stretch"
+                                                              ClipToBounds="True" Padding="1,0,0,0"
+                                                              Background="{TemplateBinding Background}"/>
                                 <Grid x:Name="PART_Header" ColumnDefinitions="19,0, *"
                                       Margin="{TemplateBinding Level, Mode=OneWay, Converter={StaticResource LeftMarginConverter}}"
                                       HorizontalAlignment="Stretch"
-                                      MinHeight="20" Grid.Column="0">
+                                      MinHeight="20" Grid.Column="0"
+                                      Background="{TemplateBinding Background}">
                                     <ToggleButton x:Name="PART_ExpandCollapseChevron"
                                                   Focusable="False"
                                                   Background="Transparent"
@@ -54,10 +59,6 @@
                                         <TextBox x:Name="PART_HeaderTextBox" Text="{TemplateBinding Header, Mode=TwoWay}" BorderThickness="0" Padding="0"/>
                                     </Panel>
                                 </Grid>
-                                <c2:LayerStateModifierListBox x:Name="PART_StateModifierListBox"
-                                                              Grid.Column="2" VerticalAlignment="Stretch"
-                                                              ClipToBounds="True" Padding="1,0,0,0"/>
-
                                 <Panel Grid.Column="4"/>
                             </Grid>
                         </Border>

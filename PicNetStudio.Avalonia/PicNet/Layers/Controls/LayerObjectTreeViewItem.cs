@@ -338,7 +338,7 @@ public class LayerObjectTreeViewItem : TreeViewItem, ILayerNodeItem {
                 DataObject obj = new DataObject();
                 obj.Set(LayerDropRegistry.DropTypeText, list);
 
-                DragDrop.DoDragDrop(e, obj, DragDropEffects.Copy | DragDropEffects.Move | DragDropEffects.Link);
+                DragDrop.DoDragDrop(e, obj, DragDropEffects.Move | DragDropEffects.Copy);
             }
             catch (Exception ex) {
                 Debug.WriteLine("Exception while executing resource tree item drag drop: " + ex.GetToString());
@@ -365,31 +365,25 @@ public class LayerObjectTreeViewItem : TreeViewItem, ILayerNodeItem {
     private double DropBorderBottomArea => (this.Bounds.Height - this.DropBorderTopArea);
 
     private void OnDragOver(DragEventArgs e) {
+        const DragDropEffects args = DragDropEffects.Move | DragDropEffects.Copy;
         if (this.LayerObject != null) {
-            if (!this.isDragDropping) {
-                Point point = e.GetPosition(this);
-                if (point.Y < this.DropBorderTopArea) {
-                    this.PART_DragDropMoveBorder!.BorderThickness = new Thickness(0, 1, 0, 0);
-                    e.DragEffects = DragDropEffects.Move;
-                    Debug.WriteLine("Set border to ABOVE at " + Time.GetSystemMillis());
-                }
-                else if (point.Y >= this.DropBorderBottomArea) {
-                    this.PART_DragDropMoveBorder!.BorderThickness = new Thickness(0, 0, 0, 1);
-                    e.DragEffects = DragDropEffects.Move;
-                    Debug.WriteLine("Set border to BELOW at " + Time.GetSystemMillis());
-                }
-                else {
-                    if (ProcessCanDragOver(this.LayerObject, e)) {
-                        this.IsDroppableTargetOver = true;
-                    }
-
-                    this.PART_DragDropMoveBorder!.BorderThickness = default;
-                    Debug.WriteLine("Set border to RESET at " + Time.GetSystemMillis());
-                    return;
-                }
+            Point point = e.GetPosition(this);
+            if (point.Y < this.DropBorderTopArea) {
+                this.PART_DragDropMoveBorder!.BorderThickness = new Thickness(0, 1, 0, 0);
+                e.DragEffects = args;
+            }
+            else if (point.Y >= this.DropBorderBottomArea) {
+                this.PART_DragDropMoveBorder!.BorderThickness = new Thickness(0, 0, 0, 1);
+                e.DragEffects = args;
             }
             else {
-                e.DragEffects = DragDropEffects.None;
+                if (ProcessCanDragOver(this.LayerObject, e)) {
+                    this.IsDroppableTargetOver = true;
+                    e.DragEffects = args;
+                }
+
+                this.PART_DragDropMoveBorder!.BorderThickness = default;
+                return;
             }
 
             e.Handled = true;
@@ -425,19 +419,39 @@ public class LayerObjectTreeViewItem : TreeViewItem, ILayerNodeItem {
                 }
 
                 if (type != 0) {
-                    bool isLayerInList = list.Remove(layer);
-                    BaseLayerTreeObject.RemoveListFromTree(list);
-                    int index = layer.ParentLayer.IndexOf(layer);
-                    
-                    if (type == 1) {
-                        layer.ParentLayer.InsertLayers(index, list);
+                    if (effects == EnumDropType.Move) {
+                        bool isLayerInList = list.Remove(layer);
+                        BaseLayerTreeObject.RemoveListFromTree(list);
+                        int index = layer.ParentLayer.IndexOf(layer);
+
+                        if (type == 1) {
+                            layer.ParentLayer.InsertLayers(index, list);
+                        }
+                        else {
+                            layer.ParentLayer.InsertLayers(index + 1, list);
+                        }
+
+                        if (isLayerInList)
+                            list.Add(layer);
                     }
-                    else {
-                        layer.ParentLayer.InsertLayers(index + 1, list);
+                    else if (effects == EnumDropType.Copy) {
+                        int index = layer.ParentLayer.IndexOf(layer);
+                        List<BaseLayerTreeObject> cloneList = new List<BaseLayerTreeObject>();
+                        foreach (BaseLayerTreeObject layerInList in list) {
+                            BaseLayerTreeObject clone = layerInList.Clone();
+                            if (!TextIncrement.GetIncrementableString((s => true), clone.Name, out string name))
+                                name = clone.Name;
+                            clone.Name = name;
+                            cloneList.Add(clone);
+                        }
+                        
+                        if (type == 1) {
+                            layer.ParentLayer.InsertLayers(index, cloneList);
+                        }
+                        else {
+                            layer.ParentLayer.InsertLayers(index + 1, cloneList);
+                        }
                     }
-                    
-                    if (isLayerInList)
-                        list.Add(layer);
                     
                     this.LayerTree!.ClearSelection();
                 }

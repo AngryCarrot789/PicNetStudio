@@ -20,9 +20,13 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Linq;
 using Avalonia;
+using Avalonia.Collections;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using PicNetStudio.Avalonia.Interactivity;
 using PicNetStudio.Avalonia.Utils;
@@ -55,14 +59,41 @@ public class LayerObjectTreeView : TreeView {
 
     public ISelectionManager<BaseLayerTreeObject> SelectionManager { get; }
     private readonly SelectionManagerImpl selectionManagerImpl;
+    private readonly AvaloniaList<LayerObjectTreeViewItem> selectedItemsList;
 
     public LayerObjectTreeView() {
         this.controlToModel = new Dictionary<LayerObjectTreeViewItem, BaseLayerTreeObject>();
         this.modelToControl = new Dictionary<BaseLayerTreeObject, LayerObjectTreeViewItem>();
         this.SelectionManager = this.selectionManagerImpl = new SelectionManagerImpl(this);
         this.itemCache = new Stack<LayerObjectTreeViewItem>();
-        this.SelectionChanged += this.OnTreeSelectionChanged;
         DragDrop.SetAllowDrop(this, true);
+        this.SelectedItems = this.selectedItemsList = new AvaloniaList<LayerObjectTreeViewItem>();
+        this.selectedItemsList.CollectionChanged += OnSelectedItemListChanged;
+    }
+
+    private void MarkContainerSelected(Control container, bool selected) {
+        container.SetCurrentValue(SelectingItemsControl.IsSelectedProperty, selected);
+    }
+
+    private void OnSelectedItemListChanged(object? sender, NotifyCollectionChangedEventArgs e) {
+        switch (e.Action) {
+            case NotifyCollectionChangedAction.Add:
+                this.selectionManagerImpl.RaiseSelectionChanged(ReadOnlyCollection<LayerObjectTreeViewItem>.Empty, e.NewItems ?? ReadOnlyCollection<LayerObjectTreeViewItem>.Empty);
+                break;
+            case NotifyCollectionChangedAction.Remove:
+                this.selectionManagerImpl.RaiseSelectionChanged(e.OldItems ?? ReadOnlyCollection<LayerObjectTreeViewItem>.Empty, ReadOnlyCollection<LayerObjectTreeViewItem>.Empty);
+                break;
+            case NotifyCollectionChangedAction.Replace:
+                this.selectionManagerImpl.RaiseSelectionChanged(e.OldItems ?? ReadOnlyCollection<LayerObjectTreeViewItem>.Empty, e.NewItems ?? ReadOnlyCollection<LayerObjectTreeViewItem>.Empty);
+                break;
+            case NotifyCollectionChangedAction.Reset:
+                this.selectionManagerImpl.RaiseSelectionCleared();
+                break;
+        }
+
+        if (this.Canvas is Canvas canvas) {
+            canvas.ActiveLayerTreeObject = this.SelectedItems.Count == 1 ? ((LayerObjectTreeViewItem) this.SelectedItems[0]!).LayerObject : null;
+        }
     }
 
     static LayerObjectTreeView() {
@@ -71,13 +102,6 @@ public class LayerObjectTreeView : TreeView {
         DragDrop.DragOverEvent.AddClassHandler<LayerObjectTreeView>((o, e) => o.OnDragOver(e));
         DragDrop.DragLeaveEvent.AddClassHandler<LayerObjectTreeView>((o, e) => o.OnDragLeave(e));
         DragDrop.DropEvent.AddClassHandler<LayerObjectTreeView>((o, e) => o.OnDrop(e));
-    }
-
-    private void OnTreeSelectionChanged(object? sender, SelectionChangedEventArgs e) {
-        this.selectionManagerImpl.RaiseSelectionChanged(e.RemovedItems, e.AddedItems);
-        if (this.Canvas is Canvas canvas) {
-            canvas.ActiveLayerTreeObject = this.SelectedItems.Count == 1 ? ((LayerObjectTreeViewItem) this.SelectedItems[0]!).LayerObject : null; 
-        }
     }
 
     private IEnumerable<LayerObjectTreeViewItem> GetControlsFromModels(IEnumerable<BaseLayerTreeObject> items) {
@@ -220,27 +244,32 @@ public class LayerObjectTreeView : TreeView {
         this.ClearSelection();
         this.SelectedItems.Add(item);
     }
-    
+
     private class SelectionManagerImpl : ISelectionManager<BaseLayerTreeObject> {
         public readonly LayerObjectTreeView Tree;
 
         public int Count => this.Tree.SelectedItems.Count;
-        
+
         public IEnumerable<BaseLayerTreeObject> SelectedItems => this.Tree.SelectedItems.Cast<LayerObjectTreeViewItem>().Select(x => x.LayerObject!);
 
         public event SelectionChangedEventHandler<BaseLayerTreeObject>? SelectionChanged;
-        
+        public event SelectionClearedEventHandler<BaseLayerTreeObject>? SelectionCleared;
+
         public SelectionManagerImpl(LayerObjectTreeView treeView) {
             this.Tree = treeView;
         }
 
         public void RaiseSelectionChanged(IList oldItems, IList newItems) {
-            this.SelectionChanged?.Invoke(
-                this, 
-                oldItems.Cast<LayerObjectTreeViewItem>().Select(x => x.LayerObject!).ToList().AsReadOnly(), 
-                newItems.Cast<LayerObjectTreeViewItem>().Select(x => x.LayerObject!).ToList().AsReadOnly());
+            ReadOnlyCollection<BaseLayerTreeObject> oldList = oldItems.Cast<LayerObjectTreeViewItem>().Select(x => x.LayerObject!).ToList().AsReadOnly();
+            ReadOnlyCollection<BaseLayerTreeObject> newList = newItems.Cast<LayerObjectTreeViewItem>().Select(x => x.LayerObject!).ToList().AsReadOnly();
+            if (oldList.Count > 0 || newList.Count > 0)
+                this.SelectionChanged?.Invoke(this, oldList, newList);
         }
         
+        public void RaiseSelectionCleared() {
+            this.SelectionCleared?.Invoke(this);
+        }
+
         public bool IsSelected(BaseLayerTreeObject item) {
             if (this.Tree.modelToControl.TryGetValue(item, out LayerObjectTreeViewItem? treeItem))
                 return treeItem.IsSelected;

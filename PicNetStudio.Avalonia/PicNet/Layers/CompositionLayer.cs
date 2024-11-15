@@ -76,7 +76,7 @@ public class CompositionLayer : BaseVisualLayer {
             InternalOnAddedToLayer(index, layer, this);
         }
 
-        this.Canvas?.RaiseRenderInvalidated();
+        this.InvalidateVisual();
     }
     
     public void AddLayers(IEnumerable<BaseLayerTreeObject> layers) {
@@ -129,7 +129,7 @@ public class CompositionLayer : BaseVisualLayer {
             }
         }
 
-        this.Canvas?.RaiseRenderInvalidated();
+        this.InvalidateVisual();
     }
 
     public bool RemoveLayer(BaseLayerTreeObject layer) {
@@ -154,7 +154,7 @@ public class CompositionLayer : BaseVisualLayer {
             InternalOnRemovedFromLayer(layer, this);
         }
 
-        this.Canvas?.RaiseRenderInvalidated();
+        this.InvalidateVisual();
     }
     
     public void RemoveLayers(IEnumerable<BaseLayerTreeObject> layers) {
