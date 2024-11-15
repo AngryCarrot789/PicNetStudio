@@ -24,7 +24,9 @@ using System.Text;
 namespace PicNetStudio.Avalonia.Utils;
 
 public static class StringUtils {
-    public static string JavaSubstring(this string @this, int startIndex, int endIndex) => @this.Substring(startIndex, endIndex - startIndex);
+    public static string JSubstring(this string @this, int startIndex, int endIndex) {
+        return @this.Substring(startIndex, endIndex - startIndex);
+    }
 
     public static bool IsEmpty(this string @this) {
         return string.IsNullOrEmpty(@this);
@@ -267,5 +269,12 @@ public static class StringUtils {
             src.CopyTo(srcIndex, chars, j, chars.Length - j);
             return new string(chars);
         }
+    }
+
+    public static void ValidateNotWhiteSpaces(string str, string varName) {
+        if (str == null)
+            throw new ArgumentNullException(varName);
+        if (string.IsNullOrWhiteSpace(str))
+            throw new ArgumentException(varName + " cannot be null, empty or consist of only whitespaces", varName);
     }
 }

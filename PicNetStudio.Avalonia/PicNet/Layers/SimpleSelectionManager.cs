@@ -24,35 +24,32 @@ using PicNetStudio.Avalonia.Utils;
 
 namespace PicNetStudio.Avalonia.PicNet.Layers;
 
-public delegate void SelectionManagerSelectionChangedEventHandler<TModel>(SelectionManager<TModel> sender, IList<TModel>? oldItems, IList<TModel>? newItems);
-
 /// <summary>
 /// A class which manages a set of selected objects, assumed to be equal by reference
 /// </summary>
-public class SelectionManager<TModel> {
-    private readonly HashSet<TModel> items;
+public abstract class SimpleSelectionManager<T> : ISelectionManager<T> {
+    private readonly HashSet<T> items;
+
+    public int Count => this.items.Count;
 
     /// <summary>
     /// An event fired when items are selected (newItems) or deselected (oldItems)
     /// </summary>
-    public event SelectionManagerSelectionChangedEventHandler<TModel>? SelectionChanged;
+    public event SelectionChangedEventHandler<T>? SelectionChanged;
 
-    /// <summary>
-    /// Gets the set of selected items
-    /// </summary>
-    public IReadOnlySet<TModel> Selection => this.items;
-
-    public SelectionManager() {
-        this.items = new HashSet<TModel>();
+    public IEnumerable<T> SelectedItems => this.items;
+    
+    public SimpleSelectionManager() {
+        this.items = new HashSet<T>();
     }
 
-    public bool IsSelected(TModel layer) => this.items.Contains(layer);
+    public bool IsSelected(T item) => this.items.Contains(item);
 
-    public void SetSelection(TModel item) {
+    public void SetSelection(T item) {
         Validate.NotNull(item);
 
-        IList<TModel>? newList = this.items.Remove(item) ? null : new SingletonList<TModel>(item);
-        List<TModel> oldList = this.items.ToList();
+        IList<T>? newList = this.items.Remove(item) ? null : new SingletonList<T>(item);
+        List<T> oldList = this.items.ToList();
         this.items.Clear();
         this.items.Add(item);
         this.SelectionChanged?.Invoke(this, oldList.AsReadOnly(), newList);
@@ -62,28 +59,28 @@ public class SelectionManager<TModel> {
     /// Replaces our selected items with the given enumerable
     /// </summary>
     /// <param name="newItems">The new selected items</param>
-    public void SetSelection(IEnumerable<TModel> selection) {
+    public void SetSelection(IEnumerable<T> items) {
         if (this.items.Count == 0) {
-            this.Select(selection);
+            this.Select(items);
             return;
         }
 
-        IList<TModel> list = selection as IList<TModel> ?? selection.ToList();
+        IList<T> list = items as IList<T> ?? items.ToList();
         if (list.Count < 1) {
             return;
         }
 
-        HashSet<TModel> set1 = new HashSet<TModel>(list);
-        HashSet<TModel> set2 = new HashSet<TModel>(this.items);
-        List<TModel> oldItems = new List<TModel>();
-        List<TModel> newItems = new List<TModel>();
+        HashSet<T> set1 = new HashSet<T>(list);
+        HashSet<T> set2 = new HashSet<T>(this.items);
+        List<T> oldItems = new List<T>();
+        List<T> newItems = new List<T>();
 
-        foreach (TModel source in (IEnumerable<TModel>) this.items) {
+        foreach (T source in (IEnumerable<T>) this.items) {
             if (set1.Add(source))
                 oldItems.Add(source);
         }
 
-        foreach (TModel source in list) {
+        foreach (T source in list) {
             if (set2.Add(source))
                 newItems.Add(source);
         }
@@ -96,32 +93,32 @@ public class SelectionManager<TModel> {
         }
     }
 
-    public void Select(TModel item) {
+    public void Select(T item) {
         Validate.NotNull(item);
 
         if (this.items.Add(item)) {
-            this.SelectionChanged?.Invoke(this, null, new SingletonList<TModel>(item));
+            this.SelectionChanged?.Invoke(this, null, new SingletonList<T>(item));
         }
     }
 
-    public void Select(IEnumerable<TModel> newItems) {
-        Validate.NotNull(newItems);
-        List<TModel> list = this.items.UnionAddEx(newItems);
+    public void Select(IEnumerable<T> items) {
+        Validate.NotNull(items);
+        List<T> list = this.items.UnionAddEx(items);
         if (list.Count > 0) {
             this.SelectionChanged?.Invoke(this, null, list.AsReadOnly());
         }
     }
 
-    public void Unselect(TModel item) {
+    public void Unselect(T item) {
         Validate.NotNull(item);
         if (this.items.Remove(item)) {
-            this.SelectionChanged?.Invoke(this, new SingletonList<TModel>(item), null);
+            this.SelectionChanged?.Invoke(this, new SingletonList<T>(item), null);
         }
     }
 
-    public void Unselect(IEnumerable<TModel> newItems) {
+    public void Unselect(IEnumerable<T> newItems) {
         Validate.NotNull(newItems);
-        List<TModel> list = this.items.UnionRemoveEx(newItems);
+        List<T> list = this.items.UnionRemoveEx(newItems);
         if (list.Count > 0) {
             this.SelectionChanged?.Invoke(this, list.AsReadOnly(), null);
         }
@@ -129,7 +126,7 @@ public class SelectionManager<TModel> {
 
     public void Clear() {
         if (this.items.Count > 0) {
-            ReadOnlyCollection<TModel> oldItems = new ReadOnlyCollection<TModel>(this.items.ToList());
+            ReadOnlyCollection<T> oldItems = new ReadOnlyCollection<T>(this.items.ToList());
             this.items.Clear();
             this.SelectionChanged?.Invoke(this, oldItems, null);
         }

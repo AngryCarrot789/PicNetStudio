@@ -17,10 +17,12 @@
 // along with PicNetStudio. If not, see <https://www.gnu.org/licenses/>.
 // 
 
+using System.Collections.Generic;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+using Avalonia.Threading;
 using PicNetStudio.Avalonia.Interactivity.Contexts;
 using PicNetStudio.Avalonia.PicNet;
 using PicNetStudio.Avalonia.PicNet.Layers;
@@ -31,16 +33,27 @@ using SkiaSharp;
 namespace PicNetStudio.Avalonia;
 
 public partial class EditorWindow : WindowEx {
-    public Editor Editor { get; }
+    public Editor Editor { get; private set; }
 
     private readonly ContextData contextData;
 
     public EditorWindow() {
         this.InitializeComponent();
+        this.contextData = new ContextData().Set(DataKeys.TopLevelHostKey, this);
+        DataManager.SetContextData(this, this.contextData);
+    }
 
+    protected override void OnLoaded(RoutedEventArgs e) {
+        base.OnLoaded(e);
+        this.ThePropertyEditor.ApplyStyling();
+        this.ThePropertyEditor.ApplyTemplate();
+        this.ThePropertyEditor.PropertyEditor = PicNetPropertyEditor.Instance;
+        this.PART_ColourPicker.Color = Color.FromUInt32((uint) SKColors.DodgerBlue);
+        
         this.Editor = new Editor();
         this.Editor.ActiveDocumentChanged += this.OnActiveDocumentChanged;
-        DataManager.SetContextData(this, this.contextData = new ContextData().Set(DataKeys.TopLevelHostKey, this).Set(DataKeys.EditorKey, this.Editor));
+        this.contextData.Set(DataKeys.LayerSelectionManagerKey, this.PART_LayerTreeControl!.PART_TreeView!.SelectionManager);
+        DataManager.InvalidateInheritedContext(this);
 
         this.PART_ToolBar.EditorToolBar = this.Editor.ToolBar;
 
@@ -79,15 +92,20 @@ public partial class EditorWindow : WindowEx {
         MakeLayer(SKColors.White, "Background Base Layer");
 
         this.Editor.AddDocument(document);
-        document.Canvas.LayerSelectionManager.Select(firstLayer);
+        this.Editor.ActiveDocument = document;
+        DataKeys.LayerSelectionManagerKey.GetContext(this.contextData)!.SelectionChanged += this.OnSelectionChanged;
+        DataKeys.LayerSelectionManagerKey.GetContext(this.contextData)!.Select(firstLayer);
+        
+        Dispatcher.UIThread.InvokeAsync(() => {
+            this.PART_Canvas.RenderCanvas();
+            Dispatcher.UIThread.InvokeAsync(() => {
+                this.PART_Canvas.PART_FreeMoveViewPort!.FitContentToCenter();
+            }, DispatcherPriority.Background);
+        }, DispatcherPriority.Background);
     }
-
-    protected override void OnLoaded(RoutedEventArgs e) {
-        base.OnLoaded(e);
-        this.ThePropertyEditor.ApplyStyling();
-        this.ThePropertyEditor.ApplyTemplate();
-        this.ThePropertyEditor.PropertyEditor = PicNetPropertyEditor.Instance;
-        this.PART_ColourPicker.Color = Color.FromUInt32((uint) SKColors.DodgerBlue);
+    
+    private void OnSelectionChanged(ISelectionManager<BaseLayerTreeObject> sender, IList<BaseLayerTreeObject>? olditems, IList<BaseLayerTreeObject>? newitems) {
+        PicNetPropertyEditor.Instance.UpdateSelectedLayerSelection(sender.SelectedItems);
     }
 
     private void OnActiveDocumentChanged(Editor sender, Document? oldactivedocument, Document? newactivedocument) {
@@ -95,7 +113,10 @@ public partial class EditorWindow : WindowEx {
         this.PART_LayerTreeControl.Canvas = newactivedocument?.Canvas;
 
         this.contextData.Set(DataKeys.DocumentKey, newactivedocument);
-        PicNetPropertyEditor.Instance.OnActiveDocumentChanged(oldactivedocument, newactivedocument);
+        if (newactivedocument != null) {
+            PicNetPropertyEditor.Instance.UpdateSelectedLayerSelection(DataKeys.LayerSelectionManagerKey.GetContext(this.contextData)!.SelectedItems);
+        }
+        
         DataManager.InvalidateInheritedContext(this);
     }
 

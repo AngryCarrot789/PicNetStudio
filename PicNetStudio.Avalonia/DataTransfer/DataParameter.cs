@@ -235,6 +235,10 @@ public abstract class DataParameter : IEquatable<DataParameter>, IComparable<Dat
         return this.GlobalIndex.CompareTo(other.GlobalIndex);
     }
 
+    public override string ToString() {
+        return $"{this.GetType().Name}({this.OwnerType.Name}::{this.Key})";
+    }
+
     /// <summary>
     /// Returns an enumerable of all parameters that are applicable to the given type.
     /// </summary>

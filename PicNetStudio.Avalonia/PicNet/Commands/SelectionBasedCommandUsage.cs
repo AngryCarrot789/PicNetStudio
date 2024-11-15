@@ -30,6 +30,7 @@ namespace PicNetStudio.Avalonia.PicNet.Commands;
 
 public class SelectionBasedCommandUsage : CommandUsage {
     private Document? referencedDocument;
+    private ISelectionManager<BaseLayerTreeObject>? selectionManager;
 
     public SelectionBasedCommandUsage(string commandId) : base(commandId) {
     }
@@ -59,21 +60,25 @@ public class SelectionBasedCommandUsage : CommandUsage {
     }
 
     protected override void OnContextChanged() {
-        IContextData? data = this.GetContextData();
-
-        if (data != null && DataKeys.DocumentKey.TryGetContext(data, out Document? document)) {
+        IContextData? ctx = this.GetContextData();
+        
+        if (ctx != null && DataKeys.DocumentKey.TryGetContext(ctx, out Document? document)) {
             this.referencedDocument = document;
-            this.referencedDocument.Canvas.LayerSelectionManager.SelectionChanged += this.OnCanvasSelectionChanged;
+            if (DataKeys.LayerSelectionManagerKey.TryGetContext(ctx, out this.selectionManager)) {
+                this.selectionManager.SelectionChanged += this.OnSelectionChanged;
+            }
         }
         else if (this.referencedDocument != null) {
-            this.referencedDocument.Canvas.LayerSelectionManager.SelectionChanged -= this.OnCanvasSelectionChanged;
+            if (this.selectionManager != null)
+                this.selectionManager.SelectionChanged -= this.OnSelectionChanged;
+            this.selectionManager = null;
             this.referencedDocument = null;
         }
 
         base.OnContextChanged();
     }
 
-    protected virtual void OnCanvasSelectionChanged(SelectionManager<BaseLayerTreeObject> sender, IList<BaseLayerTreeObject>? oldItems, IList<BaseLayerTreeObject>? newItems) {
+    private void OnSelectionChanged(ISelectionManager<BaseLayerTreeObject> sender, IList<BaseLayerTreeObject>? olditems, IList<BaseLayerTreeObject>? newitems) {
         this.UpdateCanExecuteLater();
     }
 }

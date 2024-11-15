@@ -12,6 +12,7 @@
              xmlns:nd="clr-namespace:PicNetStudio.Avalonia.PicNet.Controls.Dragger"
              xmlns:u="clr-namespace:PicNetStudio.Avalonia.CommandSystem.Usages"
              xmlns:commands="clr-namespace:PicNetStudio.Avalonia.PicNet.Commands"
+             xmlns:ams="clr-namespace:PicNetStudio.Avalonia.AdvancedMenuService"
              mc:Ignorable="d" Width="1280" Height="720"
              Title="PicNet Studio"
              aa:UIInputManager.FocusPath="Application/EditorWindow"
@@ -103,7 +104,10 @@
         </Grid>
         <Border Background="{DynamicResource ABrush.Tone1.Border.Static}" Grid.Row="1"/>
         <Menu Grid.Row="0" Background="{DynamicResource ABrush.Tone7.Background.Static}" Padding="0,3">
-            <MenuItem Header="File"/>
+            <MenuItem Header="File">
+                <ams:CommandMenuItem Header="Export" CommandId="command.generic.ExportImage"/>
+                <ams:CommandMenuItem Header="Export to Clipboard" CommandId="command.generic.ExportCanvasToClipboard"/>
+            </MenuItem>
             <MenuItem Header="Edit"/>
         </Menu>
     </Grid>

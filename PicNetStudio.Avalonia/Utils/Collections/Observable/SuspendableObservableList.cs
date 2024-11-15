@@ -33,25 +33,29 @@ public class SuspendableObservableList<T> : ObservableList<T> {
     protected override void OnItemsAdded(int index, IList<T> items) {
         if (this.suspendEventsCount > 0)
             this.scheduledEvent = this.scheduledEvent != null ? throw new InvalidOperationException("Event already scheduled") : new EventItemsAdded(index, items);
-        base.OnItemsAdded(index, items);
+        else
+            base.OnItemsAdded(index, items);
     }
 
     protected override void OnItemsRemoved(int index, IList<T> items) {
         if (this.suspendEventsCount > 0)
             this.scheduledEvent = this.scheduledEvent != null ? throw new InvalidOperationException("Item removed already scheduled") : new EventItemsRemoved(index, items);
-        base.OnItemsRemoved(index, items);
+        else
+            base.OnItemsRemoved(index, items);
     }
 
     protected override void OnItemReplaced(int index, T oldItem, T newItem) {
         if (this.suspendEventsCount > 0)
             this.scheduledEvent = this.scheduledEvent != null ? throw new InvalidOperationException("Item Replace already scheduled") : new EventItemReplaced(index, oldItem, newItem);
-        base.OnItemReplaced(index, oldItem, newItem);
+        else
+            base.OnItemReplaced(index, oldItem, newItem);
     }
 
     protected override void OnItemMoved(int oldIndex, int newIndex, T item) {
         if (this.suspendEventsCount > 0)
             this.scheduledEvent = this.scheduledEvent != null ? throw new InvalidOperationException("Item move already scheduled") : new EventItemMoved(oldIndex, newIndex, item);
-        base.OnItemMoved(oldIndex, newIndex, item);
+        else
+            base.OnItemMoved(oldIndex, newIndex, item);
     }
 
     public SuspendEventToken SuspendEvents() => new SuspendEventToken(this);
@@ -75,12 +79,9 @@ public class SuspendableObservableList<T> : ObservableList<T> {
     }
 
     private void DispatchEvents() {
-        try {
-            this.scheduledEvent?.Dispatch(this);
-        }
-        finally {
-            this.scheduledEvent = null;
-        }
+        BaseEvent? e = this.scheduledEvent;
+        this.scheduledEvent = null;
+        e?.Dispatch(this);
     }
 
     private abstract class BaseEvent {

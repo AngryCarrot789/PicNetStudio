@@ -57,6 +57,7 @@ namespace PicNetStudio.Avalonia.PicNet.Layers {
                     return Task.CompletedTask;
                 }
 
+                List<BaseLayerTreeObject> newList = new List<BaseLayerTreeObject>();
                 foreach (BaseLayerTreeObject layer in layerList) {
                     if (layer is CompositionLayer composition && composition.IsParentInHierarchy(folder)) {
                         continue;
@@ -67,12 +68,12 @@ namespace PicNetStudio.Avalonia.PicNet.Layers {
                         if (!TextIncrement.GetIncrementableString((s => true), clone.Name, out string name))
                             name = clone.Name;
                         clone.Name = name;
-                        folder.AddLayer(clone);
+                        newList.Add(clone);
                     }
                     else if (layer.ParentLayer != null) {
                         if (layer.ParentLayer != folder) {
-                            // drag dropped a resource into the same folder
-                            layer.ParentLayer.MoveItemTo(folder, layer);
+                            layer.ParentLayer?.RemoveLayer(layer);
+                            newList.Add(layer);
                         }
                     }
                     else {
@@ -82,8 +83,7 @@ namespace PicNetStudio.Avalonia.PicNet.Layers {
                     }
                 }
 
-                // ResourceLoaderDialog.TryLoadResources(items);
-
+                folder.InsertLayers(0, newList);
                 return Task.CompletedTask;
             });
         }

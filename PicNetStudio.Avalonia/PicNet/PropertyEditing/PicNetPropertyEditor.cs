@@ -53,29 +53,13 @@ public class PicNetPropertyEditor : BasePropertyEditor {
         this.Root.AddItem(this.BaseLayerObjectGroup);
     }
 
-    public void UpdateSelectedLayerSelection() {
+    public void UpdateSelectedLayerSelection(IEnumerable<BaseLayerTreeObject> selection) {
         if (this.activeDocument == null)
             return;
         
         (this.delayedUpdate ??= new RapidDispatchAction(() => {
             if (this.activeDocument != null)
-                this.BaseLayerObjectGroup.SetupHierarchyState(new List<object>(this.activeDocument.Canvas.LayerSelectionManager.Selection));
+                this.BaseLayerObjectGroup.SetupHierarchyState(new List<object>(selection));
         })).InvokeAsync();
-    }
-
-    public void OnActiveDocumentChanged(Document? oldDocument, Document? newDocument) {
-        if (oldDocument != null)
-            oldDocument.Canvas.LayerSelectionManager.SelectionChanged -= this.LayerSelectionManagerOnSelectionChanged;
-        if (newDocument != null)
-            newDocument.Canvas.LayerSelectionManager.SelectionChanged += this.LayerSelectionManagerOnSelectionChanged;
-
-        this.activeDocument = newDocument;
-        if (newDocument != null)
-            this.UpdateSelectedLayerSelection();
-    }
-
-    private void LayerSelectionManagerOnSelectionChanged(SelectionManager<BaseLayerTreeObject> sender, IList<BaseLayerTreeObject>? olditems, IList<BaseLayerTreeObject>? newitems) {
-        if (this.activeDocument != null)
-            this.UpdateSelectedLayerSelection();
     }
 }

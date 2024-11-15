@@ -120,9 +120,6 @@ public class Editor {
         this.documents.Insert(index, document);
         Document.InternalSetEditor(document, this);
         this.DocumentIndexChanged?.Invoke(this, document, -1, index);
-
-        if (this.documents.Count == 1)
-            this.ActiveDocument = document;
     }
 
     public void RemoveDocumentAt(int index) {

@@ -36,6 +36,11 @@ public delegate void BaseLayerTreeObjectNameChangedEventHandler(BaseLayerTreeObj
 public abstract class BaseLayerTreeObject : ITransferableData {
     private CompositionLayer? parentLayer;
     private string name = "Layer Object";
+    
+    // Updated by composition layer add/remove/move operations
+    // !! Do not use to check if this layer has a parent or not !!
+    // It is 0 by default, and may be invalid if an add/rem/move operations fails
+    private int indexInParent; 
 
     /// <summary>
     /// Gets the canvas this layer currently exists in
@@ -59,7 +64,7 @@ public abstract class BaseLayerTreeObject : ITransferableData {
             this.NameChanged?.Invoke(this);
         }
     }
-    
+
     public string FactoryId => LayerTypeFactory.Instance.GetId(this.GetType());
 
     /// <summary>
@@ -156,93 +161,48 @@ public abstract class BaseLayerTreeObject : ITransferableData {
     protected virtual void OnDetachedFromCanvas(BaseLayerTreeObject origin, Canvas oldCanvas) {
     }
 
-    internal void DeselectRecursive() {
-        if (this.Canvas != null && this.Canvas.LayerSelectionManager.Selection.Count > 0) {
-            List<BaseLayerTreeObject> list = new List<BaseLayerTreeObject>();
-            CollectTreeInternal(this, list);
-            this.Canvas.LayerSelectionManager.Unselect(list);
+    public static bool CheckHaveParentsAndAllMatch(ISelectionManager<BaseLayerTreeObject> manager, [NotNullWhen(true)] out CompositionLayer? sameParent) {
+        using (IEnumerator<BaseLayerTreeObject> enumerator = manager.SelectedItems.GetEnumerator()) {
+            if (!enumerator.MoveNext())
+                throw new InvalidOperationException("Expected items to contain at least 1 item");
+
+            if ((sameParent = enumerator.Current.ParentLayer) == null)
+                return false;
+
+            while (enumerator.MoveNext()) {
+                if (!ReferenceEquals(enumerator.Current.ParentLayer, sameParent)) {
+                    return false;
+                }
+            }
+
+            return true;
         }
     }
 
-    internal static void CollectTreeInternal(BaseLayerTreeObject layer, List<BaseLayerTreeObject> list) {
-        list.Add(layer);
-        if (layer is CompositionLayer) {
-            foreach (BaseLayerTreeObject child in ((CompositionLayer) layer).Layers) {
-                CollectTreeInternal(child, list);
-            }
+    /// <summary>
+    /// A helper method for removing a list of items from their parent containers
+    /// </summary>
+    /// <param name="list"></param>
+    public static void RemoveListFromTree(List<BaseLayerTreeObject> list) {
+        foreach (BaseLayerTreeObject layer in list) {
+            layer.ParentLayer?.RemoveLayer(layer);
         }
     }
 
     internal static void InternalOnPreRemoveFromOwner(BaseLayerTreeObject layer) {
-        layer.DeselectRecursive();
     }
 
     internal static void InternalSetCanvas(BaseLayerTreeObject layer, Canvas canvas) {
         layer.Canvas = canvas;
     }
 
-    #region fucking nightmare fuel
-
-    // User deleted top-level layer
-    internal static void InternalOnAddedAsTopLevelLayer(BaseLayerTreeObject layer, Canvas canvas) {
-        layer.Canvas = canvas;
-        layer.OnAttachedToCanvas(layer);
-        layer.CanvasChanged?.Invoke(layer, null, canvas);
-        if (layer is CompositionLayer asComposition) {
-            foreach (BaseLayerTreeObject child in asComposition.Layers) {
-                child.Canvas = canvas;
-                RecurseChildren(child, layer);
-            }
-        }
-
-        // Not passing the new canvas in this recurse function as it saves stack memory ^-^
-
-        return;
-
-        static void RecurseChildren(BaseLayerTreeObject child, BaseLayerTreeObject origin) {
-            child.OnAttachedToCanvas(origin);
-            child.CanvasChanged?.Invoke(child, null, child.Canvas);
-            if (child is CompositionLayer asComposition) {
-                foreach (BaseLayerTreeObject nextChild in asComposition.Layers) {
-                    nextChild.Canvas = child.Canvas;
-                    RecurseChildren(nextChild, origin);
-                }
-            }
-        }
-    }
-
-    // User deleted top-level layer
-    internal static void InternalOnRemovedAsTopLevelLayer(BaseLayerTreeObject layer, Canvas oldCanvas) {
-        layer.Canvas = null;
-        layer.OnDetachedFromCanvas(layer, oldCanvas);
-        layer.CanvasChanged?.Invoke(layer, oldCanvas, null);
-        if (layer is CompositionLayer asComposition) {
-            foreach (BaseLayerTreeObject child in asComposition.Layers) {
-                child.Canvas = null;
-                RecurseChildren(child, layer, oldCanvas);
-            }
-        }
-
-        return;
-
-        static void RecurseChildren(BaseLayerTreeObject child, BaseLayerTreeObject origin, Canvas originOldCanvas) {
-            child.OnDetachedFromCanvas(origin, originOldCanvas);
-            child.CanvasChanged?.Invoke(child, originOldCanvas, null);
-            if (child is CompositionLayer asComposition) {
-                foreach (BaseLayerTreeObject nextChild in asComposition.Layers) {
-                    nextChild.Canvas = null;
-                    RecurseChildren(nextChild, origin, originOldCanvas);
-                }
-            }
-        }
-    }
-
     // User added some layer into composition layer
-    internal static void InternalOnAddedToLayer(BaseLayerTreeObject layer, CompositionLayer newParent) {
+    internal static void InternalOnAddedToLayer(int index, BaseLayerTreeObject layer, CompositionLayer newParent) {
         Debug.Assert(layer.ParentLayer == null, "Did not expect layer to be in a composition layer when adding it to another");
         Debug.Assert(layer.Canvas == null, "Did not expect layer to be in a canvas when adding to a composition layer");
 
         layer.parentLayer = newParent;
+        layer.indexInParent = index;
         layer.OnParentChanged(null, newParent);
         layer.ParentLayerChanged?.Invoke(layer, null, newParent);
 
@@ -319,23 +279,11 @@ public abstract class BaseLayerTreeObject : ITransferableData {
         }
     }
 
-    #endregion
-
-    public static bool CheckHaveParentsAndAllMatch(SelectionManager<BaseLayerTreeObject> manager, [NotNullWhen(true)] out CompositionLayer? sameParent) {
-        using (IEnumerator<BaseLayerTreeObject> enumerator = manager.Selection.GetEnumerator()) {
-            if (!enumerator.MoveNext())
-                throw new InvalidOperationException("Expected items to contain at least 1 item");
-
-            if ((sameParent = enumerator.Current.ParentLayer) == null)
-                return false;
-
-            while (enumerator.MoveNext()) {
-                if (!ReferenceEquals(enumerator.Current.ParentLayer, sameParent)) {
-                    return false;
-                }
-            }
-
-            return true;
-        }
+    protected internal static void InternalSetIndexInParent(BaseLayerTreeObject layer, int index) {
+        layer.indexInParent = index;
+    }
+    
+    protected internal static int InternalIndexInParent(BaseLayerTreeObject layer) {
+        return layer.indexInParent;
     }
 }

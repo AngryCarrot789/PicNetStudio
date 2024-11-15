@@ -44,7 +44,7 @@ public class LayerTreeControl : TemplatedControl {
     public GridLength ColumnWidth4 { get => this.GetValue(ColumnWidth4Property); set => this.SetValue(ColumnWidth4Property, value); }
 
     private readonly PropertyBinder<Canvas?> canvasBinder;
-    private LayerObjectTreeView? PART_TreeView => this.canvasBinder.TargetControl as LayerObjectTreeView;
+    public LayerObjectTreeView? PART_TreeView => this.canvasBinder.TargetControl as LayerObjectTreeView;
 
     public LayerTreeControl() {
         this.canvasBinder = new PropertyBinder<Canvas?>(this, CanvasProperty, LayerObjectTreeView.CanvasProperty);

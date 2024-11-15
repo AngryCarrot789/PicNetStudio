@@ -20,22 +20,28 @@
 using System.Collections.Generic;
 using System.Linq;
 using PicNetStudio.Avalonia.CommandSystem;
+using PicNetStudio.Avalonia.Interactivity.Contexts;
 using PicNetStudio.Avalonia.PicNet.Layers;
 
 namespace PicNetStudio.Avalonia.PicNet.Commands;
 
 public class DeleteSelectedLayersCommand : DocumentCommand {
     protected override Executability CanExecute(Editor editor, Document document, CommandEventArgs e) {
-        int count = document.Canvas.LayerSelectionManager.Selection.Count;
+        if (!DataKeys.LayerSelectionManagerKey.TryGetContext(e.ContextData, out ISelectionManager<BaseLayerTreeObject>? selectionManager))
+            return Executability.Invalid;
+        
+        int count = selectionManager.Count;
         return count > 0 ? Executability.Valid : Executability.ValidButCannotExecute;
     }
 
     protected override void Execute(Editor editor, Document document, CommandEventArgs e) {
-        SelectionManager<BaseLayerTreeObject> manager = document.Canvas.LayerSelectionManager;
-        List<BaseLayerTreeObject> list = manager.Selection.ToList();
+        if (!DataKeys.LayerSelectionManagerKey.TryGetContext(e.ContextData, out ISelectionManager<BaseLayerTreeObject>? manager))
+            return;
+        
+        List<BaseLayerTreeObject> list = manager.SelectedItems.ToList();
         if (list.Count > 0) {
             if (BaseLayerTreeObject.CheckHaveParentsAndAllMatch(manager, out CompositionLayer? sameParent)) {
-                List<int> indices = manager.Selection.Select(x => sameParent.IndexOf(x)).OrderBy(index => index).ToList();
+                List<int> indices = list.Select(x => sameParent.IndexOf(x)).OrderBy(index => index).ToList();
                 int minIndex = indices[0];
                 manager.Clear();
 

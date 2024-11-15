@@ -19,6 +19,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using PicNetStudio.Avalonia.Interactivity.Contexts;
 using PicNetStudio.Avalonia.Utils.RDA;
@@ -111,11 +112,11 @@ public class CommandManager {
     /// <summary>
     /// Gets a command with the given ID
     /// </summary>
-    public virtual Command GetCommandById(string id) {
-        return !string.IsNullOrEmpty(id) && this.commands.TryGetValue(id, out CommandEntry command) ? command.Command : null;
+    public virtual Command? GetCommandById(string id) {
+        return !string.IsNullOrEmpty(id) && this.commands.TryGetValue(id, out CommandEntry? command) ? command.Command : null;
     }
 
-    public bool TryGetCommandById(string id, out Command command) => (command = this.GetCommandById(id)) != null;
+    public bool TryGetCommandById(string id, [NotNullWhen(true)] out Command? command) => (command = this.GetCommandById(id)) != null;
 
     /// <summary>
     /// Executes a command with the given ID and context
@@ -132,7 +133,7 @@ public class CommandManager {
     /// <exception cref="ArgumentNullException">Context is null</exception>
     public void Execute(string commandId, IContextData context, bool isUserInitiated = true) {
         ValidateId(commandId);
-        if (this.commands.TryGetValue(commandId, out CommandEntry command))
+        if (this.commands.TryGetValue(commandId, out CommandEntry? command))
             this.Execute(commandId, command.Command, context, isUserInitiated);
     }
 
@@ -148,7 +149,7 @@ public class CommandManager {
         ValidateId(commandId);
         if (contextProvider == null)
             throw new ArgumentNullException(nameof(contextProvider), "Data context provider cannot be null");
-        if (!this.commands.TryGetValue(commandId, out CommandEntry command))
+        if (!this.commands.TryGetValue(commandId, out CommandEntry? command))
             return false;
 
         IContextData context = contextProvider();
@@ -197,7 +198,7 @@ public class CommandManager {
     public Executability CanExecute(string commandId, IContextData context, bool isUserInitiated = true) {
         ValidateId(commandId);
         ValidateContext(context);
-        if (this.commands.TryGetValue(commandId, out CommandEntry command)) {
+        if (this.commands.TryGetValue(commandId, out CommandEntry? command)) {
             return this.CanExecute(command.Command, context, isUserInitiated);
         }
 

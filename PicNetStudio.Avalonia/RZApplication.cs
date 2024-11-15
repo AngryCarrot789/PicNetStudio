@@ -107,6 +107,7 @@ public abstract class RZApplication {
         manager.Register("command.tool.BaseDiameterTool.IncreaseBrushSize", new IncreaseBaseDiameterToolSizeCommand());
         manager.Register("command.tool.BaseDiameterTool.DecreaseBrushSize", new DecreaseBaseDiameterToolSizeCommand());
         manager.Register("command.generic.ExportImage", new ExportImageCommand());
+        manager.Register("command.generic.ExportCanvasToClipboard", new ExportCanvasToClipboardCommand());
         manager.Register("command.layertree.CreateNewRasterLayer", new CreateNewRasterLayerCommand());
         manager.Register("command.layertree.DeleteSelectedLayers", new DeleteSelectedLayersCommand());
         manager.Register("command.layertree.GroupSelectionIntoComposition", new GroupSelectionIntoCompositionCommand());
@@ -120,6 +121,7 @@ public abstract class RZApplication {
             throw new InvalidOperationException("Cannot re-initialise application");
 
         instance = application;
+        AvCore.OnApplicationInitialised();
     }
 
     internal static void InternalInititalise() {

@@ -32,7 +32,7 @@ public delegate void ShortcutActivityEventHandler(ShortcutInputProcessor process
 /// A class for storing and managing shortcuts
 /// </summary>
 public abstract class ShortcutManager {
-    private List<GroupedShortcut> cachedAllShortcuts;
+    private List<GroupedShortcut>? cachedAllShortcuts;
     private readonly Dictionary<string, LinkedList<GroupedShortcut>> cachedCmdToShortcut; // linked because there will only really be like 1 or 2 ever
     private readonly Dictionary<string, GroupedShortcut> cachedPathToShortcut;
     private readonly Dictionary<string, InputStateManager> stateGroups;
@@ -107,7 +107,12 @@ public abstract class ShortcutManager {
 
     public IEnumerable<GroupedShortcut> GetAllShortcuts() {
         this.EnsureCacheBuilt();
-        return this.cachedAllShortcuts;
+        return this.cachedAllShortcuts!;
+    }
+
+    public IEnumerable<GroupedShortcut>? GetShortcutsByCommandId(string cmdId) {
+        this.EnsureCacheBuilt();
+        return this.cachedCmdToShortcut.GetValueOrDefault(cmdId);
     }
 
     public static void GetAllShortcuts(ShortcutGroup rootGroup, ICollection<GroupedShortcut> accumulator) {

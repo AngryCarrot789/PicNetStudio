@@ -17,8 +17,6 @@
 // along with PicNetStudio. If not, see <https://www.gnu.org/licenses/>.
 // 
 
-using System.Collections.Generic;
-using System.Linq;
 using Avalonia;
 using PicNetStudio.Avalonia.PicNet.Layers;
 using SkiaSharp;
@@ -50,11 +48,6 @@ public class Canvas {
     /// </summary>
     public CompositionLayer RootComposition { get; }
 
-    /// <summary>
-    /// Gets this canvas' layer selection manager, which stores which layers are selected
-    /// </summary>
-    public SelectionManager<BaseLayerTreeObject> LayerSelectionManager { get; }
-
     public BaseLayerTreeObject? ActiveLayerTreeObject {
         get => this.activeLayerTreeObject;
         set {
@@ -64,8 +57,6 @@ public class Canvas {
 
             this.activeLayerTreeObject = value;
             this.ActiveLayerChanged?.Invoke(this, oldActiveLayerTreeObject, value);
-            if (value != null)
-                this.LayerSelectionManager.Select(value);
         }
     }
 
@@ -101,13 +92,12 @@ public class Canvas {
     public Canvas(Document document) {
         this.Document = document;
         this.RootComposition = CompositionLayer.InternalCreateCanvasRoot(this);
-        this.LayerSelectionManager = new SelectionManager<BaseLayerTreeObject>();
-        this.LayerSelectionManager.SelectionChanged += this.OnSelectionChanged;
+        this.RootComposition.RenderInvalidated += this.OnRootRenderInvalidated;
         this.size = new PixelSize(500, 500);
     }
 
-    private void OnSelectionChanged(SelectionManager<BaseLayerTreeObject> sender, IList<BaseLayerTreeObject>? olditems, IList<BaseLayerTreeObject>? newitems) {
-        this.ActiveLayerTreeObject = sender.Selection.Count == 1 ? sender.Selection.FirstOrDefault() : null;
+    private void OnRootRenderInvalidated(BaseVisualLayer layer) {
+        this.RaiseRenderInvalidated();
     }
 
     // QtBitmapEditor -> Project::paintEvent

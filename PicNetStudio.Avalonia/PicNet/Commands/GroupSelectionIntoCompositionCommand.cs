@@ -20,35 +20,36 @@
 using System.Collections.Generic;
 using System.Linq;
 using PicNetStudio.Avalonia.CommandSystem;
+using PicNetStudio.Avalonia.Interactivity.Contexts;
 using PicNetStudio.Avalonia.PicNet.Layers;
 
 namespace PicNetStudio.Avalonia.PicNet.Commands;
 
 public class GroupSelectionIntoCompositionCommand : DocumentCommand {
     protected override Executability CanExecute(Editor editor, Document document, CommandEventArgs e) {
-        IReadOnlySet<BaseLayerTreeObject> selection = document.Canvas.LayerSelectionManager.Selection;
-        if (selection.Count < 1) {
+        if (!DataKeys.LayerSelectionManagerKey.TryGetContext(e.ContextData, out ISelectionManager<BaseLayerTreeObject>? manager))
+            return Executability.Invalid;
+        
+        if (manager.Count < 1)
             return Executability.ValidButCannotExecute;
-        }
-
-        if (selection.Count == 1) {
+        if (manager.Count == 1)
             return Executability.Valid;
-        }
 
-        return BaseLayerTreeObject.CheckHaveParentsAndAllMatch(document.Canvas.LayerSelectionManager, out _) ? Executability.Valid : Executability.ValidButCannotExecute;
+        return BaseLayerTreeObject.CheckHaveParentsAndAllMatch(manager, out _) ? Executability.Valid : Executability.ValidButCannotExecute;
     }
 
     protected override void Execute(Editor editor, Document document, CommandEventArgs e) {
-        SelectionManager<BaseLayerTreeObject> selectionManager = document.Canvas.LayerSelectionManager;
-        IReadOnlySet<BaseLayerTreeObject> selection = selectionManager.Selection;
-        if (selection.Count < 1) {
+        if (!DataKeys.LayerSelectionManagerKey.TryGetContext(e.ContextData, out ISelectionManager<BaseLayerTreeObject>? selectionManager))
+            return;
+        
+        if (selectionManager.Count < 1) {
             return;
         }
 
         CompositionLayer newCompositionLayer;
         CompositionLayer? theParent;
-        if (selection.Count == 1) {
-            BaseLayerTreeObject theLayer = selection.First();
+        if (selectionManager.Count == 1) {
+            BaseLayerTreeObject theLayer = selectionManager.SelectedItems.First();
             if ((theParent = theLayer.ParentLayer) != null) {
                 int index = theParent.IndexOf(theLayer);
                 theParent.RemoveLayerAt(index);
@@ -66,7 +67,7 @@ public class GroupSelectionIntoCompositionCommand : DocumentCommand {
             return;
         }
 
-        List<int> indices = selection.Select(x => theParent.IndexOf(x)).OrderBy(index => index).ToList();
+        List<int> indices = selectionManager.SelectedItems.Select(x => theParent.IndexOf(x)).OrderBy(index => index).ToList();
         selectionManager.Clear();
         int minIndex = indices[0];
 

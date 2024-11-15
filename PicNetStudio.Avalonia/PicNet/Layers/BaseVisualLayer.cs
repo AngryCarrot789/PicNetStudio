@@ -17,11 +17,14 @@
 // along with PicNetStudio. If not, see <https://www.gnu.org/licenses/>.
 // 
 
+using System;
 using PicNetStudio.Avalonia.DataTransfer;
 using PicNetStudio.Avalonia.Utils.Accessing;
 using SkiaSharp;
 
 namespace PicNetStudio.Avalonia.PicNet.Layers;
+
+public delegate void BaseVisualLayerRenderInvalidatedEventHandler(BaseVisualLayer layer);
 
 /// <summary>
 /// The base class for standard visual layers, e.g. raster layers, vector layers, etc.
@@ -75,15 +78,44 @@ public abstract class BaseVisualLayer : BaseLayerTreeObject {
     /// </summary>
     public bool UsesCustomOpacityCalculation { get; protected set; }
 
+    /// <summary>
+    /// An event fired when this layer is marked as "dirty" and requires re-drawing
+    /// </summary>
+    public event BaseVisualLayerRenderInvalidatedEventHandler? RenderInvalidated;
+    
     protected BaseVisualLayer() {
     }
 
     static BaseVisualLayer() {
-        DataParameter.AddMultipleHandlers(OnDataParameterChangedToInvalidateVisual, OpacityParameter, IsRenderVisibleParameter, BlendModeParameter);
+        SetParameterAffectsRender(OpacityParameter, IsRenderVisibleParameter, BlendModeParameter);
+    }
+
+    /// <summary>
+    /// Adds a parameter value changed handler for each of the given parameters
+    /// that will invalidate the render state of the current visual layer
+    /// <remarks>Must be called from a static constructor, as it adds a static event handler</remarks>
+    /// </summary>
+    /// <param name="parameters">The parameters that, when changed, invalidate the visual state</param>
+    protected static void SetParameterAffectsRender(params DataParameter[] parameters) {
+        foreach (DataParameter parameter in parameters) {
+            if (!parameter.OwnerType.IsAssignableTo(typeof(BaseVisualLayer)))
+                throw new ArgumentException(parameter + "'s owner is not an instance of visual layer");
+        }
+        
+        DataParameter.AddMultipleHandlers(OnDataParameterChangedToInvalidateVisual, parameters);
+    }
+        
+    
+    /// <summary>
+    /// Marks this layer as having an invalid rendered state, meaning that any pre-rendered frame using this layer must be re-rendered
+    /// </summary>
+    public virtual void InvalidateVisual() {
+        this.RenderInvalidated?.Invoke(this);
+        this.ParentLayer?.InvalidateVisual();
     }
 
     protected static void OnDataParameterChangedToInvalidateVisual(DataParameter parameter, ITransferableData owner) {
-        ((BaseVisualLayer) owner).Canvas?.RaiseRenderInvalidated();
+        ((BaseVisualLayer) owner).InvalidateVisual();
     }
 
     /// <summary>

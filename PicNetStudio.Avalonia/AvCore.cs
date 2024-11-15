@@ -47,6 +47,8 @@ public static class AvCore {
     /// <param name="type">The service type</param>
     /// <returns>The service, or null, if no service was found</returns>
     public static object? GetService(Type type) => GetServiceMethod.Invoke(Locator, [type]);
+    
+    public static T? GetService<T>() => (T?) GetServiceMethod.Invoke(Locator, [typeof(T)]);
 
     /// <summary>
     /// Tries to get a service of the generic type

@@ -18,6 +18,7 @@
 // 
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -26,7 +27,6 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
-using Avalonia.Threading;
 using PicNetStudio.Avalonia.Bindings;
 using PicNetStudio.Avalonia.Interactivity;
 using PicNetStudio.Avalonia.Interactivity.Contexts;
@@ -37,7 +37,7 @@ using PicNetStudio.Avalonia.Utils.Collections.Observable;
 namespace PicNetStudio.Avalonia.PicNet.Layers.Controls;
 
 /// <summary>
-/// A tree view item for all layer objects
+/// A tree view item that represents any type of layer
 /// </summary>
 public class LayerObjectTreeViewItem : TreeViewItem {
     public static readonly StyledProperty<bool> IsDroppableTargetOverProperty = LayerObjectTreeView.IsDroppableTargetOverProperty.AddOwner<LayerObjectTreeView>();
@@ -56,9 +56,11 @@ public class LayerObjectTreeViewItem : TreeViewItem {
     private readonly IBinder<BaseLayerTreeObject> displayNameBinder = new GetSetAutoUpdateAndEventPropertyBinder<BaseLayerTreeObject>(HeaderProperty, nameof(BaseLayerTreeObject.NameChanged), b => b.Model.Name, (b, v) => b.Model.Name = (string) v);
     private readonly PropertyAutoSetter<BaseLayerTreeObject, LayerStateModifierListBox> stateModifierListBoxHelper;
     private LayerStateModifierListBox? PART_StateModifierListBox => this.stateModifierListBoxHelper.TargetControl;
+    private Border? PART_DragDropMoveBorder;
 
     public LayerObjectTreeViewItem() {
         this.stateModifierListBoxHelper = new PropertyAutoSetter<BaseLayerTreeObject, LayerStateModifierListBox>(LayerStateModifierListBox.LayerObjectProperty);
+        DragDrop.SetAllowDrop(this, true);
     }
 
     static LayerObjectTreeViewItem() {
@@ -71,13 +73,14 @@ public class LayerObjectTreeViewItem : TreeViewItem {
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e) {
         base.OnApplyTemplate(e);
         this.stateModifierListBoxHelper.SetControl(e.NameScope.GetTemplateChild<LayerStateModifierListBox>("PART_StateModifierListBox"));
+        this.PART_DragDropMoveBorder = e.NameScope.GetTemplateChild<Border>(nameof(this.PART_DragDropMoveBorder));
     }
 
     public void OnAdding(LayerObjectTreeView tree, LayerObjectTreeViewItem parentNode, BaseLayerTreeObject layer) {
         this.LayerTree = tree;
         this.ParentNode = parentNode;
         this.LayerObject = layer;
-        DragDrop.SetAllowDrop(this, layer is CompositionLayer);
+        // DragDrop.SetAllowDrop(this, layer is CompositionLayer);
     }
 
     public void OnAdded() {
@@ -91,10 +94,6 @@ public class LayerObjectTreeViewItem : TreeViewItem {
 
         this.displayNameBinder.Attach(this, this.LayerObject!);
         this.stateModifierListBoxHelper.SetModel(this.LayerObject);
-        if (this.LayerObject!.Canvas?.LayerSelectionManager.IsSelected(this.LayerObject) ?? false) {
-            this.IsSelected = true;
-        }
-
         DataManager.SetContextData(this, new ContextData().Set(DataKeys.LayerObjectKey, this.LayerObject));
     }
 
@@ -216,6 +215,10 @@ public class LayerObjectTreeViewItem : TreeViewItem {
             if (ReferenceEquals(e.Pointer.Captured, this)) {
                 e.Pointer.Capture(null);
             }
+            
+            if (this.LayerTree != null && this.LayerTree.SelectedItems.Count > 1) {
+                this.LayerTree?.SetSelection(this);
+            }
         }
     }
 
@@ -232,7 +235,7 @@ public class LayerObjectTreeViewItem : TreeViewItem {
             return;
         }
 
-        if (!this.isDragActive || this.isDragDropping) {
+        if (!this.isDragActive || this.isDragDropping || this.LayerTree == null) {
             return;
         }
 
@@ -243,13 +246,13 @@ public class LayerObjectTreeViewItem : TreeViewItem {
         Point posA = point.Position;
         Point posB = this.originMousePoint;
         Point change = new Point(Math.Abs(posA.X - posB.X), Math.Abs(posA.X - posB.X));
-        if (change.X > 5 || change.Y > 5) {
-            IReadOnlySet<BaseLayerTreeObject> selection = layer.Canvas.LayerSelectionManager.Selection;
-            if (selection.Count < 1 || !selection.Contains(layer)) {
+        if (change.X > 4 || change.Y > 4) {
+            IList selection = this.LayerTree.SelectedItems;
+            if (selection.Count < 1 || !selection.Contains(this)) {
                 this.IsSelected = true;
             }
 
-            List<BaseLayerTreeObject> list = selection.ToList();
+            List<BaseLayerTreeObject> list = selection.Cast<LayerObjectTreeViewItem>().Select(x => x.LayerObject!).ToList();
 
             try {
                 this.isDragDropping = true;
@@ -267,30 +270,98 @@ public class LayerObjectTreeViewItem : TreeViewItem {
         }
     }
 
+    private static int Comparison(BaseLayerTreeObject x, BaseLayerTreeObject y) {
+        int a = x.ParentLayer?.IndexOf(x) ?? 0;
+        int b = y.ParentLayer?.IndexOf(x) ?? 0;
+        if (a < b) return -1;
+        if (a > b) return 1;
+        return 0;
+    }
+
     private void OnDragEnter(DragEventArgs e) {
         this.OnDragOver(e);
     }
 
+    private double DropBorderTopArea => 8.0;
+    private double DropBorderBottomArea => (this.Bounds.Height - this.DropBorderTopArea);
+
     private void OnDragOver(DragEventArgs e) {
-        if (this.LayerObject != null)
-            this.IsDroppableTargetOver = ProcessCanDragOver(this.LayerObject, e);
+        if (this.LayerObject != null) {
+            if (!this.isDragDropping) {
+                Point point = e.GetPosition(this);
+                if (point.Y < this.DropBorderTopArea) {
+                    this.PART_DragDropMoveBorder!.BorderThickness = new Thickness(0, 1, 0, 0);
+                    e.DragEffects = DragDropEffects.Move;
+                    Debug.WriteLine("Set border to ABOVE at " + Time.GetSystemMillis());
+                }
+                else if (point.Y >= this.DropBorderBottomArea) {
+                    this.PART_DragDropMoveBorder!.BorderThickness = new Thickness(0, 0, 0, 1);
+                    e.DragEffects = DragDropEffects.Move;
+                    Debug.WriteLine("Set border to BELOW at " + Time.GetSystemMillis());
+                }
+                else {
+                    if (ProcessCanDragOver(this.LayerObject, e)) {
+                        this.IsDroppableTargetOver = true;
+                    }
+
+                    this.PART_DragDropMoveBorder!.BorderThickness = default;
+                    Debug.WriteLine("Set border to RESET at " + Time.GetSystemMillis());
+                    return;
+                }
+            }
+            else {
+                e.DragEffects = DragDropEffects.None;
+            }
+
+            e.Handled = true;
+        }
     }
 
     private void OnDragLeave(DragEventArgs e) {
-        if (!this.IsPointerOver)
+        if (!this.IsPointerOver) {
             this.IsDroppableTargetOver = false;
+            this.PART_DragDropMoveBorder!.BorderThickness = default;
+        }
     }
 
     private async void OnDrop(DragEventArgs e) {
         e.Handled = true;
-        if (this.isProcessingAsyncDrop || !(this.LayerObject is BaseLayerTreeObject layer)) {
+        if (this.isProcessingAsyncDrop || !(this.LayerObject is BaseLayerTreeObject layer) || layer.ParentLayer == null) {
             return;
         }
 
         try {
             this.isProcessingAsyncDrop = true;
             if (GetDropResourceListForEvent(e, out List<BaseLayerTreeObject>? list, out EnumDropType effects)) {
-                await LayerDropRegistry.DropRegistry.OnDropped(layer, list, effects);
+                Point point = e.GetPosition(this);
+                int type = 0;
+                if (point.Y < this.DropBorderTopArea) {
+                    type = 1;
+                }
+                else if (point.Y >= this.DropBorderBottomArea) {
+                    type = 2;
+                }
+                else {
+                    await LayerDropRegistry.DropRegistry.OnDropped(layer, list, effects);
+                }
+
+                if (type != 0) {
+                    bool isLayerInList = list.Remove(layer);
+                    BaseLayerTreeObject.RemoveListFromTree(list);
+                    int index = layer.ParentLayer.IndexOf(layer);
+                    
+                    if (type == 1) {
+                        layer.ParentLayer.InsertLayers(index, list);
+                    }
+                    else {
+                        layer.ParentLayer.InsertLayers(index + 1, list);
+                    }
+                    
+                    if (isLayerInList)
+                        list.Add(layer);
+                    
+                    this.LayerTree!.ClearSelection();
+                }
             }
             else if (!await LayerDropRegistry.DropRegistry.OnDroppedNative(layer, new DataObjectWrapper(e.Data), effects)) {
                 await IoC.MessageService.ShowMessage("Unknown Data", "Unknown dropped item. Drop files here");
@@ -299,6 +370,7 @@ public class LayerObjectTreeViewItem : TreeViewItem {
         finally {
             this.IsDroppableTargetOver = false;
             this.isProcessingAsyncDrop = false;
+            this.PART_DragDropMoveBorder!.BorderThickness = default;
         }
     }
 

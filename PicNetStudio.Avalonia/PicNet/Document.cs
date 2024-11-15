@@ -44,7 +44,7 @@ public class Document {
     /// <summary>
     /// Gets this canvas' layer selection manager, which stores which layers are selected
     /// </summary>
-    public SelectionManager<BaseLayerTreeObject> LayerSelectionManager { get; }
+    public SimpleSelectionManager<BaseLayerTreeObject> LayerSelectionManager { get; }
 
     public Document() {
         this.Canvas = new Canvas(this);

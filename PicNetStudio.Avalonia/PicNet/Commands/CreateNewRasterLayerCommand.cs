@@ -19,18 +19,25 @@
 
 using System.Linq;
 using PicNetStudio.Avalonia.CommandSystem;
+using PicNetStudio.Avalonia.Interactivity.Contexts;
 using PicNetStudio.Avalonia.PicNet.Layers;
 
 namespace PicNetStudio.Avalonia.PicNet.Commands;
 
 public class CreateNewRasterLayerCommand : DocumentCommand {
     protected override Executability CanExecute(Editor editor, Document document, CommandEventArgs e) {
-        int count = document.Canvas.LayerSelectionManager.Selection.Count;
+        if (!DataKeys.LayerSelectionManagerKey.TryGetContext(e.ContextData, out ISelectionManager<BaseLayerTreeObject>? selectionManager))
+            return Executability.Invalid;
+        
+        int count = selectionManager.Count;
         return count > 1 ? Executability.ValidButCannotExecute : Executability.Valid;
     }
 
     protected override void Execute(Editor editor, Document document, CommandEventArgs e) {
-        int count = document.Canvas.LayerSelectionManager.Selection.Count;
+        if (!DataKeys.LayerSelectionManagerKey.TryGetContext(e.ContextData, out ISelectionManager<BaseLayerTreeObject>? selectionManager))
+            return;
+        
+        int count = selectionManager.Count;
         if (count > 1) {
             return;
         }
@@ -39,7 +46,7 @@ public class CreateNewRasterLayerCommand : DocumentCommand {
         raster.Bitmap.InitialiseBitmap(document.Canvas.Size);
 
         if (count == 1) {
-            BaseLayerTreeObject selection = document.Canvas.LayerSelectionManager.Selection.First();
+            BaseLayerTreeObject selection = selectionManager.SelectedItems.First();
             CompositionLayer target = selection.ParentLayer ?? document.Canvas.RootComposition;
             target.InsertLayer(target.IndexOf(selection), raster);
         }
@@ -47,7 +54,7 @@ public class CreateNewRasterLayerCommand : DocumentCommand {
             document.Canvas.RootComposition.InsertLayer(0, raster);
         }
 
-        document.Canvas.LayerSelectionManager.SetSelection(raster);
+        selectionManager.SetSelection(raster);
     }
 }
 

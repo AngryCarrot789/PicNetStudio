@@ -18,18 +18,21 @@
 // 
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
-using Avalonia.Threading;
 using PicNetStudio.Avalonia.Interactivity;
 using PicNetStudio.Avalonia.Utils;
 using PicNetStudio.Avalonia.Utils.Collections.Observable;
 
 namespace PicNetStudio.Avalonia.PicNet.Layers.Controls;
 
+/// <summary>
+/// A tree view which presents a canvas' layer hierarchy in a tree system
+/// </summary>
 public class LayerObjectTreeView : TreeView {
     public static readonly StyledProperty<Canvas?> CanvasProperty = AvaloniaProperty.Register<LayerObjectTreeView, Canvas?>("Canvas");
     public static readonly StyledProperty<bool> IsDroppableTargetOverProperty = AvaloniaProperty.Register<LayerObjectTreeView, bool>("IsDroppableTargetOver");
@@ -48,13 +51,15 @@ public class LayerObjectTreeView : TreeView {
     private readonly Dictionary<BaseLayerTreeObject, LayerObjectTreeViewItem> modelToControl;
     internal readonly Stack<LayerObjectTreeViewItem> itemCache;
     private IDisposable? collectionChangeListener;
-    private bool ignoreTreeSelectionChangeEvent;
-    private bool ignoreManagerSelectionChangeEvent;
     private bool isProcessingAsyncDrop;
+
+    public ISelectionManager<BaseLayerTreeObject> SelectionManager { get; }
+    private readonly SelectionManagerImpl selectionManagerImpl;
 
     public LayerObjectTreeView() {
         this.controlToModel = new Dictionary<LayerObjectTreeViewItem, BaseLayerTreeObject>();
         this.modelToControl = new Dictionary<BaseLayerTreeObject, LayerObjectTreeViewItem>();
+        this.SelectionManager = this.selectionManagerImpl = new SelectionManagerImpl(this);
         this.itemCache = new Stack<LayerObjectTreeViewItem>();
         this.SelectionChanged += this.OnTreeSelectionChanged;
         DragDrop.SetAllowDrop(this, true);
@@ -69,79 +74,17 @@ public class LayerObjectTreeView : TreeView {
     }
 
     private void OnTreeSelectionChanged(object? sender, SelectionChangedEventArgs e) {
-        if (this.ignoreTreeSelectionChangeEvent) {
-            return;
-        }
-
+        this.selectionManagerImpl.RaiseSelectionChanged(e.RemovedItems, e.AddedItems);
         if (this.Canvas is Canvas canvas) {
-            // #pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type.
-            //             List<BaseLayerTreeObject>? removedList = e.RemovedItems.Count > 0 ? e.RemovedItems.Cast<LayerObjectTreeViewItem>().Select(x => x.LayerObject).Where(x => x != null).ToList() : null;
-            //             List<BaseLayerTreeObject>? addedList = e.AddedItems.Count > 0 ? e.AddedItems.Cast<LayerObjectTreeViewItem>().Select(x => x.LayerObject).Where(x => x != null).ToList() : null;
-            // #pragma warning restore CS8619 // Nullability of reference types in value doesn't match target type.
-            //
-            //             try {
-            //                 this.ignoreManagerSelectionChangeEvent = true;
-            //                 if (removedList != null) {
-            //                     canvas.LayerSelectionManager.Unselect(removedList);
-            //                 }
-            //             
-            //                 if (addedList != null) {
-            //                     canvas.LayerSelectionManager.Select(addedList);
-            //                 }
-            //             }
-            //             finally {
-            //                 this.ignoreManagerSelectionChangeEvent = false;
-            //             }
-
-#pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type.
-            List<BaseLayerTreeObject>? selection = this.SelectedItems.Count > 0 ? this.SelectedItems.Cast<LayerObjectTreeViewItem>().Select(x => x.LayerObject).Where(x => x != null).ToList() : null;
-#pragma warning restore CS8619 // Nullability of reference types in value doesn't match target type.
-            try {
-                this.ignoreManagerSelectionChangeEvent = true;
-                if (selection != null && selection.Count > 0) {
-                    canvas.LayerSelectionManager.SetSelection(selection);
-                }
-                else {
-                    canvas.LayerSelectionManager.Clear();
-                }
-            }
-            finally {
-                this.ignoreManagerSelectionChangeEvent = false;
-            }
+            canvas.ActiveLayerTreeObject = this.SelectedItems.Count == 1 ? ((LayerObjectTreeViewItem) this.SelectedItems[0]!).LayerObject : null; 
         }
     }
 
-
-    private void OnLayerSelectionChanged(SelectionManager<BaseLayerTreeObject> sender, IList<BaseLayerTreeObject>? olditems, IList<BaseLayerTreeObject>? newitems) {
-        if (this.ignoreManagerSelectionChangeEvent && this.SelectedItems.Count == sender.Selection.Count) {
-            return;
-        }
-
-        try {
-            this.ignoreTreeSelectionChangeEvent = true;
-            if (newitems == null || newitems.Count == 0) {
-                this.ClearSelection();
+    private IEnumerable<LayerObjectTreeViewItem> GetControlsFromModels(IEnumerable<BaseLayerTreeObject> items) {
+        foreach (BaseLayerTreeObject layer in items) {
+            if (this.modelToControl.TryGetValue(layer, out LayerObjectTreeViewItem? control)) {
+                yield return control;
             }
-            else {
-                List<LayerObjectTreeViewItem> controls = new List<LayerObjectTreeViewItem>();
-                foreach (BaseLayerTreeObject layer in newitems) {
-                    if (this.modelToControl.TryGetValue(layer, out LayerObjectTreeViewItem? control)) {
-                        controls.Add(control);
-                    }
-                }
-
-                if (this.SelectedItems.CollectionEquals(controls)) {
-                    return;
-                }
-
-                this.SelectedItems.Clear();
-                foreach (LayerObjectTreeViewItem control in controls) {
-                    this.SelectedItems.Add(control);
-                }
-            }
-        }
-        finally {
-            this.ignoreTreeSelectionChangeEvent = false;
         }
     }
 
@@ -181,14 +124,12 @@ public class LayerObjectTreeView : TreeView {
     private void OnCanvasChanged(AvaloniaPropertyChangedEventArgs<Canvas?> e) {
         this.collectionChangeListener?.Dispose();
         if (e.TryGetOldValue(out Canvas? oldCanvas)) {
-            oldCanvas.LayerSelectionManager.SelectionChanged -= this.OnLayerSelectionChanged;
             for (int i = this.Items.Count - 1; i >= 0; i--) {
                 this.RemoveNode(i);
             }
         }
 
         if (e.TryGetNewValue(out Canvas? newCanvas)) {
-            newCanvas.LayerSelectionManager.SelectionChanged += this.OnLayerSelectionChanged;
             this.collectionChangeListener = ObservableItemProcessor.MakeIndexable(newCanvas.RootComposition.Layers, this.OnCanvasLayerAdded, this.OnCanvasLayerRemoved, this.OnCanvasLayerIndexMoved);
             int i = 0;
             foreach (BaseLayerTreeObject layer in newCanvas.RootComposition.Layers) {
@@ -276,7 +217,77 @@ public class LayerObjectTreeView : TreeView {
     }
 
     public void SetSelection(LayerObjectTreeViewItem item) {
-        this.SelectedItems.Clear();
+        this.ClearSelection();
         this.SelectedItems.Add(item);
+    }
+    
+    private class SelectionManagerImpl : ISelectionManager<BaseLayerTreeObject> {
+        public readonly LayerObjectTreeView Tree;
+
+        public int Count => this.Tree.SelectedItems.Count;
+        
+        public IEnumerable<BaseLayerTreeObject> SelectedItems => this.Tree.SelectedItems.Cast<LayerObjectTreeViewItem>().Select(x => x.LayerObject!);
+
+        public event SelectionChangedEventHandler<BaseLayerTreeObject>? SelectionChanged;
+        
+        public SelectionManagerImpl(LayerObjectTreeView treeView) {
+            this.Tree = treeView;
+        }
+
+        public void RaiseSelectionChanged(IList oldItems, IList newItems) {
+            this.SelectionChanged?.Invoke(
+                this, 
+                oldItems.Cast<LayerObjectTreeViewItem>().Select(x => x.LayerObject!).ToList().AsReadOnly(), 
+                newItems.Cast<LayerObjectTreeViewItem>().Select(x => x.LayerObject!).ToList().AsReadOnly());
+        }
+        
+        public bool IsSelected(BaseLayerTreeObject item) {
+            if (this.Tree.modelToControl.TryGetValue(item, out LayerObjectTreeViewItem? treeItem))
+                return treeItem.IsSelected;
+            return false;
+        }
+
+        public void SetSelection(BaseLayerTreeObject item) {
+            this.Tree.ClearSelection();
+            this.Select(item);
+        }
+
+        public void SetSelection(IEnumerable<BaseLayerTreeObject> items) {
+            this.Tree.ClearSelection();
+            this.Select(items);
+        }
+
+        public void Select(BaseLayerTreeObject item) {
+            if (this.Tree.modelToControl.TryGetValue(item, out LayerObjectTreeViewItem? treeItem)) {
+                treeItem.IsSelected = true;
+            }
+        }
+
+        public void Select(IEnumerable<BaseLayerTreeObject> items) {
+            foreach (BaseLayerTreeObject item in items.ToList()) {
+                if (this.Tree.modelToControl.TryGetValue(item, out LayerObjectTreeViewItem? treeItem)) {
+                    treeItem.IsSelected = true;
+                }
+            }
+        }
+
+        public void Unselect(BaseLayerTreeObject item) {
+            if (this.Tree.modelToControl.TryGetValue(item, out LayerObjectTreeViewItem? treeItem)) {
+                treeItem.IsSelected = false;
+            }
+        }
+
+        public void Unselect(IEnumerable<BaseLayerTreeObject> newItems) {
+            List<BaseLayerTreeObject> list = newItems.ToList();
+            foreach (BaseLayerTreeObject item in list) {
+                if (this.Tree.modelToControl.TryGetValue(item, out LayerObjectTreeViewItem? treeItem)) {
+                    treeItem.IsSelected = false;
+                }
+            }
+        }
+
+        public void Clear() {
+            this.Tree.ClearSelection();
+        }
     }
 }

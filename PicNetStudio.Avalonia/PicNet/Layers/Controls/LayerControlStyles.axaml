@@ -67,13 +67,16 @@
                     </StackPanel>
                     <Border x:Name="PART_DropTargetOverBorder" Margin="0" BorderThickness="0"
                             BorderBrush="{DynamicResource ABrush.ColourfulGlyph.Static}"/>
+                    <Border x:Name="PART_DragDropMoveBorder" 
+                            Margin="{TemplateBinding Level, Mode=OneWay, Converter={StaticResource LeftMarginConverter}}"
+                            BorderBrush="{DynamicResource ABrush.ColourfulGlyph.Static}" BorderThickness="0"/>
                 </Panel>
             </ControlTemplate>
         </Setter>
 
         <!--
-        <Style Selector="^:nth-child(odd)">
-            <Setter Property="Background" Value="{DynamicResource AColour.Tone5.Background.Static}"/>
+        <Style Selector="^:nth-child(odd) /template/ Border#SelectionBorder">
+            <Setter Property="Background" Value="{DynamicResource AColour.Tone6.Background.Static}"/>
         </Style>
         -->
 
