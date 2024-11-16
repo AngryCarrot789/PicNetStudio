@@ -34,7 +34,7 @@ public abstract class BasePropEditControlContent : TemplatedControl {
 
     public PropertyEditorSlotControl? SlotControl { get; private set; }
 
-    public PropertyEditorSlot? SlotModel => this.SlotControl!.Model;
+    public PropertyEditorSlot? SlotModel => this.SlotControl?.Model;
 
     public bool IsConnected => this.SlotControl != null;
 

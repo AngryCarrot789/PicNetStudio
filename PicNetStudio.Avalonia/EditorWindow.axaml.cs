@@ -25,6 +25,7 @@ using Avalonia.Media;
 using Avalonia.Threading;
 using PicNetStudio.Avalonia.Interactivity.Contexts;
 using PicNetStudio.Avalonia.PicNet;
+using PicNetStudio.Avalonia.PicNet.Effects;
 using PicNetStudio.Avalonia.PicNet.Layers;
 using PicNetStudio.Avalonia.PicNet.PropertyEditing;
 using PicNetStudio.Avalonia.Themes.Controls;
@@ -89,8 +90,9 @@ public partial class EditorWindow : WindowEx {
         MakeLayer(SKColors.Transparent, "Layer 2 in comp", comp);
         
         MakeLayer(SKColors.Transparent, "Layer 4");
-        MakeLayer(SKColors.White, "Background Base Layer");
-
+        RasterLayer background = MakeLayer(SKColors.White, "Background Base Layer");
+        background.AddEffect(new ColourChannelLayerEffect());
+        
         this.Editor.AddDocument(document);
         this.Editor.ActiveDocument = document;
 

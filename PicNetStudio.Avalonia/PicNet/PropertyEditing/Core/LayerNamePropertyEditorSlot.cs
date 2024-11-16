@@ -68,7 +68,7 @@ public class LayerNamePropertyEditorSlot : PropertyEditorSlot {
     }
 
     public void RequeryOpacityFromHandlers() {
-        this.Name = GetEqualValue(this.Handlers, x => ((BaseLayerTreeObject) x).Name, out string d) ? d : "<different values>";
+        this.Name = GetEqualValue(this.Handlers, x => ((BaseLayerTreeObject) x).Name, out string? d) ? d! : "<different values>";
         this.NameChanged?.Invoke(this);
     }
 

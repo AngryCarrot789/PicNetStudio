@@ -295,4 +295,7 @@ public static class Maths {
             default: throw new ArgumentOutOfRangeException(nameof(mode), mode, null);
         }
     }
+
+    public static int Floor(double d) => (int) Math.Floor(d);
+    public static int Ceil(double d) => (int) Math.Ceiling(d);
 }

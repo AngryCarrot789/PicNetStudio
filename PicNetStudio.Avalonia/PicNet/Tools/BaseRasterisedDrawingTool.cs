@@ -19,12 +19,13 @@
 
 using System;
 using Avalonia;
+using Avalonia.Input;
 using PicNetStudio.Avalonia.PicNet.Layers;
 
 namespace PicNetStudio.Avalonia.PicNet.Tools;
 
 /// <summary>
-/// The base class for a tool that draws onto a rasterised layer
+/// The base class for a tool that draws onto a rasterised layer when the mouse is pressed and dragged around
 /// </summary>
 public abstract class BaseRasterisedDrawingTool : BaseDrawingTool {
     private bool keepDrawing;
@@ -41,6 +42,8 @@ public abstract class BaseRasterisedDrawingTool : BaseDrawingTool {
     /// Gets or sets a property indicating this drawing tool allows drawing with both primary and secondary cursor inputs (left and right mouse)
     /// </summary>
     protected bool CanDrawSecondaryColour { get; set; }
+    
+    protected bool BypassClipping { get; set; }
 
     protected BaseRasterisedDrawingTool() {
     }
@@ -57,11 +60,15 @@ public abstract class BaseRasterisedDrawingTool : BaseDrawingTool {
     /// </param>
     public abstract void DrawPixels(PNBitmap bitmap, Document document, double x, double y, bool isPrimaryColour);
 
-    public override bool OnCursorPressed(Document document, double x, double y, int count, EnumCursorType cursor) {
-        if (base.OnCursorPressed(document, x, y, count, cursor))
+    public override bool OnCursorPressed(Document document, double x, double y, int count, EnumCursorType cursor, KeyModifiers modifiers) {
+        if (base.OnCursorPressed(document, x, y, count, cursor, modifiers))
             return true;
 
-        if (cursor != EnumCursorType.Primary && !this.CanDrawSecondaryColour)
+        // Only allow without modifiers pressed to allow the canvas to be moved around with ALT+LMB
+        if ((cursor != EnumCursorType.Primary && cursor != EnumCursorType.Secondary) || modifiers != KeyModifiers.None)
+            return false;
+        
+        if (cursor == EnumCursorType.Secondary && !this.CanDrawSecondaryColour)
             return false;
 
         this.keepDrawing = false;
@@ -70,10 +77,10 @@ public abstract class BaseRasterisedDrawingTool : BaseDrawingTool {
         return ret;
     }
 
-    public override bool OnCursorReleased(Document document, double x, double y, EnumCursorType cursor) {
+    public override bool OnCursorReleased(Document document, double x, double y, EnumCursorType cursor, KeyModifiers modifiers) {
         if (cursor == EnumCursorType.Primary)
             this.keepDrawing = false;
-        return base.OnCursorReleased(document, x, y, cursor);
+        return base.OnCursorReleased(document, x, y, cursor, modifiers);
     }
 
     public override bool OnCursorMoved(Document document, double x, double y, EnumCursorType cursorMask) {
@@ -94,7 +101,12 @@ public abstract class BaseRasterisedDrawingTool : BaseDrawingTool {
 
         PNBitmap bitmap = bitmapLayer.Bitmap;
         Point mPos = new Point(x, y);
-
+        
+        BaseSelection? selection = document.Canvas.SelectionRegion;
+        if (selection != null && !tool.BypassClipping) {
+            selection.ApplyClip(bitmap);
+        }
+        
         if (tool.keepDrawing) {
             double distance = GetDistance(tool.lastDragDrawPoint, mPos);
 
@@ -113,6 +125,10 @@ public abstract class BaseRasterisedDrawingTool : BaseDrawingTool {
 
         tool.keepDrawing = true;
         tool.DrawPixels(bitmap, document, mPos.X, mPos.Y, isPrimaryCursor);
+        if (selection != null && !tool.BypassClipping) {
+            selection.FinishClip(bitmap);
+        }
+        
         document.Canvas.RaiseRenderInvalidated();
         tool.lastDragDrawPoint = mPos;
         return true;

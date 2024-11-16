@@ -38,13 +38,13 @@ public sealed class DataParameterLong : DataParameter<long> {
 
     private readonly bool hasRangeLimit;
 
-    public DataParameterLong(Type ownerType, string key, ValueAccessor<long> accessor, DataParameterFlags flags = DataParameterFlags.None) : this(ownerType, key, 0L, accessor, flags) {
+    public DataParameterLong(Type ownerType, string name, ValueAccessor<long> accessor, DataParameterFlags flags = DataParameterFlags.None) : this(ownerType, name, 0L, accessor, flags) {
     }
 
-    public DataParameterLong(Type ownerType, string key, long defValue, ValueAccessor<long> accessor, DataParameterFlags flags = DataParameterFlags.None) : this(ownerType, key, defValue, long.MinValue, long.MaxValue, accessor, flags) {
+    public DataParameterLong(Type ownerType, string name, long defValue, ValueAccessor<long> accessor, DataParameterFlags flags = DataParameterFlags.None) : this(ownerType, name, defValue, long.MinValue, long.MaxValue, accessor, flags) {
     }
 
-    public DataParameterLong(Type ownerType, string key, long defValue, long minValue, long maxValue, ValueAccessor<long> accessor, DataParameterFlags flags = DataParameterFlags.None) : base(ownerType, key, defValue, accessor, flags) {
+    public DataParameterLong(Type ownerType, string name, long defValue, long minValue, long maxValue, ValueAccessor<long> accessor, DataParameterFlags flags = DataParameterFlags.None) : base(ownerType, name, defValue, accessor, flags) {
         if (minValue > maxValue)
             throw new ArgumentException($"Minimum value exceeds the maximum value: {minValue} > {maxValue}", nameof(minValue));
         if (defValue < minValue || defValue > maxValue)

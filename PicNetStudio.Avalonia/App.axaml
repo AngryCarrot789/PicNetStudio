@@ -1,7 +1,7 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:pns="clr-namespace:PicNetStudio"
-             xmlns:avalonia="clr-namespace:PicNetStudio.Avalonia"
+             xmlns:a="clr-namespace:PicNetStudio.Avalonia"
              xmlns:c="clr-namespace:PicNetStudio.Avalonia.PicNet.Controls"
              xmlns:s="clr-namespace:System;assembly=System.Runtime"
              x:Class="PicNetStudio.Avalonia.App"
@@ -24,6 +24,7 @@
                 <MergeResourceInclude Source="/PicNet/Toolbars/Controls/ToolBarItemStyles.axaml"/>
                 <MergeResourceInclude Source="/PicNet/Layers/Controls/LayerControlStyles.axaml"/>
                 <MergeResourceInclude Source="/PicNet/Layers/StateMods/Controls/LayerStateModifierControlStyles.axaml"/>
+                <MergeResourceInclude Source="/PicNet/Effects/Controls/LayerStateModifierControlStyles.axaml"/>
 
                 <MergeResourceInclude Source="/PicNet/Controls/Dragger/NumberDraggerStyles.axaml"/>
                 <MergeResourceInclude Source="/PicNet/PropertyEditing/Controls/PropertyEditorStyles.axaml"/>
@@ -44,10 +45,10 @@
                                                   ZoomScale="{TemplateBinding ZoomScale}"
                                                   HorizontalAlignment="Stretch"
                                                   VerticalAlignment="Stretch"
-                                                  Margin="{TemplateBinding BorderThickness}">
-                                <avalonia:TransformationContainer UseLayoutRounding="False">
+                                                  Margin="{TemplateBinding BorderThickness}" Background="Yellow">
+                                <a:TransformationContainer x:Name="PART_CanvasContainer" UseLayoutRounding="False">
                                     <c:SKAsyncViewPort x:Name="PART_SkiaViewPort" UseLayoutRounding="False"/>
-                                </avalonia:TransformationContainer>
+                                </a:TransformationContainer>
                             </c:FreeMoveViewPortV2>
                             <!-- Setting background to null should disable hit-testing but I set the property just to be double sure -->
                             <Border Background="{x:Null}" IsHitTestVisible="False"

@@ -22,7 +22,6 @@ using PicNetStudio.Avalonia.CommandSystem;
 using PicNetStudio.Avalonia.Interactivity.Contexts;
 using PicNetStudio.Avalonia.PicNet.Layers;
 using PicNetStudio.Avalonia.PicNet.Layers.Controls;
-using PicNetStudio.Avalonia.Services.Messages;
 
 namespace PicNetStudio.Avalonia.PicNet.Commands;
 
@@ -44,15 +43,15 @@ public class EditLayerNameCommand : AsyncDocumentCommand {
         if (selectionManager.Count != 1 || !DataKeys.LayerNodeKey.TryGetContext(e.ContextData, out ILayerNodeItem? node) || node.Layer == null)
             return;
 
-        // node.EditNameState = true;
+        node.EditNameState = true;
 
-        SingleUserInputData data = new SingleUserInputData(node.Layer.Name) {
-            ConfirmText = "Rename", Caption = "Rename this layer", Label = "Input a new name for this layer:", AllowEmptyText = false
-        };
-
-        if (await RZApplication.Instance.Services.GetService<IUserInputDialogService>().ShowInputDialogAsync(data) == true) {
-            if (node.Layer != null)
-                node.Layer.Name = data.Text!;
-        }
+        // SingleUserInputData data = new SingleUserInputData(node.Layer.Name) {
+        //     ConfirmText = "Rename", Caption = "Rename this layer", Label = "Input a new name for this layer:", AllowEmptyText = false
+        // };
+        // 
+        // if (await RZApplication.Instance.Services.GetService<IUserInputDialogService>().ShowInputDialogAsync(data) == true) {
+        //     if (node.Layer != null)
+        //         node.Layer.Name = data.Text!;
+        // }
     }
 }

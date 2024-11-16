@@ -31,5 +31,5 @@ public static class BoolBox {
     public static object Box(this bool value) => value ? True : False;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static object BoxNullable(this bool? value) => value.HasValue ? (value.Value ? NullableTrue : NullableFalse) : null;
+    public static object? BoxNullable(this bool? value) => value.HasValue ? (value.Value ? NullableTrue : NullableFalse) : null;
 }

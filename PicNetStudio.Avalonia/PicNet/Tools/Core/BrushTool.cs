@@ -32,7 +32,7 @@ public class BrushTool : BaseDiameterTool {
     public override void DrawPixels(PNBitmap bitmap, Document document, double x, double y, bool isPrimaryColour) {
         if (bitmap.Canvas == null)
             return;
-
+        
         using SKPaint paint = new SKPaint();
         paint.Color = isPrimaryColour ? document.Editor!.PrimaryColour : document.Editor!.SecondaryColour;
         paint.IsAntialias = true;

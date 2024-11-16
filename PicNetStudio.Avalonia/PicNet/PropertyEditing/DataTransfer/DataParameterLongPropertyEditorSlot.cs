@@ -22,7 +22,7 @@ using PicNetStudio.Avalonia.DataTransfer;
 
 namespace PicNetStudio.Avalonia.PicNet.PropertyEditing.DataTransfer;
 
-public class DataParameterLongPropertyEditorSlot : DataParameterPropertyEditorSlot {
+public class DataParameterLongPropertyEditorSlot : DataParameterFormattableNumberPropertyEditorSlot {
     private long value;
 
     public long Value {

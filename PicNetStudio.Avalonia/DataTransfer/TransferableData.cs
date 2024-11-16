@@ -124,16 +124,16 @@ public sealed class TransferableData {
         }
     }
 
-    public static void InternalBeginValueChange(DataParameter parameter, ITransferableData owner) {
+    internal static void InternalBeginValueChange(DataParameter parameter, ITransferableData owner) {
         ParameterData internalData = owner.TransferableData.GetParamData(parameter);
         if (internalData.isValueChanging) {
-            throw new InvalidOperationException("Value is already changing. This exception is thrown as the alternative is most likely a stack overflow exception");
+            throw new InvalidOperationException("Value is already changing. This exception is thrown, as the alternative is most likely a stack overflow exception");
         }
 
         internalData.isValueChanging = true;
     }
 
-    public static void InternalEndValueChange(DataParameter parameter, ITransferableData owner) {
+    internal static void InternalEndValueChange(DataParameter parameter, ITransferableData owner) {
         TransferableData data = owner.TransferableData;
         ParameterData internalData = data.GetParamData(parameter);
         try {

@@ -4,7 +4,6 @@
     <ControlTheme x:Key="{x:Type tb:ToolBarItemListBox}" TargetType="{x:Type tb:ToolBarItemListBox}">
         <Setter Property="Background" Value="{DynamicResource ListBox.Static.Background}"/>
         <Setter Property="BorderBrush" Value="Transparent"/>
-        <Setter Property="Foreground" Value="Transparent"/>
         <Setter Property="Padding" Value="0"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto"/>
@@ -119,6 +118,15 @@
         <Setter Property="Template">
             <ControlTemplate>
                 <TextBlock Text="FILL" FontSize="9"/>
+            </ControlTemplate>
+        </Setter>
+    </ControlTheme>
+    <ControlTheme x:Key="{x:Type tb:ToolBarItemControlContent_SelectRegionTool}"
+                  TargetType="{x:Type tb:ToolBarItemControlContent_FloodFillTool}"
+                  BasedOn="{StaticResource {x:Type tb:ToolBarItemControlContentSingleTool}}">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <TextBlock Text="RECT SEL" FontSize="9"/>
             </ControlTemplate>
         </Setter>
     </ControlTheme>

@@ -3,7 +3,8 @@
                     xmlns:c="clr-namespace:PicNetStudio.Avalonia.PicNet.Layers.Controls"
                     xmlns:avalonia="clr-namespace:PicNetStudio.Avalonia"
                     xmlns:c2="clr-namespace:PicNetStudio.Avalonia.PicNet.Layers.StateMods.Controls"
-                    xmlns:ui="clr-namespace:PicNetStudio.Avalonia.Shortcuts.Avalonia">
+                    xmlns:ui="clr-namespace:PicNetStudio.Avalonia.Shortcuts.Avalonia"
+                    xmlns:controls="clr-namespace:PicNetStudio.Avalonia.PicNet.Effects.Controls">
     <ControlTheme x:Key="{x:Type c:LayerObjectTreeView}" TargetType="{x:Type c:LayerObjectTreeView}" BasedOn="{StaticResource {x:Type TreeView}}">
         <Setter Property="SelectionMode" Value="Multiple"/>
     </ControlTheme>
@@ -60,7 +61,7 @@
                                                               Grid.Column="2" VerticalAlignment="Stretch"
                                                               ClipToBounds="True" Padding="1,0,0,0"
                                                               Background="{TemplateBinding Background}"/>
-                                <Panel Grid.Column="4"/>
+                                <controls:EffectListBox x:Name="PART_EffectListBox" Grid.Column="4" ClipToBounds="True" Padding="1,0,0,0"/>
                             </Grid>
                         </Border>
                         <ItemsPresenter x:Name="PART_ItemsPresenter"

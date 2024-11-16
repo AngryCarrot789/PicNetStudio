@@ -1,27 +1,29 @@
-//
+﻿// 
 // Copyright (c) 2023-2024 REghZy
-//
+// 
 // This file is part of PicNetStudio.
-//
+// 
 // PicNetStudio is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either
 // version 3.0 of the License, or (at your option) any later version.
-//
+// 
 // PicNetStudio is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 // Lesser General Public License for more details.
-//
+// 
 // You should have received a copy of the GNU General Public License
 // along with PicNetStudio. If not, see <https://www.gnu.org/licenses/>.
-//
+// 
 
-using Avalonia.Interactivity;
+namespace PicNetStudio.Avalonia.PicNet.Effects;
 
-namespace PicNetStudio.Avalonia.PicNet.Controls.Dragger;
+public class EffectFactory : ReflectiveObjectFactory<BaseLayerEffect> {
+    public static EffectFactory Instance { get; } = new EffectFactory();
 
-public class EditStartEventArgs : RoutedEventArgs {
-    public EditStartEventArgs() : base(NumberDragger.EditStartedEvent) {
+    private EffectFactory() {
     }
+
+    public new BaseLayerEffect NewInstance(string id) => base.NewInstance(id);
 }

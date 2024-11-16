@@ -34,7 +34,7 @@ namespace PicNetStudio.Avalonia.PicNet.Controls;
 /// <summary>
 /// A view port that manages the rendering of a canvas
 /// </summary>
-public class CanvasViewPortControl : TemplatedControl {
+public class CanvasViewPortControl : TemplatedControl, ICanvasElement {
     public static readonly StyledProperty<Document?> DocumentProperty = AvaloniaProperty.Register<CanvasViewPortControl, Document?>(nameof(Document));
     public static readonly StyledProperty<double> ZoomScaleProperty = FreeMoveViewPortV2.ZoomScaleProperty.AddOwner<CanvasViewPortControl>();
 
@@ -58,6 +58,7 @@ public class CanvasViewPortControl : TemplatedControl {
     public SKAsyncViewPort? PART_SkiaViewPort;
     private readonly CanvasInputHandler inptHandler;
     private readonly RapidDispatchAction rdaInvalidateRender;
+    public TransformationContainer PART_CanvasContainer;
 
     static CanvasViewPortControl() {
         AffectsRender<Image>(DocumentProperty);
@@ -75,14 +76,23 @@ public class CanvasViewPortControl : TemplatedControl {
         base.OnApplyTemplate(e);
         e.NameScope.GetTemplateChild("PART_FreeMoveViewPort", out this.PART_FreeMoveViewPort);
         e.NameScope.GetTemplateChild("PART_SkiaViewPort", out this.PART_SkiaViewPort);
-        if (this.PART_SkiaViewPort != null) {
-            // nearest neighbour
-            RenderOptions.SetBitmapInterpolationMode(this.PART_SkiaViewPort, BitmapInterpolationMode.None);
-            RenderOptions.SetEdgeMode(this.PART_SkiaViewPort, EdgeMode.Aliased);
-        }
+        e.NameScope.GetTemplateChild("PART_CanvasContainer", out this.PART_CanvasContainer);
+        
+        // nearest neighbour
+        RenderOptions.SetBitmapInterpolationMode(this.PART_SkiaViewPort, BitmapInterpolationMode.None);
+        RenderOptions.SetEdgeMode(this.PART_SkiaViewPort, EdgeMode.Aliased);
+        this.PART_SkiaViewPort.PostRenderExtension += this.OnPostRenderViewPort;
 
+        this.PART_FreeMoveViewPort.Setup(this);
         if (this.Document is Document document) {
             this.UpdateViewPortSize(document.Canvas.Size);
+        }
+    }
+
+    private void OnPostRenderViewPort(SKAsyncViewPort sender, DrawingContext ctx, Rect bounds) {
+        if (this.Document is Document document && document.Canvas.SelectionRegion is RectangleSelection selection) {
+            SKRectI rect = selection.Rect;
+            ctx.DrawRectangle(null, new Pen(Brushes.Red, 1.0), new Rect(new Point(rect.Left - 0.5, rect.Top - 0.5), new Point(rect.Right + 0.5, rect.Bottom + 0.5)));
         }
     }
 
@@ -146,4 +156,6 @@ public class CanvasViewPortControl : TemplatedControl {
         this.PART_SkiaViewPort.Width = size.Width;
         this.PART_SkiaViewPort.Height = size.Height;
     }
+
+    public BaseSelection SelectionPreview { get; set; }
 }

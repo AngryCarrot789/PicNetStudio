@@ -1,8 +1,14 @@
 ﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:l="clr-namespace:PicNetStudio.Avalonia.PicNet.Controls.Dragger">
+    <Design.PreviewWith>
+        <l:NumberDragger Minimum="0" Maximum="100" Value="30" Width="100" Height="24"/>
+    </Design.PreviewWith>
     <ControlTheme x:Key="{x:Type l:NumberDragger}" TargetType="{x:Type l:NumberDragger}">
-        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Background" Value="{DynamicResource PanelBackground2}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource PanelBorderBrush}"/>
+        <Setter Property="Padding" Value="4,0"/>
+        <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="Focusable" Value="True"/>
         <Setter Property="Template">
             <Setter.Value>
@@ -10,18 +16,21 @@
                     <Border Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}">
-                        <Grid Margin="{TemplateBinding Padding}" VerticalAlignment="Stretch">
-                            <TextBlock Text="0" x:Name="PART_TextBlock" Padding="2,0,2,0"
+                        <Grid Margin="{TemplateBinding Padding}">
+                            <TextBlock x:Name="PART_TextBlock" Text="Preview"
                                        Background="Transparent"
-                                       HorizontalAlignment="Center"/>
-                            <TextBox Text="0" x:Name="PART_TextBox" VerticalContentAlignment="Center"
-                                     HorizontalContentAlignment="Center"
-                                     BorderThickness="0" Background="Transparent" HorizontalAlignment="Stretch"/>
-                            <TextBlock x:Name="PART_HintTextBlock" Padding="2,0,2,0"
-                                       Background="Transparent"
-                                       HorizontalAlignment="Center"
-                                       Foreground="{DynamicResource ABrush.Foreground.Disabled}"
-                                       Text="{TemplateBinding EditingHint}" IsVisible="False"/>
+                                       HorizontalAlignment="Stretch"
+                                       VerticalAlignment="Center" 
+                                       TextAlignment="{TemplateBinding TextAlignment}"/>
+                            <TextBox x:Name="PART_TextBox" Text="Editing"
+                                     HorizontalAlignment="Stretch"
+                                     VerticalContentAlignment="Center"
+                                     BorderThickness="0"
+                                     Background="Transparent"
+                                     VerticalAlignment="Center" Padding="0" 
+                                     TextAlignment="{TemplateBinding TextAlignment}"
+                                     ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"/>
                         </Grid>
                     </Border>
                 </ControlTemplate>
@@ -29,67 +38,32 @@
         </Setter>
     </ControlTheme>
 
-    <ControlTheme x:Key="AbletonNumberDraggerStyle" TargetType="{x:Type l:NumberDragger}" BasedOn="{StaticResource {x:Type l:NumberDragger}}">
-        <Setter Property="Background" Value="{DynamicResource PanelBackground2}"/>
-        <Setter Property="BorderBrush" Value="{DynamicResource PanelBorderBrush}"/>
-        <Setter Property="BorderThickness" Value="1"/>
+    <ControlTheme x:Key="NumberDraggerAbletonTheme" TargetType="{x:Type l:NumberDragger}" BasedOn="{StaticResource {x:Type l:NumberDragger}}">
+        <Setter Property="TextAlignment" Value="Center"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type l:NumberDragger}">
-                    <Grid>
-                        <ProgressBar Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
-                                     Minimum="{TemplateBinding Minimum}" Maximum="{TemplateBinding Maximum}"
+                    <Panel>
+                        <ProgressBar Background="{TemplateBinding Background}"
+                                     BorderBrush="{TemplateBinding BorderBrush}"
+                                     BorderThickness="{TemplateBinding BorderThickness}"
+                                     Minimum="{TemplateBinding Minimum}"
+                                     Maximum="{TemplateBinding Maximum}"
                                      Value="{TemplateBinding Value}"
                                      UseLayoutRounding="True"/>
-                        <Grid Margin="{TemplateBinding Padding}" VerticalAlignment="Stretch">
-                            <TextBlock Text="0" x:Name="PART_TextBlock" Padding="2,0"
+                        <Grid Margin="{TemplateBinding Padding}">
+                            <TextBlock x:Name="PART_TextBlock" Text="A" Padding="0"
                                        Background="Transparent"
                                        HorizontalAlignment="Center"
-                                       VerticalAlignment="Center"/>
-                            <TextBox Text="0" x:Name="PART_TextBox" VerticalContentAlignment="Center"
+                                       VerticalAlignment="Center" TextAlignment="{TemplateBinding TextAlignment}"/>
+                            <TextBox x:Name="PART_TextBox" Text="A"
+                                     VerticalContentAlignment="Center"
                                      HorizontalContentAlignment="Center"
-                                     BorderThickness="0" Background="Transparent" HorizontalAlignment="Stretch"
-                                     VerticalAlignment="Center" Padding="0,0,0,0"/>
-                            <TextBlock x:Name="PART_HintTextBlock" Padding="2,0,2,0"
-                                       Background="Transparent"
-                                       HorizontalAlignment="Center"
-                                       Foreground="{DynamicResource ABrush.Foreground.Disabled}"
-                                       Text="{TemplateBinding EditingHint}" IsVisible="False"/>
+                                     BorderThickness="0"
+                                     Background="Transparent"
+                                     VerticalAlignment="Center" Padding="1,0,0,0" TextAlignment="{TemplateBinding TextAlignment}"/>
                         </Grid>
-                    </Grid>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </ControlTheme>
-
-    <ControlTheme x:Key="AbletonNumberDraggerWithoutProgressStyle" TargetType="{x:Type l:NumberDragger}" BasedOn="{StaticResource {x:Type l:NumberDragger}}">
-        <Setter Property="Background" Value="{DynamicResource PanelBackground2}"/>
-        <Setter Property="BorderBrush" Value="{DynamicResource PanelBorderBrush}"/>
-        <Setter Property="BorderThickness" Value="1"/>
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="{x:Type l:NumberDragger}">
-                    <Grid>
-                        <Border Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                UseLayoutRounding="True"/>
-                        <Grid Margin="{TemplateBinding Padding}" VerticalAlignment="Stretch">
-                            <TextBlock Text="0" x:Name="PART_TextBlock" Padding="2,0"
-                                       Background="Transparent"
-                                       HorizontalAlignment="Center"
-                                       VerticalAlignment="Center"/>
-                            <TextBox Text="0" x:Name="PART_TextBox" VerticalContentAlignment="Center"
-                                     HorizontalContentAlignment="Center"
-                                     BorderThickness="0" Background="Transparent" HorizontalAlignment="Stretch"
-                                     VerticalAlignment="Center" Padding="0,0,0,0"/>
-                            <TextBlock x:Name="PART_HintTextBlock" Padding="2,0,2,0"
-                                       Background="Transparent"
-                                       HorizontalAlignment="Center"
-                                       Foreground="{DynamicResource ABrush.Foreground.Disabled}"
-                                       Text="{TemplateBinding EditingHint}" IsVisible="False"/>
-                        </Grid>
-                    </Grid>
+                    </Panel>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>

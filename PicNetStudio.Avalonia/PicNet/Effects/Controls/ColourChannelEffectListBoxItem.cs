@@ -1,4 +1,4 @@
-// 
+﻿// 
 // Copyright (c) 2023-2024 REghZy
 // 
 // This file is part of PicNetStudio.
@@ -17,14 +17,29 @@
 // along with PicNetStudio. If not, see <https://www.gnu.org/licenses/>.
 // 
 
-using Avalonia.Interactivity;
+using Avalonia.Controls.Primitives;
+using PicNetStudio.Avalonia.PicNet.Layers;
 
-namespace PicNetStudio.Avalonia.PicNet.Controls.Dragger;
+namespace PicNetStudio.Avalonia.PicNet.Effects.Controls;
 
-public class EditCompletedEventArgs : RoutedEventArgs {
-    public bool IsCancelled { get; }
+/// <summary>
+/// A layer state modifier control that controls the visibility
+/// </summary>
+public class ColourChannelEffectListBoxItem : BaseEffectListBoxItem {
+    public new BaseVisualLayer Layer => (BaseVisualLayer) base.Layer;
+    
+    public ColourChannelEffectListBoxItem() {
+    }
 
-    public EditCompletedEventArgs(bool cancelled) : base(NumberDragger.EditCompletedEvent) {
-        this.IsCancelled = cancelled;
+    protected override void OnConnected() {
+        base.OnConnected();
+    }
+
+    protected override void OnDisconnected() {
+        base.OnDisconnected();
+    }
+
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e) {
+        base.OnApplyTemplate(e);
     }
 }

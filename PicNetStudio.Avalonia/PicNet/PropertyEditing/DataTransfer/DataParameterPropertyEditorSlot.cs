@@ -81,7 +81,7 @@ public abstract class DataParameterPropertyEditorSlot : PropertyEditorSlot {
 
     protected DataParameterPropertyEditorSlot(DataParameter parameter, Type applicableType, string? displayName = null) : base(applicableType) {
         this.Parameter = parameter ?? throw new ArgumentNullException(nameof(parameter));
-        this.displayName = displayName ?? parameter.Key;
+        this.displayName = displayName ?? parameter.Name;
     }
 
     protected override void OnHandlersLoaded() {

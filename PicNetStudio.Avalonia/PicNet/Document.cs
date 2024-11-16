@@ -17,7 +17,8 @@
 // along with PicNetStudio. If not, see <https://www.gnu.org/licenses/>.
 // 
 
-using PicNetStudio.Avalonia.PicNet.Layers;
+using PicNetStudio.Avalonia.DataTransfer;
+using PicNetStudio.Avalonia.Utils.Accessing;
 
 namespace PicNetStudio.Avalonia.PicNet;
 
@@ -26,9 +27,16 @@ public delegate void EditorChangedEventHandler(Document document, Editor? oldEdi
 /// <summary>
 /// Represents an document which contains the canvas, file information, etc.
 /// </summary>
-public class Document {
-    private BaseLayerTreeObject? activeLayerTreeObject;
+public class Document : ITransferableData {
+    public static readonly DataParameterString FilePathParameter = DataParameter.Register(new DataParameterString(typeof(Document), nameof(FilePath), null, ValueAccessors.Reflective<string?>(typeof(Document), nameof(filePath))));
 
+    private string? filePath = FilePathParameter.DefaultValue;
+
+    public string? FilePath {
+        get => this.filePath;
+        set => DataParameter.SetValueHelper(this, FilePathParameter, ref this.filePath, value);
+    }
+    
     /// <summary>
     /// The editor that this document exists in
     /// </summary>
@@ -41,7 +49,10 @@ public class Document {
 
     public Canvas Canvas { get; }
 
+    public TransferableData TransferableData { get; }
+    
     public Document() {
+        this.TransferableData = new TransferableData(this);
         this.Canvas = new Canvas(this);
     }
 

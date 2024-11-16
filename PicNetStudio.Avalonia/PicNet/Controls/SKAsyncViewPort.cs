@@ -28,12 +28,18 @@ using SkiaSharp;
 
 namespace PicNetStudio.Avalonia.PicNet.Controls;
 
+public delegate void AsyncViewPortPreRenderExtensionEventHandler(SKAsyncViewPort sender, SKSurface surface);
+public delegate void AsyncViewPortRenderExtensionEventHandler(SKAsyncViewPort sender, DrawingContext ctx, Rect bounds);
+
 public class SKAsyncViewPort : Control {
     private WriteableBitmap? bitmap;
     private SKSurface? targetSurface;
     private SKImageInfo skImageInfo;
     private bool ignorePixelScaling;
     private ILockedFramebuffer lockKey;
+
+    public SKPoint FeedbackZoomOrigin;
+    public SKPoint FeedbackZoomSize;
 
     /// <summary>Gets the current canvas size.</summary>
     /// <value />
@@ -50,6 +56,9 @@ public class SKAsyncViewPort : Control {
             this.InvalidateVisual();
         }
     }
+
+    public event AsyncViewPortPreRenderExtensionEventHandler? PreRenderExtension;
+    public event AsyncViewPortRenderExtensionEventHandler? PostRenderExtension;
 
     public SKImageInfo FrameInfo => this.skImageInfo;
 
@@ -92,10 +101,11 @@ public class SKAsyncViewPort : Control {
     public void EndRender(bool invalidateVisual = true) {
         // SKImageInfo info = this.skImageInfo;
         // this.lockKey.AddDirtyRect(new Int32Rect(0, 0, info.Width, info.Height));
+        this.PreRenderExtension?.Invoke(this, this.targetSurface!);
         this.lockKey.Dispose();
         if (invalidateVisual)
             this.InvalidateVisual();
-        this.targetSurface?.Dispose();
+        this.targetSurface!.Dispose();
         this.targetSurface = null;
     }
 
@@ -105,6 +115,7 @@ public class SKAsyncViewPort : Control {
         if (bmp != null) {
             Rect bounds = this.Bounds;
             context.DrawImage(bmp, new Rect(0d, 0d, bounds.Width, bounds.Height));
+            this.PostRenderExtension?.Invoke(this, context, bounds);
         }
     }
 

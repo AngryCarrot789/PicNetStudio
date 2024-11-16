@@ -22,7 +22,7 @@ using PicNetStudio.Avalonia.PicNet.PropertyEditing.DataTransfer;
 
 namespace PicNetStudio.Avalonia.PicNet.PropertyEditing.Controls.DataTransfer;
 
-public class DataParameterDoublePropertyEditorControl : BaseNumberDataParamPropEditorControl {
+public class DataParameterDoublePropertyEditorControl : BaseNumberDraggerDataParamPropEditorControl {
     public new DataParameterDoublePropertyEditorSlot SlotModel => (DataParameterDoublePropertyEditorSlot) base.SlotControl.Model;
 
     public DataParameterDoublePropertyEditorControl() {
@@ -46,7 +46,7 @@ public class DataParameterDoublePropertyEditorControl : BaseNumberDataParamPropE
         DragStepProfile profile = slot.StepProfile;
         this.dragger.TinyChange = profile.TinyStep;
         this.dragger.SmallChange = profile.SmallStep;
-        this.dragger.LargeChange = profile.NormalStep;
-        this.dragger.MassiveChange = profile.LargeStep;
+        this.dragger.NormalChange = profile.NormalStep;
+        this.dragger.LargeChange = profile.LargeStep;
     }
 }

@@ -209,6 +209,10 @@
         </Style>
     </ControlTheme>
 
+    <ControlTheme x:Key="PrimaryHierarchialExpanderStyle" TargetType="{x:Type Expander}" BasedOn="{StaticResource HierarchicalExpanderStyle}">
+        <Setter Property="Background" Value="{DynamicResource ABrush.Tone6.Background.Static}"/>
+    </ControlTheme>
+    
     <ControlTheme x:Key="SecondaryHierarchialExpanderStyle" TargetType="{x:Type Expander}">
         <Setter Property="Foreground" Value="{DynamicResource ABrush.Foreground.Static}"/>
         <Setter Property="Background" Value="Transparent"/>
@@ -240,9 +244,10 @@
                                           VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                                           HorizontalAlignment="Stretch"
                                           Theme="{StaticResource HierarchicalExpanderToggleButtonStyle_OLD}"/>
+                            
                             <ContentPresenter x:Name="ExpandSite" DockPanel.Dock="Bottom" Focusable="false"
                                               HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                              Margin="0,0,0,0" IsVisible="False"
+                                              Margin="{TemplateBinding Padding}" IsVisible="False"
                                               VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                                               Content="{TemplateBinding Content}"
                                               ContentTemplate="{TemplateBinding ContentTemplate}"
@@ -252,19 +257,15 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
-        <Style Selector="^[IsExpanded=True] /template/ ContentPresenter#ExpandSite">
-            <Setter Property="IsVisible" Value="False"/>
+        <Style Selector="^:expanded /template/ ContentPresenter#ExpandSite">
+            <Setter Property="IsVisible" Value="true"/>
         </Style>
         <Style Selector="^[IsEnabled=False]">
             <Setter Property="Foreground" Value="{DynamicResource ABrush.Foreground.Disabled}"/>
         </Style>
-        <Style Selector="^[IsExpanded=True] /template/ Separator#PART_Separator">
+        <Style Selector="^:expanded /template/ Separator#PART_Separator">
             <Setter Property="Background" Value="{DynamicResource SeparatorMouseOverBrush}"/>
         </Style>
-    </ControlTheme>
-
-    <ControlTheme x:Key="PrimaryHierarchialExpanderStyle" TargetType="{x:Type Expander}" BasedOn="{StaticResource HierarchicalExpanderStyle}">
-        <Setter Property="Background" Value="{DynamicResource ABrush.Tone6.Background.Static}"/>
     </ControlTheme>
 
     <l:GroupTypeToStyleConverter x:Key="GroupTypeToHierarchialExpanderStyleConverter"

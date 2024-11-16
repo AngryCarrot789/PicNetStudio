@@ -19,6 +19,7 @@
 
 using System;
 using PicNetStudio.Avalonia.DataTransfer;
+using PicNetStudio.Avalonia.PicNet.Effects;
 using PicNetStudio.Avalonia.Utils.Accessing;
 using SkiaSharp;
 
@@ -104,7 +105,16 @@ public abstract class BaseVisualLayer : BaseLayerTreeObject {
         
         DataParameter.AddMultipleHandlers(OnDataParameterChangedToInvalidateVisual, parameters);
     }
-        
+    
+    protected override void OnEffectAdded(int index, BaseLayerEffect effect) {
+        base.OnEffectAdded(index, effect);
+        this.InvalidateVisual();
+    }
+
+    protected override void OnEffectRemoved(int index, BaseLayerEffect effect) {
+        base.OnEffectRemoved(index, effect);
+        this.InvalidateVisual();
+    }
     
     /// <summary>
     /// Marks this layer as having an invalid rendered state, meaning that any pre-rendered frame using this layer must be re-rendered

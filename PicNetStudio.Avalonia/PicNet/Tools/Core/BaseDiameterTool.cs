@@ -24,6 +24,9 @@ using PicNetStudio.Avalonia.Utils.Accessing;
 
 namespace PicNetStudio.Avalonia.PicNet.Tools.Core;
 
+/// <summary>
+/// Base class for a <see cref="BaseRasterisedDrawingTool"/> that uses a diameter based tool size
+/// </summary>
 public abstract class BaseDiameterTool : BaseRasterisedDrawingTool {
     public static readonly DataParameterFloat DiameterDataParameter =
         DataParameter.Register(

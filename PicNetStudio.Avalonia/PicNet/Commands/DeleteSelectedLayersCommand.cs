@@ -42,7 +42,7 @@ public class DeleteSelectedLayersCommand : AsyncDocumentCommand {
         
         List<BaseLayerTreeObject> list = manager.SelectedItems.ToList();
         if (list.Count > 0) {
-            MessageBoxData message = new MessageBoxData("Delete layers", $"Are you sure you want to delete {list.Count} layers?") {
+            MessageBoxData message = new MessageBoxData("Delete layers", $"Are you sure you want to delete {list.Count} layer{(list.Count == 1 ? "" : "s")}?") {
                 Buttons = MessageBoxButton.OKCancel,
                 YesOkText = "Delete",
                 DefaultButton = MessageBoxResult.OK

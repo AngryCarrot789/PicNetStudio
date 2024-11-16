@@ -28,13 +28,20 @@ namespace PicNetStudio.Avalonia.DataTransfer;
 public delegate void DataParameterValueChangedEventHandler(DataParameter parameter, ITransferableData owner);
 
 /// <summary>
-/// The core base class for all data parameters. A data parameter is similar to a <see cref="System.Reflection.Metadata.Parameter"/>, except the
-/// value cannot be automated. The purpose of this is to simplify the data transfer between objects and things
-/// like slots, as parameters do
+/// The core base class for all data parameters. A data parameter is used to simplify the data transfer between
+/// objects and the UI, such as property editor slots.
 /// <para>
 /// This class should typically not be overridden directly, instead, use <see cref="DataParameter{T}"/>,
 /// which provides mechanisms to Get/Set the value
 /// </para>
+/// <para>
+/// Parameters have 3 value-change events that are fired in a specific order:
+/// </para>
+/// <list type="bullet">
+/// <item>A specific parameter changed, relative to an instance of <see cref="ITransferableData"/></item>
+/// <item>Any parameter changed, relative to an instance of <see cref="ITransferableData"/></item>
+/// <item>A specific parameter changed, globally</item>
+/// </list>
 /// </summary>
 public abstract class DataParameter : IEquatable<DataParameter>, IComparable<DataParameter> {
     private static readonly Dictionary<string, DataParameter> RegistryMap;
@@ -52,14 +59,14 @@ public abstract class DataParameter : IEquatable<DataParameter>, IComparable<Dat
     public Type OwnerType { get; }
 
     /// <summary>
-    /// Gets this data parameter's unique key that identifies it relative to our <see cref="OwnerType"/>
+    /// Gets this data parameter's unique name that identifies it relative to our <see cref="OwnerType"/>
     /// </summary>
-    public string Key { get; }
+    public string Name { get; }
 
     /// <summary>
     /// Gets the globally registered index of this data parameter. This is the only property used for equality
     /// comparison between parameters for speed purposes. The global index should not be serialised because it
-    /// may not be the same as more parameters are registered, even if <see cref="Key"/> remains the same
+    /// may not be the same as more parameters are registered, even if <see cref="Name"/> remains the same
     /// </summary>
     public int GlobalIndex { get; private set; }
 
@@ -69,20 +76,29 @@ public abstract class DataParameter : IEquatable<DataParameter>, IComparable<Dat
     public DataParameterFlags Flags { get; }
 
     /// <summary>
-    /// Returns a string that is a concatenation of our owner type's simple name and our key, joined by '::'
+    /// Returns a string that is a concatenation of our owner type's simple name and our key, joined by '::'.
+    /// This is a globally unique value, and no two parameters can be registered with the same global keys
     /// </summary>
-    public string GlobalKey => this.OwnerType.Name + "::" + this.Key;
+    public string GlobalKey => this.OwnerType.Name + "::" + this.Name;
 
+    /// <summary>
+    /// Fired when the value of this parameter changes for any <see cref="ITransferableData"/> instance
+    /// </summary>
     public event DataParameterValueChangedEventHandler? ValueChanged;
 
-    protected DataParameter(Type ownerType, string key, DataParameterFlags flags) {
+    protected DataParameter(Type ownerType, string name, DataParameterFlags flags) {
         if (ownerType == null)
             throw new ArgumentNullException(nameof(ownerType));
-        if (string.IsNullOrWhiteSpace(key))
+        if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Key cannot be null, empty or consist of only whitespaces");
         this.OwnerType = ownerType;
-        this.Key = key;
+        this.Name = name;
         this.Flags = flags;
+    }
+    
+    static DataParameter() {
+        RegistryMap = new Dictionary<string, DataParameter>();
+        TypeToParametersMap = new Dictionary<Type, List<DataParameter>>();
     }
 
     /// <summary>
@@ -147,11 +163,6 @@ public abstract class DataParameter : IEquatable<DataParameter>, IComparable<Dat
     }
 
     #endregion
-
-    static DataParameter() {
-        RegistryMap = new Dictionary<string, DataParameter>();
-        TypeToParametersMap = new Dictionary<Type, List<DataParameter>>();
-    }
 
     public bool IsValueChanging(ITransferableData owner) {
         return owner.TransferableData.IsValueChanging(this);
@@ -289,17 +300,18 @@ public abstract class DataParameter : IEquatable<DataParameter>, IComparable<Dat
     }
 
     internal static void InternalInvokeValueChangeHandler(DataParameter parameter, ITransferableData owner, Delegate handler) {
-        if (handler.GetType() == typeof(DataParameterValueChangedEventHandler))
+        Type type = handler.GetType();
+        if (type == typeof(DataParameterValueChangedEventHandler))
             ((DataParameterValueChangedEventHandler) handler)(parameter, owner);
-        else if (handler.GetType() == typeof(DataParameterBoolValueChangedEventHandler))
+        else if (type == typeof(DataParameterBoolValueChangedEventHandler))
             ((DataParameterBoolValueChangedEventHandler) handler)((DataParameterBool) parameter, owner);
-        else if (handler.GetType() == typeof(DataParameterLongValueChangedEventHandler))
+        else if (type == typeof(DataParameterLongValueChangedEventHandler))
             ((DataParameterLongValueChangedEventHandler) handler)((DataParameterLong) parameter, owner);
-        else if (handler.GetType() == typeof(DataParameterFloatValueChangedEventHandler))
+        else if (type == typeof(DataParameterFloatValueChangedEventHandler))
             ((DataParameterFloatValueChangedEventHandler) handler)((DataParameterFloat) parameter, owner);
-        else if (handler.GetType() == typeof(DataParameterDoubleValueChangedEventHandler))
+        else if (type == typeof(DataParameterDoubleValueChangedEventHandler))
             ((DataParameterDoubleValueChangedEventHandler) handler)((DataParameterDouble) parameter, owner);
-        else if (handler.GetType() == typeof(DataParameterStringValueChangedEventHandler))
+        else if (type == typeof(DataParameterStringValueChangedEventHandler))
             ((DataParameterStringValueChangedEventHandler) handler)((DataParameterString) parameter, owner);
         else
             parameter.OnHandleGenericValueChanged(handler, owner);
@@ -340,14 +352,14 @@ public class DataParameter<T> : DataParameter {
 
     public T DefaultValue { get; }
 
-    public DataParameter(Type ownerType, string key, ValueAccessor<T> accessor, DataParameterFlags flags = DataParameterFlags.None) : base(ownerType, key, flags) {
+    public DataParameter(Type ownerType, string name, ValueAccessor<T> accessor, DataParameterFlags flags = DataParameterFlags.None) : base(ownerType, name, flags) {
         if (accessor == null)
             throw new ArgumentNullException(nameof(accessor));
         this.accessor = accessor;
         this.isObjectAccessPreferred = accessor.IsObjectPreferred;
     }
 
-    public DataParameter(Type ownerType, string key, T defaultValue, ValueAccessor<T> accessor, DataParameterFlags flags = DataParameterFlags.None) : this(ownerType, key, accessor, flags) {
+    public DataParameter(Type ownerType, string name, T defaultValue, ValueAccessor<T> accessor, DataParameterFlags flags = DataParameterFlags.None) : this(ownerType, name, accessor, flags) {
         this.DefaultValue = defaultValue;
     }
 

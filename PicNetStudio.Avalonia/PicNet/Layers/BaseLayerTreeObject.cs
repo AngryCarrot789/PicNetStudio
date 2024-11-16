@@ -22,6 +22,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using PicNetStudio.Avalonia.DataTransfer;
+using PicNetStudio.Avalonia.PicNet.Effects;
+using PicNetStudio.Avalonia.Utils.Collections.Observable;
 
 namespace PicNetStudio.Avalonia.PicNet.Layers;
 
@@ -34,13 +36,15 @@ public delegate void BaseLayerTreeObjectNameChangedEventHandler(BaseLayerTreeObj
 /// The base class for an object in the layer hierarchy for a canvas
 /// </summary>
 public abstract class BaseLayerTreeObject : ITransferableData {
+    private readonly SuspendableObservableList<BaseLayerEffect> effects;
+
     private CompositionLayer? parentLayer;
     private string name = "Layer Object";
-    
+
     // Updated by composition layer add/remove/move operations
     // !! Do not use to check if this layer has a parent or not !!
     // It is 0 by default, and may be invalid if an add/rem/move operations fails
-    private int indexInParent; 
+    private int indexInParent;
 
     /// <summary>
     /// Gets the canvas this layer currently exists in
@@ -51,6 +55,10 @@ public abstract class BaseLayerTreeObject : ITransferableData {
     /// Gets or sets the composition layer that is a direct parent to this layer
     /// </summary>
     public CompositionLayer? ParentLayer => this.parentLayer;
+
+    public ReadOnlyObservableList<BaseLayerEffect> Effects { get; }
+
+    public bool HasEffects => this.effects.Count > 0;
 
     public TransferableData TransferableData { get; }
 
@@ -84,6 +92,8 @@ public abstract class BaseLayerTreeObject : ITransferableData {
 
     protected BaseLayerTreeObject() {
         this.TransferableData = new TransferableData(this);
+        this.effects = new SuspendableObservableList<BaseLayerEffect>();
+        this.Effects = new ReadOnlyObservableList<BaseLayerEffect>(this.effects);
     }
 
     /// <summary>
@@ -115,6 +125,7 @@ public abstract class BaseLayerTreeObject : ITransferableData {
     /// <param name="oldParent">The previous parent (non-null when removing or moving)</param>
     /// <param name="newParent">The new parent (non-null when adding or moving)</param>
     protected virtual void OnParentChanged(CompositionLayer? oldParent, CompositionLayer? newParent) {
+        
     }
 
     /// <summary>
@@ -130,6 +141,7 @@ public abstract class BaseLayerTreeObject : ITransferableData {
     /// <param name="origin">The parent that was actually added. It may equal this layer's parent layer</param>
     /// <param name="oldParent">The origin's previous parent (non-null when removing or moving)</param>
     protected virtual void OnHierarchicalParentChanged(BaseLayerTreeObject origin, CompositionLayer? originOldParent) {
+        
     }
 
     /// <summary>
@@ -144,6 +156,7 @@ public abstract class BaseLayerTreeObject : ITransferableData {
     /// or being added into a composition layer that exists in a canvas). May equal the current instance
     /// </param>
     protected virtual void OnAttachedToCanvas(BaseLayerTreeObject origin) {
+        
     }
 
     /// <summary>
@@ -159,6 +172,56 @@ public abstract class BaseLayerTreeObject : ITransferableData {
     /// </param>
     /// <param name="oldCanvas">The canvas that we previously existed in</param>
     protected virtual void OnDetachedFromCanvas(BaseLayerTreeObject origin, Canvas oldCanvas) {
+        
+    }
+
+    protected virtual void OnEffectAdded(int index, BaseLayerEffect effect) {
+        
+    }
+
+    protected virtual void OnEffectRemoved(int index, BaseLayerEffect effect) {
+        
+    }
+    
+    public void AddEffect(BaseLayerEffect effect) => this.InsertEffect(this.effects.Count, effect);
+
+    public void InsertEffect(int index, BaseLayerEffect effect) {
+        if (index < 0)
+            throw new ArgumentOutOfRangeException(nameof(index), "Negative indices not allowed");
+        if (index > this.effects.Count)
+            throw new ArgumentOutOfRangeException(nameof(index), $"Index is beyond the range of this list: {index} > count({this.effects.Count})");
+
+        if (effect == null)
+            throw new ArgumentNullException(nameof(effect), "Cannot add a null effect");
+        if (effect.Layer == this)
+            throw new InvalidOperationException("Effect already exists in this effect. It must be removed first");
+        if (effect.Layer != null)
+            throw new InvalidOperationException("Effect already exists in another container. It must be removed first");
+
+        using (this.effects.SuspendEvents()) {
+            this.effects.Insert(index, effect);
+            BaseLayerEffect.InternalOnAddedToLayer(effect, this);
+        }
+
+        this.OnEffectAdded(index, effect);
+    }
+
+    public bool RemoveEffect(BaseLayerEffect effect) {
+        int index = this.effects.IndexOf(effect);
+        if (index == -1)
+            return false;
+        this.RemoveEffectAt(index);
+        return true;
+    }
+
+    public void RemoveEffectAt(int index) {
+        BaseLayerEffect effect = this.effects[index];
+        using (this.effects.SuspendEvents()) {
+            this.effects.RemoveAt(index);
+            BaseLayerEffect.InternalOnRemovedFromLayer(effect, this);
+        }
+        
+        this.OnEffectRemoved(index, effect);
     }
 
     public static bool CheckHaveParentsAndAllMatch(ISelectionManager<BaseLayerTreeObject> manager, [NotNullWhen(true)] out CompositionLayer? sameParent) {
@@ -282,7 +345,7 @@ public abstract class BaseLayerTreeObject : ITransferableData {
     protected internal static void InternalSetIndexInParent(BaseLayerTreeObject layer, int index) {
         layer.indexInParent = index;
     }
-    
+
     protected internal static int InternalIndexInParent(BaseLayerTreeObject layer) {
         return layer.indexInParent;
     }

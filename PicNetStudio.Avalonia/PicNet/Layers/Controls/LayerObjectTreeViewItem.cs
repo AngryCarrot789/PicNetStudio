@@ -31,6 +31,7 @@ using Avalonia.Interactivity;
 using PicNetStudio.Avalonia.Bindings;
 using PicNetStudio.Avalonia.Interactivity;
 using PicNetStudio.Avalonia.Interactivity.Contexts;
+using PicNetStudio.Avalonia.PicNet.Effects.Controls;
 using PicNetStudio.Avalonia.PicNet.Layers.StateMods.Controls;
 using PicNetStudio.Avalonia.Utils;
 using PicNetStudio.Avalonia.Utils.Collections.Observable;
@@ -56,7 +57,9 @@ public class LayerObjectTreeViewItem : TreeViewItem, ILayerNodeItem {
 
     private readonly IBinder<BaseLayerTreeObject> displayNameBinder = new GetSetAutoUpdateAndEventPropertyBinder<BaseLayerTreeObject>(HeaderProperty, nameof(BaseLayerTreeObject.NameChanged), b => b.Model.Name, (b, v) => b.Model.Name = (string) v);
     private readonly PropertyAutoSetter<BaseLayerTreeObject, LayerStateModifierListBox> stateModifierListBoxHelper;
+    private readonly PropertyAutoSetter<BaseLayerTreeObject, EffectListBox> effectListBoxHelper;
     private LayerStateModifierListBox? PART_StateModifierListBox => this.stateModifierListBoxHelper.TargetControl;
+    private LayerStateModifierListBox? PART_EffectListBox => this.stateModifierListBoxHelper.TargetControl;
     private Border? PART_DragDropMoveBorder;
     private bool isDragDropping;
     private bool isDragActive;
@@ -96,6 +99,7 @@ public class LayerObjectTreeViewItem : TreeViewItem, ILayerNodeItem {
 
     public LayerObjectTreeViewItem() {
         this.stateModifierListBoxHelper = new PropertyAutoSetter<BaseLayerTreeObject, LayerStateModifierListBox>(LayerStateModifierListBox.LayerObjectProperty);
+        this.effectListBoxHelper = new PropertyAutoSetter<BaseLayerTreeObject, EffectListBox>(EffectListBox.LayerObjectProperty);
         DragDrop.SetAllowDrop(this, true);
         DataManager.SetContextData(this, this.contextData = new ContextData().Set(DataKeys.LayerNodeKey, this));
     }
@@ -111,8 +115,7 @@ public class LayerObjectTreeViewItem : TreeViewItem, ILayerNodeItem {
         if (this.isEditingNameState) {
             this.PART_HeaderTextBox!.IsVisible = true;
             this.PART_HeaderTextBlock!.IsVisible = false;
-            this.PART_HeaderTextBox.Focus();
-            this.PART_HeaderTextBox.SelectAll();
+            BugFix.TextBox_FocusSelectAll(this.PART_HeaderTextBox);
         }
         else {
             this.PART_HeaderTextBox!.IsVisible = false;
@@ -123,6 +126,7 @@ public class LayerObjectTreeViewItem : TreeViewItem, ILayerNodeItem {
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e) {
         base.OnApplyTemplate(e);
         this.stateModifierListBoxHelper.SetControl(e.NameScope.GetTemplateChild<LayerStateModifierListBox>("PART_StateModifierListBox"));
+        this.effectListBoxHelper.SetControl(e.NameScope.GetTemplateChild<EffectListBox>("PART_EffectListBox"));
         this.PART_DragDropMoveBorder = e.NameScope.GetTemplateChild<Border>(nameof(this.PART_DragDropMoveBorder));
         this.PART_HeaderTextBlock = e.NameScope.GetTemplateChild<TextBlock>(nameof(this.PART_HeaderTextBlock));
         this.PART_HeaderTextBox = e.NameScope.GetTemplateChild<TextBox>(nameof(this.PART_HeaderTextBox));
@@ -157,6 +161,13 @@ public class LayerObjectTreeViewItem : TreeViewItem, ILayerNodeItem {
             this.Focus();
             e.Handled = true;
         }
+
+        // FIX prevent arrow key presses in text box from changing the selected tree item.
+        // Weirdly, it's only an issue when pressing Down (and I guess up too) and
+        // Right (when at the end of the text box)
+        if (e.Key == Key.Left || e.Key == Key.Right || e.Key == Key.Up || e.Key == Key.Down) {
+            e.Handled = true;
+        }
     }
 
     public void OnAdding(LayerObjectTreeView tree, LayerObjectTreeViewItem parentNode, BaseLayerTreeObject layer) {
@@ -177,6 +188,7 @@ public class LayerObjectTreeViewItem : TreeViewItem, ILayerNodeItem {
 
         this.displayNameBinder.Attach(this, this.LayerObject!);
         this.stateModifierListBoxHelper.SetModel(this.LayerObject);
+        this.effectListBoxHelper.SetModel(this.LayerObject);
         DataManager.SetContextData(this, this.contextData.Set(DataKeys.LayerObjectKey, this.LayerObject));
     }
 
@@ -189,6 +201,7 @@ public class LayerObjectTreeViewItem : TreeViewItem, ILayerNodeItem {
 
         this.displayNameBinder.Detach();
         this.stateModifierListBoxHelper.SetModel(null);
+        this.effectListBoxHelper.SetModel(null);
     }
 
     public void OnRemoved() {

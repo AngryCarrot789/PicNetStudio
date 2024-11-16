@@ -18,7 +18,6 @@
 // 
 
 using System.Collections.Generic;
-using System.Diagnostics;
 using Avalonia;
 using Avalonia.Input;
 using PicNetStudio.Avalonia.PicNet.Tools;
@@ -102,7 +101,9 @@ public class CanvasInputHandler {
         }
 
         if (this.control.Document is Document document && document.Editor?.ToolBar.ActiveTool is BaseCanvasTool activeTool) {
-            ProcessChangedButtons(pointer.Position, document, activeTool, e.ClickCount, oldButtons, newButtons);
+            if (ProcessChangedButtons(pointer.Position, document, activeTool, e.ClickCount, oldButtons, newButtons, e.KeyModifiers)) {
+                e.Pointer.Capture(this.control);
+            }
         }
     }
 
@@ -114,10 +115,12 @@ public class CanvasInputHandler {
             // no buttons changed, so do nothing
             return;
         }
-
-        if (this.control.Document is Document document && document.Editor?.ToolBar.ActiveTool is BaseCanvasTool activeTool) {
-            ProcessChangedButtons(pointer.Position, document, activeTool, 1, oldButtons, newButtons);
-        }
+        
+        if (ReferenceEquals(e.Pointer.Captured, this.control))
+            e.Pointer.Capture(null);
+        
+        if (this.control.Document is Document document && document.Editor?.ToolBar.ActiveTool is BaseCanvasTool activeTool)
+            ProcessChangedButtons(pointer.Position, document, activeTool, 1, oldButtons, newButtons, e.KeyModifiers);
     }
 
     private void OnPointerPointerMoved(object? sender, PointerEventArgs e) {
@@ -136,25 +139,25 @@ public class CanvasInputHandler {
                 e.Handled = activeTool.OnCursorMoved(document, point.X, point.Y, newButtons);
             }
             else {
-                e.Handled = ProcessChangedButtons(point, document, activeTool, 1, oldButtons, newButtons);
+                e.Handled = ProcessChangedButtons(point, document, activeTool, 1, oldButtons, newButtons, e.KeyModifiers);
             }
         }
-
+        
         this.lastMouseMove = point;
     }
 
-    private static bool ProcessChangedButtons(Point point, Document document, BaseCanvasTool activeTool, int clickCount, EnumCursorType oldButtons, EnumCursorType newButtons) {
+    private static bool ProcessChangedButtons(Point point, Document document, BaseCanvasTool activeTool, int clickCount, EnumCursorType oldButtons, EnumCursorType newButtons, KeyModifiers modifiers) {
         bool handled = false;
         EnumCursorType addedFlags = (oldButtons ^ newButtons) & newButtons;
         foreach (EnumCursorType type in GetEnumerableFlagSet(addedFlags)) {
-            Debug.WriteLine("Cursor pressed: " + type);
-            handled |= activeTool.OnCursorPressed(document, point.X, point.Y, clickCount, type);
+            // Debug.WriteLine("Cursor pressed: " + type);
+            handled |= activeTool.OnCursorPressed(document, point.X, point.Y, clickCount, type, modifiers);
         }
 
         EnumCursorType removedFlags = (oldButtons ^ newButtons) & oldButtons;
         foreach (EnumCursorType type in GetEnumerableFlagSet(removedFlags)) {
-            Debug.WriteLine("Cursor released: " + type);
-            handled |= activeTool.OnCursorReleased(document, point.X, point.Y, type);
+            // Debug.WriteLine("Cursor released: " + type);
+            handled |= activeTool.OnCursorReleased(document, point.X, point.Y, type, modifiers);
         }
 
         return handled;

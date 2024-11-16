@@ -18,6 +18,7 @@
 // 
 
 using System.Collections.Generic;
+using PicNetStudio.Avalonia.PicNet.Controls.Dragger;
 using PicNetStudio.Avalonia.PicNet.Layers;
 using PicNetStudio.Avalonia.PicNet.Layers.CustomParameters.BlendMode;
 using PicNetStudio.Avalonia.PicNet.PropertyEditing.Core;
@@ -38,15 +39,20 @@ public class PicNetPropertyEditor : BasePropertyEditor {
     
     private PicNetPropertyEditor() {
         {
-            this.BaseLayerObjectGroup = new SimplePropertyEditorGroup(typeof(BaseLayerTreeObject)) {
+            SimplePropertyEditorGroup layer = this.BaseLayerObjectGroup = new SimplePropertyEditorGroup(typeof(BaseLayerTreeObject)) {
                 DisplayName = "Layer", IsExpanded = true
             };
 
-            this.BaseLayerObjectGroup.AddItem(new LayerNamePropertyEditorSlot());
-            this.BaseLayerObjectGroup.AddItem(new DataParameterBooleanPropertyEditorSlot(BaseVisualLayer.IsRenderVisibleParameter, typeof(BaseVisualLayer), "Is Render Visible"));
-            this.BaseLayerObjectGroup.AddItem(new DataParameterBooleanPropertyEditorSlot(BaseVisualLayer.IsExportVisibleParameter, typeof(BaseVisualLayer), "Is Export Visible"));
-            this.BaseLayerObjectGroup.AddItem(new DataParameterBlendModePropertyEditorSlot(BaseVisualLayer.BlendModeParameter, typeof(BaseVisualLayer)));
-            this.BaseLayerObjectGroup.AddItem(new DataParameterFloatPropertyEditorSlot(BaseVisualLayer.OpacityParameter, typeof(BaseVisualLayer), "Opacity", DragStepProfile.UnitOne));
+            layer.AddItem(new LayerNamePropertyEditorSlot());
+            layer.AddItem(new DataParameterBlendModePropertyEditorSlot(BaseVisualLayer.BlendModeParameter, typeof(BaseVisualLayer)));
+            layer.AddItem(new DataParameterFloatPropertyEditorSlot(BaseVisualLayer.OpacityParameter, typeof(BaseVisualLayer), "Opacity", DragStepProfile.UnitOne) {ValueFormatter = UnitToPercentFormatter.Standard});
+
+            SimplePropertyEditorGroup channelGroup = new SimplePropertyEditorGroup(typeof(RasterLayer), GroupType.SecondaryExpander) {DisplayName = "Channels"};
+            channelGroup.AddItem(new DataParameterFloatPropertyEditorSlot(RasterLayer.ChannelRParameter, typeof(RasterLayer), "Channel R", DragStepProfile.UnitOne) {ValueFormatter = UnitToPercentFormatter.Standard});
+            channelGroup.AddItem(new DataParameterFloatPropertyEditorSlot(RasterLayer.ChannelGParameter, typeof(RasterLayer), "Channel G", DragStepProfile.UnitOne) {ValueFormatter = UnitToPercentFormatter.Standard});
+            channelGroup.AddItem(new DataParameterFloatPropertyEditorSlot(RasterLayer.ChannelBParameter, typeof(RasterLayer), "Channel B", DragStepProfile.UnitOne) {ValueFormatter = UnitToPercentFormatter.Standard});
+            channelGroup.AddItem(new DataParameterFloatPropertyEditorSlot(RasterLayer.ChannelAParameter, typeof(RasterLayer), "Channel A", DragStepProfile.UnitOne) {ValueFormatter = UnitToPercentFormatter.Standard});
+            layer.AddItem(channelGroup);
         }
 
         this.Root.AddItem(this.BaseLayerObjectGroup);

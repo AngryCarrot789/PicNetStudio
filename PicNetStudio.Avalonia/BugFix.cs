@@ -1,4 +1,4 @@
-// 
+﻿// 
 // Copyright (c) 2023-2024 REghZy
 // 
 // This file is part of PicNetStudio.
@@ -17,12 +17,24 @@
 // along with PicNetStudio. If not, see <https://www.gnu.org/licenses/>.
 // 
 
-namespace PicNetStudio.Avalonia.PicNet.Controls.Dragger;
+using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
+using Avalonia.VisualTree;
 
-public class ValueStringFormatter : IValueFormatter {
-    public string Format { get; set; }
+namespace PicNetStudio.Avalonia;
 
-    public string ToString(double value, int? places) {
-        return string.Format(this.Format ?? "{0}", value.ToString());
+public class BugFix {
+    public static void TextBox_FocusSelectAll(TextBox textBox) {
+        textBox.Focus();
+        textBox.SelectAll();
+        
+        // Fixes an issue with the TextPresenter being rendered before the
+        // SelectionStart/SelectionEnd properties update via the TemplateBinding
+        // in the TextBox's ControlTheme
+        TextPresenter? presenter = textBox.FindDescendantOfType<TextPresenter>(false);
+        if (presenter != null) {
+            presenter.CoerceValue(TextPresenter.SelectionStartProperty);
+            presenter.CoerceValue(TextPresenter.SelectionEndProperty);
+        }
     }
 }

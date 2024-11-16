@@ -67,10 +67,10 @@
     <!-- ######################################################################################################################################################################## -->
 
     <!-- Data Transferable Property Editors -->
-    <ControlTheme x:Key="{x:Type dt:BaseNumberDataParamPropEditorControl}" TargetType="{x:Type dt:BaseNumberDataParamPropEditorControl}">
+    <ControlTheme x:Key="{x:Type dt:BaseNumberDraggerDataParamPropEditorControl}" TargetType="{x:Type dt:BaseNumberDraggerDataParamPropEditorControl}">
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="{x:Type dt:BaseNumberDataParamPropEditorControl}">
+                <ControlTemplate TargetType="{x:Type dt:BaseNumberDraggerDataParamPropEditorControl}">
                     <Grid Margin="5,0,2,0">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="{Binding RelativeSource={RelativeSource AncestorType={x:Type l:PropertyEditorControl}}, Path=ColumnWidth0, Mode=TwoWay}"/>
@@ -79,28 +79,7 @@
                         </Grid.ColumnDefinitions>
                         <CheckBox x:Name="PART_DisplayNameCheckBox" VerticalAlignment="Center" Grid.Row="0" Grid.Column="0"
                                   Theme="{TemplateBinding IsCheckBoxToggleable, Converter={StaticResource IsCheckBoxToggleableToStyleConverter}}"/>
-                        <d:NumberDragger x:Name="PART_DraggerX" Grid.Row="0" Grid.Column="2" Height="20"
-                                         BorderBrush="Black" Theme="{StaticResource AbletonNumberDraggerWithoutProgressStyle}"
-                                         Padding="4,2" PreviewRoundedPlaces="2"/>
-                    </Grid>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </ControlTheme>
-
-    <ControlTheme x:Key="{x:Type dt:BaseSliderDataParamPropEditorControl}" TargetType="{x:Type dt:BaseSliderDataParamPropEditorControl}">
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="{x:Type dt:BaseSliderDataParamPropEditorControl}">
-                    <Grid Margin="5,0,2,0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="{Binding RelativeSource={RelativeSource AncestorType={x:Type l:PropertyEditorControl}}, Path=ColumnWidth0, Mode=TwoWay}"/>
-                            <ColumnDefinition Width="{Binding RelativeSource={RelativeSource AncestorType={x:Type l:PropertyEditorControl}}, Path=ColumnWidth1, Mode=TwoWay}"/>
-                            <ColumnDefinition Width="{Binding RelativeSource={RelativeSource AncestorType={x:Type l:PropertyEditorControl}}, Path=ColumnWidth2, Mode=TwoWay}"/>
-                        </Grid.ColumnDefinitions>
-                        <CheckBox x:Name="PART_DisplayNameCheckBox" VerticalAlignment="Center" Grid.Row="0" Grid.Column="0"
-                                  Theme="{TemplateBinding IsCheckBoxToggleable, Converter={StaticResource IsCheckBoxToggleableToStyleConverter}}"/>
-                        <Slider x:Name="PART_Slider" Grid.Row="0" Grid.Column="2" Height="20" BorderBrush="Black" Padding="4,2"/>
+                        <d:NumberDragger x:Name="PART_Dragger" Grid.Row="0" Grid.Column="2" Height="20" BorderBrush="Black" Padding="4,2"/>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
@@ -166,14 +145,14 @@
 
     <ControlTheme x:Key="{x:Type dt:DataParameterFloatPropertyEditorControl}"
                   TargetType="{x:Type dt:DataParameterFloatPropertyEditorControl}"
-                  BasedOn="{StaticResource {x:Type dt:BaseSliderDataParamPropEditorControl}}"/>
+                  BasedOn="{StaticResource {x:Type dt:BaseNumberDraggerDataParamPropEditorControl}}"/>
 
     <ControlTheme x:Key="{x:Type dt:DataParameterDoublePropertyEditorControl}"
                   TargetType="{x:Type dt:DataParameterDoublePropertyEditorControl}"
-                  BasedOn="{StaticResource {x:Type dt:BaseSliderDataParamPropEditorControl}}"/>
+                  BasedOn="{StaticResource {x:Type dt:BaseNumberDraggerDataParamPropEditorControl}}"/>
 
     <ControlTheme x:Key="{x:Type dt:DataParameterLongPropertyEditorControl}"
                   TargetType="{x:Type dt:DataParameterLongPropertyEditorControl}"
-                  BasedOn="{StaticResource {x:Type dt:BaseSliderDataParamPropEditorControl}}"/>
+                  BasedOn="{StaticResource {x:Type dt:BaseNumberDraggerDataParamPropEditorControl}}"/>
 
 </ResourceDictionary>

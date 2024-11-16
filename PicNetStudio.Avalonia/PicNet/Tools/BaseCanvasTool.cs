@@ -47,7 +47,8 @@ public abstract class BaseCanvasTool : ITransferableData {
     ///     before this becomes 2, and a timeout resets it back to 1 (typically ~250ms)
     /// </param>
     /// <param name="cursor">The type of cursor that was involved</param>
-    public virtual bool OnCursorPressed(Document document, double x, double y, int count, EnumCursorType cursor) {
+    /// <param name="modifiers"></param>
+    public virtual bool OnCursorPressed(Document document, double x, double y, int count, EnumCursorType cursor, KeyModifiers modifiers) {
         return false;
     }
 
@@ -58,7 +59,8 @@ public abstract class BaseCanvasTool : ITransferableData {
     /// <param name="x">The X position where the event occurred (may be between 2 pixels)</param>
     /// <param name="y">The Y position where the event occurred (may be between 2 pixels)</param>
     /// <param name="cursor">The type of cursor that was involved</param>
-    public virtual bool OnCursorReleased(Document document, double x, double y, EnumCursorType cursor) {
+    /// <param name="modifiers"></param>
+    public virtual bool OnCursorReleased(Document document, double x, double y, EnumCursorType cursor, KeyModifiers modifiers) {
         return false;
     }
 
@@ -76,7 +78,10 @@ public abstract class BaseCanvasTool : ITransferableData {
     /// <summary>
     /// Invoked when the user presses a key down on only their keyboard
     /// </summary>
+    /// <param name="document"></param>
+    /// <param name="canvasUi"></param>
     /// <param name="key">The pressed key</param>
+    /// <param name="modifiers"></param>
     /// <returns>
     /// True when the key press is handled, false when the key press should be
     /// sent to the character input procedure, null when to ignore the key press

@@ -50,6 +50,7 @@ public class ToolBarItemControlContent : TemplatedControl {
         SingleToolSubRegistry.RegisterType<BrushTool>(() => new ToolBarItemControlContent_BrushTool());
         SingleToolSubRegistry.RegisterType<PencilTool>(() => new ToolBarItemControlContent_PencilTool());
         SingleToolSubRegistry.RegisterType<FloodFillTool>(() => new ToolBarItemControlContent_FloodFillTool());
+        SingleToolSubRegistry.RegisterType<SelectRegionTool>(() => new ToolBarItemControlContent_SelectRegionTool());
     }
 
     public void Connect(ToolBarItemControl item) {
@@ -73,8 +74,7 @@ public class ToolBarItemControlContent : TemplatedControl {
 /// The base class for a toolbar list box item that activates a single tool
 /// </summary>
 public abstract class ToolBarItemControlContentSingleTool : ToolBarItemControlContent;
-
 public class ToolBarItemControlContent_BrushTool : ToolBarItemControlContentSingleTool;
-
 public class ToolBarItemControlContent_PencilTool : ToolBarItemControlContentSingleTool;
 public class ToolBarItemControlContent_FloodFillTool : ToolBarItemControlContentSingleTool;
+public class ToolBarItemControlContent_SelectRegionTool : ToolBarItemControlContentSingleTool;

@@ -31,12 +31,15 @@ public delegate void CanvasActiveLayerChangedEventHandler(Canvas canvas, BaseLay
 
 public delegate void CanvasSizeChangedEventHandler(Canvas canvas, PixelSize oldSize, PixelSize newSize);
 
+public delegate void CanvasSelectionRegionChangedEventHandler(Canvas sender);
+
 /// <summary>
 /// Represents the canvas for a document. This contains layer information among other data
 /// </summary>
 public class Canvas {
     private PixelSize size;
     private BaseLayerTreeObject? activeLayerTreeObject;
+    private BaseSelection? selectionRegion;
 
     /// <summary>
     /// The document that owns this canvas
@@ -72,6 +75,17 @@ public class Canvas {
         }
     }
 
+    public BaseSelection? SelectionRegion {
+        get => this.selectionRegion;
+        set {
+            if (this.selectionRegion == value)
+                return;
+
+            this.selectionRegion = value;
+            this.SelectionRegionChanged?.Invoke(this);
+        }
+    }
+
     /// <summary>
     /// An event fired when the canvas has changed and any UI needs redrawing due to the pixels changing
     /// </summary>
@@ -87,6 +101,11 @@ public class Canvas {
     /// </summary>
     public event CanvasSizeChangedEventHandler? SizeChanged;
 
+    /// <summary>
+    /// An event fired when our selection region changes
+    /// </summary>
+    public event CanvasSelectionRegionChangedEventHandler? SelectionRegionChanged;
+    
     // TODO: two bitmaps containing pre-rendered layers before and after active layer, as to make rendering faster 
 
     public Canvas(Document document) {

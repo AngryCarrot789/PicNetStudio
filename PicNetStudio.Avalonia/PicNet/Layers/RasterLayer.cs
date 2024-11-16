@@ -17,16 +17,53 @@
 // along with PicNetStudio. If not, see <https://www.gnu.org/licenses/>.
 // 
 
+using PicNetStudio.Avalonia.DataTransfer;
+using PicNetStudio.Avalonia.Utils;
+using PicNetStudio.Avalonia.Utils.Accessing;
 using SkiaSharp;
 
 namespace PicNetStudio.Avalonia.PicNet.Layers;
 
 public class RasterLayer : BaseVisualLayer {
+    public static readonly DataParameterFloat ChannelRParameter = DataParameter.Register(new DataParameterFloat(typeof(RasterLayer), nameof(ChannelR), 1.0f, ValueAccessors.Reflective<float>(typeof(RasterLayer), nameof(channelR))));
+    public static readonly DataParameterFloat ChannelGParameter = DataParameter.Register(new DataParameterFloat(typeof(RasterLayer), nameof(ChannelG), 1.0f, ValueAccessors.Reflective<float>(typeof(RasterLayer), nameof(channelG))));
+    public static readonly DataParameterFloat ChannelBParameter = DataParameter.Register(new DataParameterFloat(typeof(RasterLayer), nameof(ChannelB), 1.0f, ValueAccessors.Reflective<float>(typeof(RasterLayer), nameof(channelB))));
+    public static readonly DataParameterFloat ChannelAParameter = DataParameter.Register(new DataParameterFloat(typeof(RasterLayer), nameof(ChannelA), 1.0f, ValueAccessors.Reflective<float>(typeof(RasterLayer), nameof(channelA))));
+
+    private float channelR = ChannelRParameter.DefaultValue;
+    private float channelG = ChannelGParameter.DefaultValue;
+    private float channelB = ChannelBParameter.DefaultValue;
+    private float channelA = ChannelAParameter.DefaultValue;
+
+    public float ChannelR {
+        get => this.channelR;
+        set => DataParameter.SetValueHelper(this, ChannelRParameter, ref this.channelR, value);
+    }
+    
+    public float ChannelG {
+        get => this.channelG;
+        set => DataParameter.SetValueHelper(this, ChannelGParameter, ref this.channelG, value);
+    }
+    
+    public float ChannelB {
+        get => this.channelB;
+        set => DataParameter.SetValueHelper(this, ChannelRParameter, ref this.channelB, value);
+    }
+    
+    public float ChannelA {
+        get => this.channelA;
+        set => DataParameter.SetValueHelper(this, ChannelAParameter, ref this.channelA, value);
+    }
+    
     public PNBitmap Bitmap { get; }
 
     public RasterLayer() {
         this.Bitmap = new PNBitmap();
         this.UsesCustomOpacityCalculation = true;
+    }
+
+    static RasterLayer() {
+        SetParameterAffectsRender(ChannelRParameter, ChannelGParameter, ChannelBParameter, ChannelAParameter);
     }
 
     protected override void LoadDataIntoClone(BaseLayerTreeObject clone) {
@@ -42,10 +79,20 @@ public class RasterLayer : BaseVisualLayer {
 
     public override void RenderLayer(ref RenderContext ctx) {
         if (this.Bitmap.HasPixels) {
-            SKColor colour = RenderUtils.BlendAlpha(SKColors.White, this.Opacity);
             using SKPaint paint = new SKPaint();
-            paint.Color = colour;
+            paint.Color = RenderUtils.BlendAlpha(SKColors.White, this.Opacity);
             paint.BlendMode = this.BlendMode;
+            if (!DoubleUtils.AreClose(this.ChannelR, 1.0) || !DoubleUtils.AreClose(this.ChannelG, 1.0) || !DoubleUtils.AreClose(this.ChannelB, 1.0) || !DoubleUtils.AreClose(this.ChannelA, 1.0)) {
+                float[] matrix = new float[] {
+                    this.ChannelR, 0, 0, 0, 0,
+                    0, this.ChannelG, 0, 0, 0,
+                    0, 0, this.ChannelB, 0, 0,
+                    0, 0, 0, this.ChannelA, 0
+                };
+
+                paint.ColorFilter = SKColorFilter.CreateColorMatrix(matrix);
+            }
+
             ctx.Canvas.DrawBitmap(this.Bitmap.Bitmap, 0, 0, paint);
         }
     }

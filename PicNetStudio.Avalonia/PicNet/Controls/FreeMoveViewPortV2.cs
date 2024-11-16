@@ -82,8 +82,11 @@ public class FreeMoveViewPortV2 : Border {
     private Point lastMousePointAbs; // Relative to parent container
     private Point lastMousePointRel; // Relative to us being zoomed and translated
 
-    public Control? ActualChild => ((TransformationContainer) this.Child)?.Child;
+    public TransformationContainer? CanvasTransformContainer { get; set; }
+    public SKAsyncViewPort? AsyncViewPort { get; set; }
 
+    public CanvasViewPortControl? ParentCanvasViewPort;
+    
     public FreeMoveViewPortV2() {
         this.Loaded += this.OnLoaded;
         this.AddHandler(PointerWheelChangedEvent, this.OnPreviewMouseWheel, RoutingStrategies.Tunnel, false);
@@ -109,12 +112,18 @@ public class FreeMoveViewPortV2 : Border {
         });
     }
 
+    public void Setup(CanvasViewPortControl control) {
+        this.ParentCanvasViewPort = control;
+        this.CanvasTransformContainer = control.PART_CanvasContainer;
+        this.AsyncViewPort = control.PART_SkiaViewPort;
+    }
+    
     private void OnLoaded(object? sender, RoutedEventArgs e) {
         this.FitContentToCenter();
     }
 
     public void FitContentToCenter() {
-        if (this.ActualChild is Control child) {
+        if (this.AsyncViewPort is SKAsyncViewPort child) {
             this.HorizontalOffset = 0;
             this.VerticalOffset = 0;
             this.ZoomScale = 1;
@@ -209,15 +218,15 @@ public class FreeMoveViewPortV2 : Border {
 
     protected override Size MeasureOverride(Size constraint) {
         Size size = new Size();
-        this.ActualChild?.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+        this.AsyncViewPort?.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
         return size;
     }
 
     protected override Size ArrangeOverride(Size arrangeSize) {
-        if (this.Child is TransformationContainer container) {
+        if (this.CanvasTransformContainer is TransformationContainer container) {
             container.RenderTransform = new ScaleTransform(this.ZoomScale, this.ZoomScale);
             container.RenderTransformOrigin = new RelativePoint(arrangeSize.Width / 2d, arrangeSize.Height / 2d, RelativeUnit.Absolute);
-
+            
             // Size visualSize = new Size(desired.Width * this.ZoomScale, desired.Height * this.ZoomScale);
             // if (visualSize.Width > arrangeSize.Width) {
             //     double diff = visualSize.Width - arrangeSize.Width;

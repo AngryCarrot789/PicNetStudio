@@ -19,6 +19,7 @@
 
 using System;
 using System.Collections.Generic;
+using Avalonia.Input;
 using PicNetStudio.Avalonia.PicNet.Layers;
 using SkiaSharp;
 
@@ -31,11 +32,11 @@ public class FloodFillTool : BaseDrawingTool {
     public FloodFillTool() {
     }
     
-    public override bool OnCursorPressed(Document document, double x, double y, int count, EnumCursorType cursor) {
-        if (base.OnCursorPressed(document, x, y, count, cursor))
+    public override bool OnCursorPressed(Document document, double x, double y, int count, EnumCursorType cursor, KeyModifiers modifiers) {
+        if (base.OnCursorPressed(document, x, y, count, cursor, modifiers))
             return true;
 
-        if (cursor != EnumCursorType.Primary && cursor != EnumCursorType.Secondary)
+        if ((cursor != EnumCursorType.Primary && cursor != EnumCursorType.Secondary) || modifiers != KeyModifiers.None)
             return false;
 
         if (document.Canvas.ActiveLayerTreeObject is not RasterLayer bitmapLayer)
@@ -43,6 +44,7 @@ public class FloodFillTool : BaseDrawingTool {
 
         SKColor replaceColour = cursor == EnumCursorType.Primary ? document.Editor!.PrimaryColour : document.Editor!.SecondaryColour;
         DrawPixels(bitmapLayer.Bitmap, (int) Math.Floor(x), (int) Math.Floor(y), (uint) replaceColour);
+
         document.Canvas.RaiseRenderInvalidated();
         return true;
     }

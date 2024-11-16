@@ -23,35 +23,31 @@ using PicNetStudio.Avalonia.PicNet.PropertyEditing.DataTransfer;
 
 namespace PicNetStudio.Avalonia.PicNet.PropertyEditing.Controls.DataTransfer;
 
-public class DataParameterLongPropertyEditorControl : BaseSliderDataParamPropEditorControl {
+public class DataParameterLongPropertyEditorControl : BaseNumberDraggerDataParamPropEditorControl {
     public new DataParameterLongPropertyEditorSlot SlotModel => (DataParameterLongPropertyEditorSlot) base.SlotControl.Model;
 
     public DataParameterLongPropertyEditorControl() {
     }
 
     protected override void UpdateControlValue() {
-        this.slider.Value = this.SlotModel.Value;
+        this.dragger.Value = this.SlotModel.Value;
     }
 
     protected override void UpdateModelValue() {
-        this.SlotModel.Value = (long) Math.Round(this.slider.Value);
+        this.SlotModel.Value = (long) Math.Round(this.dragger.Value);
     }
 
     protected override void OnConnected() {
         base.OnConnected();
         DataParameterLongPropertyEditorSlot slot = this.SlotModel;
         DataParameterLong param = slot.Parameter;
-        this.slider.Minimum = param.Minimum;
-        this.slider.Maximum = param.Maximum;
-
-        // DragStepProfile profile = slot.StepProfile;
-        // this.dragger.TinyChange = Math.Max(profile.TinyStep, 1.0);
-        // this.dragger.SmallChange = Math.Max(profile.SmallStep, 1.0);
-        // this.dragger.LargeChange = Math.Max(profile.NormalStep, 1.0);
-        // this.dragger.MassiveChange = Math.Max(profile.LargeStep, 1.0);
+        this.dragger.Minimum = param.Minimum;
+        this.dragger.Maximum = param.Maximum;
 
         DragStepProfile profile = slot.StepProfile;
-        this.slider.SmallChange = Math.Max(profile.SmallStep, 1.0);
-        this.slider.LargeChange = Math.Max(profile.NormalStep, 1.0);
+        this.dragger.TinyChange = Math.Max(profile.TinyStep, 1.0);
+        this.dragger.SmallChange = Math.Max(profile.SmallStep, 1.0);
+        this.dragger.NormalChange = Math.Max(profile.NormalStep, 1.0);
+        this.dragger.LargeChange = Math.Max(profile.LargeStep, 1.0);
     }
 }

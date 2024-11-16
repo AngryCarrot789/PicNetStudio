@@ -1,4 +1,4 @@
-//
+﻿//
 // Copyright (c) 2023-2024 REghZy
 //
 // This file is part of PicNetStudio.
@@ -17,8 +17,33 @@
 // along with PicNetStudio. If not, see <https://www.gnu.org/licenses/>.
 //
 
+using System;
+
 namespace PicNetStudio.Avalonia.PicNet.Controls.Dragger;
 
 public interface IValueFormatter {
-    string ToString(double value, int? places);
+    /// <summary>
+    /// Converts the value into a readable string
+    /// </summary>
+    /// <param name="value">The value to format</param>
+    /// <param name="isEditing">Whether the number dragger control is currently in the edit state</param>
+    /// <returns>The readable string</returns>
+    string ToString(double value, bool isEditing);
+
+    /// <summary>
+    /// Tries to convert a previously formatted value back into a double
+    /// </summary>
+    /// <param name="format">The previously formatted text</param>
+    /// <param name="value">The parsed value, or zero (in which case false is returned)</param>
+    /// <returns>
+    /// True if the format was parsed back to a double, or False if the value cannot due to data lost in the format process
+    /// </returns>
+    bool TryConvertToDouble(string format, out double value);
+
+    /// <summary>
+    /// An event fired when this formatter's internal state changes and would ultimately
+    /// result in the return value of <see cref="ToString"/> being different to a previous
+    /// value, despite the numeric value being the same
+    /// </summary>
+    event EventHandler InvalidateFormat;
 }

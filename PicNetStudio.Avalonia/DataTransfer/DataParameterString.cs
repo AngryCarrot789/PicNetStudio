@@ -41,13 +41,13 @@ public sealed class DataParameterString : DataParameter<string?> {
     /// </summary>
     public int MaximumChars { get; }
 
-    public DataParameterString(Type ownerType, string key, ValueAccessor<string?> accessor, DataParameterFlags flags = DataParameterFlags.None) : this(ownerType, key, null, accessor, flags) {
+    public DataParameterString(Type ownerType, string name, ValueAccessor<string?> accessor, DataParameterFlags flags = DataParameterFlags.None) : this(ownerType, name, null, accessor, flags) {
     }
 
-    public DataParameterString(Type ownerType, string key, string? defValue, ValueAccessor<string?> accessor, DataParameterFlags flags = DataParameterFlags.None) : this(ownerType, key, defValue, 0, int.MaxValue, accessor, flags) {
+    public DataParameterString(Type ownerType, string name, string? defValue, ValueAccessor<string?> accessor, DataParameterFlags flags = DataParameterFlags.None) : this(ownerType, name, defValue, 0, int.MaxValue, accessor, flags) {
     }
 
-    public DataParameterString(Type ownerType, string key, string? defValue, int minChars, int maxChars, ValueAccessor<string?> accessor, DataParameterFlags flags = DataParameterFlags.None) : base(ownerType, key, defValue, accessor, flags) {
+    public DataParameterString(Type ownerType, string name, string? defValue, int minChars, int maxChars, ValueAccessor<string?> accessor, DataParameterFlags flags = DataParameterFlags.None) : base(ownerType, name, defValue, accessor, flags) {
         if (minChars > maxChars)
             throw new ArgumentException($"Minimum value exceeds the maximum value: {minChars} > {maxChars}", nameof(minChars));
         this.hasCharLimit = minChars != 0 || maxChars != int.MaxValue;

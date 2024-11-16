@@ -26,10 +26,10 @@ namespace PicNetStudio.Avalonia.DataTransfer;
 public delegate void DataParameterBoolValueChangedEventHandler(DataParameterBool parameter, ITransferableData owner);
 
 public sealed class DataParameterBool : DataParameter<bool> {
-    public DataParameterBool(Type ownerType, string key, ValueAccessor<bool> accessor, DataParameterFlags flags = DataParameterFlags.None) : this(ownerType, key, false, accessor, flags) {
+    public DataParameterBool(Type ownerType, string name, ValueAccessor<bool> accessor, DataParameterFlags flags = DataParameterFlags.None) : this(ownerType, name, false, accessor, flags) {
     }
 
-    public DataParameterBool(Type ownerType, string key, bool defValue, ValueAccessor<bool> accessor, DataParameterFlags flags = DataParameterFlags.None) : base(ownerType, key, defValue, accessor, flags) {
+    public DataParameterBool(Type ownerType, string name, bool defValue, ValueAccessor<bool> accessor, DataParameterFlags flags = DataParameterFlags.None) : base(ownerType, name, defValue, accessor, flags) {
     }
 
     public override void SetValue(ITransferableData owner, bool value) {
