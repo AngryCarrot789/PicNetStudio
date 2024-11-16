@@ -17,25 +17,84 @@
 // along with PicNetStudio. If not, see <https://www.gnu.org/licenses/>.
 // 
 
+using System;
+using System.Collections.Generic;
+using PicNetStudio.Avalonia.PicNet.Layers;
 using SkiaSharp;
 
 namespace PicNetStudio.Avalonia.PicNet.Tools.Core;
 
 /// <summary>
-/// The brush tool, which lets you draw circular arrangement of pixels on the canvas, with an adjustable diameter
+/// The flood fill tool
 /// </summary>
-public class FloodFillTool : BaseDiameterTool {
+public class FloodFillTool : BaseDrawingTool {
     public FloodFillTool() {
-        this.CanDrawSecondaryColour = true;
+    }
+    
+    public override bool OnCursorPressed(Document document, double x, double y, int count, EnumCursorType cursor) {
+        if (base.OnCursorPressed(document, x, y, count, cursor))
+            return true;
+
+        if (cursor != EnumCursorType.Primary && cursor != EnumCursorType.Secondary)
+            return false;
+
+        if (document.Canvas.ActiveLayerTreeObject is not RasterLayer bitmapLayer)
+            return false;
+
+        SKColor replaceColour = cursor == EnumCursorType.Primary ? document.Editor!.PrimaryColour : document.Editor!.SecondaryColour;
+        DrawPixels(bitmapLayer.Bitmap, (int) Math.Floor(x), (int) Math.Floor(y), (uint) replaceColour);
+        document.Canvas.RaiseRenderInvalidated();
+        return true;
     }
 
-    public override void DrawPixels(PNBitmap bitmap, Document document, double x, double y, bool isPrimaryColour) {
+    public static unsafe void DrawPixels(PNBitmap bitmap, int fillX, int fillY, uint bgraReplace) {
         if (bitmap.Canvas == null)
             return;
 
-        using SKPaint paint = new SKPaint();
-        paint.Color = isPrimaryColour ? document.Editor!.PrimaryColour : document.Editor!.SecondaryColour;
-        paint.IsAntialias = true;
-        bitmap.Canvas.DrawCircle((float) x, (float) y, this.Diameter, paint);
+        // ExtFloodFill is better maybe???
+        int nBmpW = bitmap.Bitmap!.Width;
+        int nBmpH = bitmap.Bitmap!.Height;
+        if (fillX < 0 || fillX >= nBmpW || fillY < 0 || fillY >= nBmpH)
+            return;
+
+        uint* colourData = (uint*) bitmap.Bitmap!.GetPixels();
+        uint bgraTarget = *(colourData + (fillY * nBmpW + fillX));
+        if (bgraTarget == bgraReplace)
+            return;
+
+        // Could maybe optimise this by making ScanNeighbour prioritise
+        // certain directions, then maybe cache parts of the pointer offsets? eh
+        // (specifically the multiplication p.Y * width)
+        // Not sure if a ternary checking the last p.Y is faster than an integer multiplication though
+        
+        Queue<SKPointI> queue = new Queue<SKPointI>(2048);
+        queue.Enqueue(new SKPointI(fillX, fillY));
+        while (queue.Count > 0) {
+            SKPointI p = queue.Dequeue();
+            uint* pColour = colourData + (p.Y * nBmpW + p.X);
+            if (*pColour == bgraTarget) {
+                *pColour = bgraReplace;
+                ScanNeighbours(p.X, p.Y, nBmpW, nBmpH, queue);
+            }
+        }
+    }
+
+    private static void ScanNeighbours(int pX, int pY, int nBmpW, int nBmpH, Queue<SKPointI> queue) {
+        if (pX > 0 && pX <= nBmpW && pY > 0 && pY <= nBmpH)
+            queue.Enqueue(new SKPointI(pX - 1, pY - 1));
+        if (pX > 0 && pX <= nBmpW && pY >= 0 && pY < nBmpH)
+            queue.Enqueue(new SKPointI(pX - 1, pY));
+        if (pX > 0 && pX <= nBmpW && pY >= -1 && pY + 1 < nBmpH)
+            queue.Enqueue(new SKPointI(pX - 1, pY + 1));
+        if (pX >= 0 && pX < nBmpW && pY > 0 && pY <= nBmpH)
+            queue.Enqueue(new SKPointI(pX, pY - 1));
+        if (pX >= 0 && pX < nBmpW && pY >= -1 && pY + 1 < nBmpH)
+            queue.Enqueue(new SKPointI(pX, pY + 1));
+        if (pX >= -1 && pX + 1 < nBmpW && pY > 0 && pY <= nBmpH)
+            queue.Enqueue(new SKPointI(pX + 1, pY - 1));
+        if (pX >= -1 && pX + 1 < nBmpW && pY >= 0 && pY < nBmpH)
+            queue.Enqueue(new SKPointI(pX + 1, pY));
+        if (pX >= -1 && pX + 1 < nBmpW && pY >= -1 && pY + 1 < nBmpH)
+            queue.Enqueue(new SKPointI(pX + 1, pY + 1));
     }
 }

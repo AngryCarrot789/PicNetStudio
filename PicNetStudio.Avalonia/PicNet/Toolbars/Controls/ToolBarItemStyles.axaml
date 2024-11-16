@@ -113,4 +113,13 @@
             </ControlTemplate>
         </Setter>
     </ControlTheme>
+    <ControlTheme x:Key="{x:Type tb:ToolBarItemControlContent_FloodFillTool}"
+                  TargetType="{x:Type tb:ToolBarItemControlContent_FloodFillTool}"
+                  BasedOn="{StaticResource {x:Type tb:ToolBarItemControlContentSingleTool}}">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <TextBlock Text="FILL" FontSize="9"/>
+            </ControlTemplate>
+        </Setter>
+    </ControlTheme>
 </ResourceDictionary>

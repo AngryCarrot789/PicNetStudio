@@ -49,6 +49,7 @@ public class ToolBarItemControlContent : TemplatedControl {
         // Register single-tool specific tools
         SingleToolSubRegistry.RegisterType<BrushTool>(() => new ToolBarItemControlContent_BrushTool());
         SingleToolSubRegistry.RegisterType<PencilTool>(() => new ToolBarItemControlContent_PencilTool());
+        SingleToolSubRegistry.RegisterType<FloodFillTool>(() => new ToolBarItemControlContent_FloodFillTool());
     }
 
     public void Connect(ToolBarItemControl item) {
@@ -76,3 +77,4 @@ public abstract class ToolBarItemControlContentSingleTool : ToolBarItemControlCo
 public class ToolBarItemControlContent_BrushTool : ToolBarItemControlContentSingleTool;
 
 public class ToolBarItemControlContent_PencilTool : ToolBarItemControlContentSingleTool;
+public class ToolBarItemControlContent_FloodFillTool : ToolBarItemControlContentSingleTool;

@@ -71,6 +71,7 @@ public class EditorToolBar {
 
         this.items.Add(new SingleToolBarItem(new BrushTool()));
         this.items.Add(new SingleToolBarItem(new PencilTool()));
+        this.items.Add(new SingleToolBarItem(new FloodFillTool()));
 
         this.ActiveToolItem = (SingleToolBarItem?) this.items[0];
     }
