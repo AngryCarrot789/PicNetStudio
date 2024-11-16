@@ -17,6 +17,7 @@
 // along with PicNetStudio. If not, see <https://www.gnu.org/licenses/>.
 // 
 
+using System.Threading.Tasks;
 using PicNetStudio.Avalonia.CommandSystem;
 using PicNetStudio.Avalonia.Interactivity.Contexts;
 
@@ -48,4 +49,35 @@ public abstract class DocumentCommand : Command {
     }
 
     protected abstract void Execute(Editor editor, Document document, CommandEventArgs e);
+}
+
+public abstract class AsyncDocumentCommand : AsyncCommand {
+    protected virtual Executability CanExecute(Editor editor, Document document, CommandEventArgs e) {
+        return Executability.Valid;
+    }
+
+    protected abstract Task Execute(Editor editor, Document document, CommandEventArgs e);
+
+    protected override Executability CanExecuteOverride(CommandEventArgs e) {
+        if (DataKeys.DocumentKey.TryGetContext(e.ContextData, out Document? document) && document.Editor != null) {
+            return this.CanExecute(document.Editor, document, e);
+        }
+        else if (DataKeys.EditorKey.TryGetContext(e.ContextData, out Editor? editor) && editor.ActiveDocument != null) {
+            return this.CanExecute(editor, editor.ActiveDocument, e);
+        }
+
+        return Executability.Invalid;
+    }
+
+    protected override Task ExecuteAsync(CommandEventArgs e) {
+        if (DataKeys.DocumentKey.TryGetContext(e.ContextData, out Document? document) && document.Editor != null) {
+            return this.Execute(document.Editor, document, e);
+        }
+        else if (DataKeys.EditorKey.TryGetContext(e.ContextData, out Editor? editor) && editor.ActiveDocument != null) {
+            return this.Execute(editor, editor.ActiveDocument, e);
+        }
+        else {
+            return Task.CompletedTask;
+        }
+    }
 }

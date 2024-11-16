@@ -24,10 +24,12 @@ using PicNetStudio.Avalonia.DataTransfer;
 namespace PicNetStudio.Avalonia.Bindings;
 
 /// <summary>
-/// The most basic fully automatic data parameter binder
+/// The most basic fully automatic data parameter binder. This uses the object getter/setter of both
+/// the control and the parameter's accessor. It also provides converter functions for easy conversion
+/// between different types (e.g. string to double and vice versa)
 /// </summary>
-/// <typeparam name="TModel"></typeparam>
-public class SimpleDataParameterPropertyBinder<TModel> : BaseAutoUpdatePropertyBinder<TModel> where TModel : class, ITransferableData {
+/// <typeparam name="TModel">The type of model which implements <see cref="ITransferableData"/> and can store property values</typeparam>
+public class DataParameterPropertyBinder<TModel> : BaseAutoUpdatePropertyBinder<TModel> where TModel : class, ITransferableData {
     public DataParameter? Parameter { get; }
 
     private readonly Func<object?, object?>? ParamToProp;
@@ -40,7 +42,7 @@ public class SimpleDataParameterPropertyBinder<TModel> : BaseAutoUpdatePropertyB
     /// <param name="parameter">The data parameter, used to listen to model value changes</param>
     /// <param name="parameterToProperty">Converts the parameter value to an appropriate property value (e.g. double to string)</param>
     /// <param name="propertyToParameter">Converts the property value back to the parameter value (e.g. string to double, or returns validation error)</param>
-    public SimpleDataParameterPropertyBinder(AvaloniaProperty? property, DataParameter? parameter, Func<object?, object?>? parameterToProperty = null, Func<object?, object?>? propertyToParameter = null) : base(property) {
+    public DataParameterPropertyBinder(AvaloniaProperty? property, DataParameter? parameter, Func<object?, object?>? parameterToProperty = null, Func<object?, object?>? propertyToParameter = null) : base(property) {
         this.Parameter = parameter;
         this.ParamToProp = parameterToProperty;
         this.PropToParam = propertyToParameter;

@@ -26,7 +26,7 @@ public interface ILayerNodeItem {
     /// <summary>
     /// Gets the layer model for this node
     /// </summary>
-    BaseLayerTreeObject Layer { get; }
+    BaseLayerTreeObject? Layer { get; }
 
     /// <summary>
     /// Gets or sets if this item is selected

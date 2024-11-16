@@ -44,7 +44,7 @@ public abstract class BaseAutoUpdatePropertyBinder<TModel> : BaseBinder<TModel> 
     protected override void CheckAttachControl(Control control) {
         base.CheckAttachControl(control);
         if (this.Property != null && !AvaloniaPropertyRegistry.Instance.IsRegistered(control.GetType(), this.Property)) {
-            throw new InvalidOperationException("The control cannot be attached because the property is incompatible with the control");
+            throw new InvalidOperationException($"The control cannot be attached because the property owner type is incompatible with the control type. Cannot assign {control.GetType().FullName} to {this.Property.OwnerType.FullName}");
         }
     }
 

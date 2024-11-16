@@ -19,6 +19,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using PicNetStudio.Avalonia.Utils;
 
 namespace PicNetStudio.Avalonia.DataTransfer;
@@ -29,7 +30,7 @@ namespace PicNetStudio.Avalonia.DataTransfer;
 /// which is why it is important that the setter methods of the data properties are not called directly
 /// </summary>
 public sealed class TransferableData {
-    private Dictionary<int, ParameterData> paramData;
+    private Dictionary<int, ParameterData>? paramData;
 
     public ITransferableData Owner { get; }
 
@@ -56,13 +57,13 @@ public sealed class TransferableData {
     }
 
     internal static void InternalRemoveHandlerUnsafe(DataParameter parameter, TransferableData owner, Delegate handler) {
-        if (owner.TryGetParameterData(parameter, out ParameterData data)) {
+        if (owner.TryGetParameterData(parameter, out ParameterData? data)) {
             data.RemoveValueChangedHandler(handler);
         }
     }
 
     public bool IsValueChanging(DataParameter parameter) {
-        return this.TryGetParameterData(parameter, out ParameterData data) && data.isValueChanging;
+        return this.TryGetParameterData(parameter, out ParameterData? data) && data.isValueChanging;
     }
 
     public bool IsParameterValid(DataParameter parameter) {
@@ -71,10 +72,10 @@ public sealed class TransferableData {
 
     public void ValidateParameter(DataParameter parameter) {
         if (!this.IsParameterValid(parameter))
-            throw new ArgumentException("Invalid parameter key for this automation data: " + parameter.Key + ". The owner types are incompatible");
+            throw new ArgumentException("Invalid parameter key for this automation data: " + parameter.GlobalKey + ". The owner types are incompatible");
     }
 
-    private bool TryGetParameterData(DataParameter parameter, out ParameterData data) {
+    private bool TryGetParameterData(DataParameter parameter, [NotNullWhen(true)] out ParameterData? data) {
         if (parameter == null)
             throw new ArgumentNullException(nameof(parameter), "Parameter cannot be null");
         if (this.paramData != null && this.paramData.TryGetValue(parameter.GlobalIndex, out data))
@@ -88,7 +89,7 @@ public sealed class TransferableData {
         if (parameter == null)
             throw new ArgumentNullException(nameof(parameter), "Parameter cannot be null");
 
-        ParameterData data;
+        ParameterData? data;
         if (this.paramData == null)
             this.paramData = new Dictionary<int, ParameterData>();
         else if (this.paramData.TryGetValue(parameter.GlobalIndex, out data))

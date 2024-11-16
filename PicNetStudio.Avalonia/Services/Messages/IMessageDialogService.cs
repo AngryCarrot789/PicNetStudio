@@ -40,4 +40,11 @@ public interface IMessageDialogService {
     /// <param name="buttons">The buttons to show</param>
     /// <returns>The button that was clicked or none if they clicked esc or something bad happened</returns>
     Task<MessageBoxResult> ShowMessage(string caption, string header, string message, MessageBoxButton buttons = MessageBoxButton.OK);
+    
+    /// <summary>
+    /// Shows a message box dialog that is dynamically customisable; 3 buttons, caption, header and message
+    /// </summary>
+    /// <param name="data">The data for the message box</param>
+    /// <returns>The button that was clicked or none if they clicked esc or something bad happened</returns>
+    Task<MessageBoxResult> ShowMessage(MessageBoxData data);
 }

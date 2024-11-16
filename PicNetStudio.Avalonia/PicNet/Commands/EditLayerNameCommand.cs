@@ -17,14 +17,16 @@
 // along with PicNetStudio. If not, see <https://www.gnu.org/licenses/>.
 // 
 
+using System.Threading.Tasks;
 using PicNetStudio.Avalonia.CommandSystem;
 using PicNetStudio.Avalonia.Interactivity.Contexts;
 using PicNetStudio.Avalonia.PicNet.Layers;
 using PicNetStudio.Avalonia.PicNet.Layers.Controls;
+using PicNetStudio.Avalonia.Services.Messages;
 
 namespace PicNetStudio.Avalonia.PicNet.Commands;
 
-public class EditLayerNameCommand : DocumentCommand {
+public class EditLayerNameCommand : AsyncDocumentCommand {
     protected override Executability CanExecute(Editor editor, Document document, CommandEventArgs e) {
         if (!DataKeys.LayerSelectionManagerKey.TryGetContext(e.ContextData, out ISelectionManager<BaseLayerTreeObject>? selectionManager))
             return Executability.Invalid;
@@ -35,13 +37,22 @@ public class EditLayerNameCommand : DocumentCommand {
         return e.ContextData.ContainsKey(DataKeys.LayerNodeKey) ? Executability.Valid : Executability.Invalid;
     }
 
-    protected override void Execute(Editor editor, Document document, CommandEventArgs e) {
+    protected override async Task Execute(Editor editor, Document document, CommandEventArgs e) {
         if (!DataKeys.LayerSelectionManagerKey.TryGetContext(e.ContextData, out ISelectionManager<BaseLayerTreeObject>? selectionManager))
             return;
 
-        if (selectionManager.Count != 1 || !DataKeys.LayerNodeKey.TryGetContext(e.ContextData, out ILayerNodeItem? node))
+        if (selectionManager.Count != 1 || !DataKeys.LayerNodeKey.TryGetContext(e.ContextData, out ILayerNodeItem? node) || node.Layer == null)
             return;
 
-        node.EditNameState = true;
+        // node.EditNameState = true;
+
+        SingleUserInputData data = new SingleUserInputData(node.Layer.Name) {
+            ConfirmText = "Rename", Caption = "Rename this layer", Label = "Input a new name for this layer:", AllowEmptyText = false
+        };
+
+        if (await RZApplication.Instance.Services.GetService<IUserInputDialogService>().ShowInputDialogAsync(data) == true) {
+            if (node.Layer != null)
+                node.Layer.Name = data.Text!;
+        }
     }
 }

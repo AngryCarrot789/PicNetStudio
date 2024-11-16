@@ -1,5 +1,5 @@
-// 
-// Copyright (c) 2024-2024 REghZy
+﻿// 
+// Copyright (c) 2023-2024 REghZy
 // 
 // This file is part of PicNetStudio.
 // 
@@ -17,16 +17,15 @@
 // along with PicNetStudio. If not, see <https://www.gnu.org/licenses/>.
 // 
 
-using System.Threading.Tasks;
+namespace PicNetStudio.Avalonia.Services.Messages.Controls;
 
-namespace PicNetStudio.Avalonia.Services.Messages.Classic;
+/// <summary>
+/// An interface for user input content controls
+/// </summary>
+public interface IUserInputContent {
+    void Connect(UserInputDialog dialog, UserInputData data);
 
-public class ClassicDesktopMessageDialogService : IMessageDialogService {
-    public Task<MessageBoxResult> ShowMessage(string caption, string message, MessageBoxButton buttons = MessageBoxButton.OK) {
-        throw new System.NotImplementedException();
-    }
+    void Disconnect();
 
-    public Task<MessageBoxResult> ShowMessage(string caption, string header, string message, MessageBoxButton buttons = MessageBoxButton.OK) {
-        throw new System.NotImplementedException();
-    }
+    void FocusPrimaryInput();
 }

@@ -19,13 +19,15 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using PicNetStudio.Avalonia.CommandSystem;
 using PicNetStudio.Avalonia.Interactivity.Contexts;
 using PicNetStudio.Avalonia.PicNet.Layers;
+using PicNetStudio.Avalonia.Services.Messages;
 
 namespace PicNetStudio.Avalonia.PicNet.Commands;
 
-public class DeleteSelectedLayersCommand : DocumentCommand {
+public class DeleteSelectedLayersCommand : AsyncDocumentCommand {
     protected override Executability CanExecute(Editor editor, Document document, CommandEventArgs e) {
         if (!DataKeys.LayerSelectionManagerKey.TryGetContext(e.ContextData, out ISelectionManager<BaseLayerTreeObject>? selectionManager))
             return Executability.Invalid;
@@ -34,12 +36,23 @@ public class DeleteSelectedLayersCommand : DocumentCommand {
         return count > 0 ? Executability.Valid : Executability.ValidButCannotExecute;
     }
 
-    protected override void Execute(Editor editor, Document document, CommandEventArgs e) {
+    protected override async Task Execute(Editor editor, Document document, CommandEventArgs e) {
         if (!DataKeys.LayerSelectionManagerKey.TryGetContext(e.ContextData, out ISelectionManager<BaseLayerTreeObject>? manager))
             return;
         
         List<BaseLayerTreeObject> list = manager.SelectedItems.ToList();
         if (list.Count > 0) {
+            MessageBoxData message = new MessageBoxData("Delete layers", $"Are you sure you want to delete {list.Count} layers?") {
+                Buttons = MessageBoxButton.OKCancel,
+                YesOkText = "Delete",
+                DefaultButton = MessageBoxResult.OK
+            };
+
+            MessageBoxResult result = await IoC.MessageService.ShowMessage(message);
+            if (result != MessageBoxResult.OK) {
+                return;
+            }
+            
             if (BaseLayerTreeObject.CheckHaveParentsAndAllMatch(manager, out CompositionLayer? sameParent)) {
                 List<int> indices = list.Select(x => sameParent.IndexOf(x)).OrderBy(index => index).ToList();
                 int minIndex = indices[0];

@@ -17,30 +17,28 @@
 // along with PicNetStudio. If not, see <https://www.gnu.org/licenses/>.
 // 
 
-using System;
+using System.Threading.Tasks;
 
 namespace PicNetStudio.Avalonia.Services.Messages;
 
 public interface IUserInputDialogService {
     /// <summary>
-    /// Shows a dialog which accepts a general text input, optionally with a validation predicate which
-    /// prevents the dialog closing successfully if the value fails the validation
+    /// Shows an input dialog with a single input field
     /// </summary>
-    /// <param name="caption">The window titlebar</param>
-    /// <param name="message">A message to present to the user above the text input</param>
-    /// <param name="defaultInput">
-    /// The text that is placed in the text input by default. Default is null aka empty string
-    /// </param>
-    /// <param name="validate">
-    /// A validator predicate. Default is null, meaning any value is allowed.
-    /// This predicate should be fast, as it will be executed whenever the user types something
-    /// </param>
-    /// <param name="allowEmptyString">
-    /// Allows this method to return an empty string if the text input is empty. Default is false
-    /// </param>
+    /// <param name="info">The information to present in the dialog</param>
     /// <returns>
-    /// The text in the input area. Null if the input was empty, the user clicked cancel or force
-    /// closed the dialog or the dialog somehow mysteriously closed
-    /// </returns>
-    string ShowSingleInputDialog(string caption, string message, string defaultInput = null, Predicate<string> validate = null, bool allowEmptyString = false);
+    /// An async boolean. True when closed successfully (you can accept the result, and trust the
+    /// validation function was run), False when validation fails or the text field is empty and
+    /// empty is disabled, or Null when the dialog closed unexpectedly</returns>
+    Task<bool?> ShowInputDialogAsync(SingleUserInputData info);
+    
+    /// <summary>
+    /// Shows an input dialog with two input fields
+    /// </summary>
+    /// <param name="info">The information to present in the dialog</param>
+    /// <returns>
+    /// An async boolean. True when closed successfully (you can accept the results, and trust the
+    /// validation function was run), False when validation fails or the text field is empty and
+    /// empty is disabled, or Null when the dialog closed unexpectedly</returns>
+    Task<bool?> ShowInputDialogAsync(DoubleUserInputData info);
 }

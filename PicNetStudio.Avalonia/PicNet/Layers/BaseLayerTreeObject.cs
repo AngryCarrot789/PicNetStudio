@@ -60,7 +60,7 @@ public abstract class BaseLayerTreeObject : ITransferableData {
             if (this.name == value)
                 return;
 
-            this.name = value;
+            this.name = value ?? "";
             this.NameChanged?.Invoke(this);
         }
     }

@@ -68,6 +68,11 @@ public abstract class DataParameter : IEquatable<DataParameter>, IComparable<Dat
     /// </summary>
     public DataParameterFlags Flags { get; }
 
+    /// <summary>
+    /// Returns a string that is a concatenation of our owner type's simple name and our key, joined by '::'
+    /// </summary>
+    public string GlobalKey => this.OwnerType.Name + "::" + this.Key;
+
     public event DataParameterValueChangedEventHandler? ValueChanged;
 
     protected DataParameter(Type ownerType, string key, DataParameterFlags flags) {
@@ -84,10 +89,21 @@ public abstract class DataParameter : IEquatable<DataParameter>, IComparable<Dat
     /// A convenience function that adds the given event handler to all of the given parameters
     /// </summary>
     /// <param name="handler">The handler to add</param>
-    /// <param name="parameters">The parameters to add an event handler for</param>
+    /// <param name="parameters">The parameters to add the event handler to</param>
     public static void AddMultipleHandlers(DataParameterValueChangedEventHandler handler, params DataParameter[] parameters) {
         foreach (DataParameter parameter in parameters) {
             parameter.ValueChanged += handler;
+        }
+    }
+    
+    /// <summary>
+    /// A convenience function that removes the given event handler from all of the given parameters
+    /// </summary>
+    /// <param name="handler">The handler to remove</param>
+    /// <param name="parameters">The parameters to remove the event handler from</param>
+    public static void RemoveMultipleHandlers(DataParameterValueChangedEventHandler handler, params DataParameter[] parameters) {
+        foreach (DataParameter parameter in parameters) {
+            parameter.ValueChanged -= handler;
         }
     }
 
@@ -110,7 +126,7 @@ public abstract class DataParameter : IEquatable<DataParameter>, IComparable<Dat
             throw new InvalidOperationException("Data parameter was already registered with a global index of " + parameter.GlobalIndex);
         }
 
-        string path = parameter.Key;
+        string path = parameter.GlobalKey;
         while (Interlocked.CompareExchange(ref RegistrationFlag, 1, 0) != 0)
             Thread.SpinWait(32);
 
@@ -236,7 +252,7 @@ public abstract class DataParameter : IEquatable<DataParameter>, IComparable<Dat
     }
 
     public override string ToString() {
-        return $"{this.GetType().Name}({this.OwnerType.Name}::{this.Key})";
+        return $"{this.GetType().Name}({this.GlobalKey})";
     }
 
     /// <summary>

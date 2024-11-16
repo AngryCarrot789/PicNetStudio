@@ -19,12 +19,17 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using PicNetStudio.Avalonia.CommandSystem;
 using PicNetStudio.Avalonia.PicNet.Commands;
 using PicNetStudio.Avalonia.PicNet.Tools.Core;
 using PicNetStudio.Avalonia.Services.Files;
 using PicNetStudio.Avalonia.Services.Messages;
+using PicNetStudio.Avalonia.Services.Messages.Controls;
 using PicNetStudio.Avalonia.Shortcuts.Avalonia;
 using PicNetStudio.Avalonia.Tasks;
 using PicNetStudio.Avalonia.Utils;
@@ -79,8 +84,8 @@ public abstract class RZApplication {
     }
 
     private void OnInitialise() {
-        this.serviceManager.Register<IMessageDialogService>(new DummyMessageDialogService());
-        this.serviceManager.Register<IUserInputDialogService>(new DummyUserInputDialogService());
+        this.serviceManager.Register<IMessageDialogService>(new MessageDialogServiceImpl());
+        this.serviceManager.Register<IUserInputDialogService>(new InputDialogServiceImpl());
         this.serviceManager.Register<IFilePickDialogService>(new DummyFilePickDialogService());
         this.serviceManager.Register<TaskManager>(new TaskManager());
 
@@ -134,18 +139,70 @@ public abstract class RZApplication {
         instance.OnInitialise();
     }
 
-    private class DummyMessageDialogService : IMessageDialogService {
+    private class MessageDialogServiceImpl : IMessageDialogService {
         public Task<MessageBoxResult> ShowMessage(string caption, string message, MessageBoxButton buttons = MessageBoxButton.OK) {
-            return default;
+            MessageBoxData data = new MessageBoxData(caption, message) { Buttons = buttons };
+            data.SetDefaultButtonText();
+            return this.ShowMessage(data);
         }
 
         public Task<MessageBoxResult> ShowMessage(string caption, string header, string message, MessageBoxButton buttons = MessageBoxButton.OK) {
-            return default;
+            MessageBoxData data = new MessageBoxData(caption, header, message) { Buttons = buttons };
+            data.SetDefaultButtonText();
+            return this.ShowMessage(data);
+        }
+
+        public async Task<MessageBoxResult> ShowMessage(MessageBoxData data) {
+            Validate.NotNull(data);
+
+            if (Application.Current!.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop) {
+                Window? parent = desktop.Windows.FirstOrDefault(x => x.IsActive) ?? desktop.MainWindow;
+                if (parent == null) {
+                    return MessageBoxResult.None;
+                }
+                
+                MessageBoxDialog dialog = new MessageBoxDialog {
+                    MessageBoxData = data
+                };
+
+                MessageBoxResult? result = await dialog.ShowDialog<MessageBoxResult?>(parent);
+                return result ?? MessageBoxResult.None;
+            }
+
+            return MessageBoxResult.None;
         }
     }
 
-    private class DummyUserInputDialogService : IUserInputDialogService {
-        public string ShowSingleInputDialog(string caption, string message, string defaultInput = null, Predicate<string> validate = null, bool allowEmptyString = false) {
+    private class InputDialogServiceImpl : IUserInputDialogService {
+        public Task<bool?> ShowInputDialogAsync(SingleUserInputData info) {
+            return ShowDialogAsync(info);
+        }
+
+        public Task<bool?> ShowInputDialogAsync(DoubleUserInputData info) {
+            return ShowDialogAsync(info);
+        }
+
+        private static async Task<bool?> ShowDialogAsync(UserInputData info) {
+            Validate.NotNull(info);
+
+            if (Application.Current!.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop) {
+                Window? parent = desktop.Windows.FirstOrDefault(x => x.IsActive) ?? desktop.MainWindow;
+                if (parent == null) {
+                    return null;
+                }
+                
+                UserInputDialog dialog = new UserInputDialog {
+                    UserInputData = info
+                };
+
+                bool? result = await dialog.ShowDialog<bool?>(parent);
+                if (result == true && dialog.DialogResult == true) {
+                    return true;
+                }
+                
+                return result;
+            }
+
             return null;
         }
     }

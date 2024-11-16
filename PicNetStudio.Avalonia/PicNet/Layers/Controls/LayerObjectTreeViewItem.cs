@@ -69,7 +69,7 @@ public class LayerObjectTreeViewItem : TreeViewItem, ILayerNodeItem {
     private TextBox? PART_HeaderTextBox;
     private readonly ContextData contextData;
 
-    BaseLayerTreeObject ILayerNodeItem.Layer => this.LayerObject ?? throw new InvalidOperationException("No associated layer objet");
+    BaseLayerTreeObject? ILayerNodeItem.Layer => this.LayerObject;
     
     public bool EditNameState {
         get => this.isEditingNameState;
@@ -177,8 +177,7 @@ public class LayerObjectTreeViewItem : TreeViewItem, ILayerNodeItem {
 
         this.displayNameBinder.Attach(this, this.LayerObject!);
         this.stateModifierListBoxHelper.SetModel(this.LayerObject);
-        this.contextData.Set(DataKeys.LayerObjectKey, this.LayerObject);
-        DataManager.InvalidateInheritedContext(this);
+        DataManager.SetContextData(this, this.contextData.Set(DataKeys.LayerObjectKey, this.LayerObject));
     }
 
     public void OnRemoving() {
