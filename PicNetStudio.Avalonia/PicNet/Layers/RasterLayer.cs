@@ -25,10 +25,10 @@ using SkiaSharp;
 namespace PicNetStudio.Avalonia.PicNet.Layers;
 
 public class RasterLayer : BaseVisualLayer {
-    public static readonly DataParameterFloat ChannelRParameter = DataParameter.Register(new DataParameterFloat(typeof(RasterLayer), nameof(ChannelR), 1.0f, ValueAccessors.Reflective<float>(typeof(RasterLayer), nameof(channelR))));
-    public static readonly DataParameterFloat ChannelGParameter = DataParameter.Register(new DataParameterFloat(typeof(RasterLayer), nameof(ChannelG), 1.0f, ValueAccessors.Reflective<float>(typeof(RasterLayer), nameof(channelG))));
-    public static readonly DataParameterFloat ChannelBParameter = DataParameter.Register(new DataParameterFloat(typeof(RasterLayer), nameof(ChannelB), 1.0f, ValueAccessors.Reflective<float>(typeof(RasterLayer), nameof(channelB))));
-    public static readonly DataParameterFloat ChannelAParameter = DataParameter.Register(new DataParameterFloat(typeof(RasterLayer), nameof(ChannelA), 1.0f, ValueAccessors.Reflective<float>(typeof(RasterLayer), nameof(channelA))));
+    public static readonly DataParameterFloat ChannelRParameter = DataParameter.Register(new DataParameterFloat(typeof(RasterLayer), nameof(ChannelR), 1.0f, 0.0f, 1.0f, ValueAccessors.Reflective<float>(typeof(RasterLayer), nameof(channelR))));
+    public static readonly DataParameterFloat ChannelGParameter = DataParameter.Register(new DataParameterFloat(typeof(RasterLayer), nameof(ChannelG), 1.0f, 0.0f, 1.0f, ValueAccessors.Reflective<float>(typeof(RasterLayer), nameof(channelG))));
+    public static readonly DataParameterFloat ChannelBParameter = DataParameter.Register(new DataParameterFloat(typeof(RasterLayer), nameof(ChannelB), 1.0f, 0.0f, 1.0f, ValueAccessors.Reflective<float>(typeof(RasterLayer), nameof(channelB))));
+    public static readonly DataParameterFloat ChannelAParameter = DataParameter.Register(new DataParameterFloat(typeof(RasterLayer), nameof(ChannelA), 1.0f, 0.0f, 1.0f, ValueAccessors.Reflective<float>(typeof(RasterLayer), nameof(channelA))));
 
     private float channelR = ChannelRParameter.DefaultValue;
     private float channelG = ChannelGParameter.DefaultValue;
