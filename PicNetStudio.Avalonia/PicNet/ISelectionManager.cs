@@ -23,19 +23,77 @@ namespace PicNetStudio.Avalonia.PicNet;
 
 public delegate void SelectionChangedEventHandler<T>(ISelectionManager<T> sender, IList<T>? oldItems, IList<T>? newItems);
 public delegate void SelectionClearedEventHandler<T>(ISelectionManager<T> sender);
+public delegate void LightSelectionChangedEventHandler<T>(ILightSelectionManager<T> sender);
+
+/// <summary>
+/// A base interface for general selection managers providing get/set/add/remove/clear/is support
+/// </summary>
+/// <typeparam name="T">The type of selected items supported</typeparam>
+public interface IBaseSelectionManager<in T> {
+    /// <summary>
+    /// Returns true when the item is selected
+    /// </summary>
+    /// <param name="item">The item to check</param>
+    /// <returns>See summary</returns>
+    bool IsSelected(T item);
+
+    /// <summary>
+    /// Effectively makes the item the only selected item
+    /// </summary>
+    /// <param name="item">The item to be the only selected item</param>
+    void SetSelection(T item);
+
+    /// <summary>
+    /// Effectively makes all of the given items the only selected items
+    /// </summary>
+    /// <param name="items">The items to be the only selected items</param>
+    void SetSelection(IEnumerable<T> items);
+
+    /// <summary>
+    /// Adds the item as a selected item
+    /// </summary>
+    /// <param name="item">The item to become selected</param>
+    void Select(T item);
+
+    /// <summary>
+    /// Adds the items as selected items
+    /// </summary>
+    /// <param name="items">The items to become selected</param>
+    void Select(IEnumerable<T> items);
+
+    /// <summary>
+    /// Removes the item from being selected
+    /// </summary>
+    /// <param name="item">The item to become un-selected</param>
+    void Unselect(T item);
+
+    /// <summary>
+    /// Removes the items from being selected
+    /// </summary>
+    /// <param name="items">The items to become un-selected</param>
+    void Unselect(IEnumerable<T> items);
+
+    /// <summary>
+    /// Clears all selected items
+    /// </summary>
+    void Clear();
+}
 
 /// <summary>
 /// An interface for an object that manages the selection state of items
 /// </summary>
-public interface ISelectionManager<T> {
-    // this.SelectedItems.Cast<LayerObjectTreeViewItem>().Select(x => x.LayerObject!).NonNull().ToList()
+/// <typeparam name="T">The type of selected items supported</typeparam>
+public interface ISelectionManager<T> : IBaseSelectionManager<T> {
     /// <summary>
-    /// Gets a read-only collection of selected items
+    /// Gets an enumerable of the selected items. Ideally, create a list from
+    /// this as soon as possible because the enumerable may be cached and become
+    /// invalid at some point
     /// </summary>
     IEnumerable<T> SelectedItems { get; }
 
     /// <summary>
-    /// Gets the number of selected items
+    /// Gets the number of selected items. Worst case scenario this involves fully
+    /// enumerating <see cref="SelectedItems"/> unless implemented correctly
     /// </summary>
     int Count { get; }
 
@@ -43,18 +101,34 @@ public interface ISelectionManager<T> {
     /// An event fired when the selection changes (item added or removed)
     /// </summary>
     public event SelectionChangedEventHandler<T>? SelectionChanged;
-    
+
     /// <summary>
     /// An event fired when the selection is cleared
     /// </summary>
     public event SelectionClearedEventHandler<T>? SelectionCleared;
+}
 
-    bool IsSelected(T item);
-    void SetSelection(T item);
-    void SetSelection(IEnumerable<T> items);
-    void Select(T item);
-    void Select(IEnumerable<T> items);
-    void Unselect(T item);
-    void Unselect(IEnumerable<T> newItems);
-    void Clear();
+/// <summary>
+/// An interface for a simple selection manager that has basic selection methods and a basic selection changed event
+/// </summary>
+/// <typeparam name="T">The type of selected items supported</typeparam>
+public interface ILightSelectionManager<T> : IBaseSelectionManager<T> {
+    /// <summary>
+    /// Gets an enumerable of the selected items. Ideally, create a list from
+    /// this as soon as possible because the enumerable may be cached and become
+    /// invalid at some point
+    /// </summary>
+    IEnumerable<T> SelectedItems { get; }
+
+    /// <summary>
+    /// Gets the number of selected items. Worst case scenario this involves fully
+    /// enumerating <see cref="SelectedItems"/> unless implemented correctly
+    /// </summary>
+    int Count { get; }
+
+    /// <summary>
+    /// An event fired when the selection changes. This does not contain what changes, it just marks a change
+    /// happening (it could be selection cleared, item added, maybe multiple items being added or removed, etc.)
+    /// </summary>
+    event LightSelectionChangedEventHandler<T> SelectionChanged;
 }

@@ -313,6 +313,8 @@ public abstract class DataParameter : IEquatable<DataParameter>, IComparable<Dat
             ((DataParameterDoubleValueChangedEventHandler) handler)((DataParameterDouble) parameter, owner);
         else if (type == typeof(DataParameterStringValueChangedEventHandler))
             ((DataParameterStringValueChangedEventHandler) handler)((DataParameterString) parameter, owner);
+        else if (type == typeof(DataParameterPointValueChangedEventHandler))
+            ((DataParameterPointValueChangedEventHandler) handler)((DataParameterPoint) parameter, owner);
         else
             parameter.OnHandleGenericValueChanged(handler, owner);
     }

@@ -45,7 +45,7 @@ public class LayerStateModifierListBox : ItemsControl {
     private void OnLayerChanged(AvaloniaPropertyChangedEventArgs<BaseLayerTreeObject?> e) {
         if (e.TryGetOldValue(out BaseLayerTreeObject? oldLayer)) {
             for (int i = this.Items.Count - 1; i >= 0; i--) {
-                BaseLayerStateModifierControl control = (BaseLayerStateModifierControl) this.Items[i]!;
+                LayerStateModifierControl control = (LayerStateModifierControl) this.Items[i]!;
                 control.OnRemovingFromList();
                 this.Items.RemoveAt(i);
                 control.OnRemovedFromList();
@@ -54,10 +54,10 @@ public class LayerStateModifierListBox : ItemsControl {
         }
 
         if (e.TryGetNewValue(out BaseLayerTreeObject? newLayer)) {
-            List<BaseLayerStateModifierControl> list = BaseLayerStateModifierControl.ProvideStateModifiers(newLayer);
+            List<LayerStateModifierControl> list = LayerStateModifierControl.ProvideStateModifiers(newLayer);
 
             int i = 0;
-            foreach (BaseLayerStateModifierControl control in list) {
+            foreach (LayerStateModifierControl control in list) {
                 int index = i++;
                 control.OnAddingToList(this, newLayer);
                 this.Items.Insert(index, control);

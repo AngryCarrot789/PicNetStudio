@@ -51,8 +51,9 @@ public abstract class BasePropEditControlContent : TemplatedControl {
         RegisterType(typeof(DataParameterLongPropertyEditorSlot), () => new DataParameterLongPropertyEditorControl());
         RegisterType(typeof(DataParameterDoublePropertyEditorSlot), () => new DataParameterDoublePropertyEditorControl());
         RegisterType(typeof(DataParameterFloatPropertyEditorSlot), () => new DataParameterFloatPropertyEditorControl());
-        RegisterType(typeof(DataParameterBooleanPropertyEditorSlot), () => new DataParameterBooleanPropertyEditorControl());
+        RegisterType(typeof(DataParameterBoolPropertyEditorSlot), () => new DataParameterBooleanPropertyEditorControl());
         RegisterType(typeof(DataParameterStringPropertyEditorSlot), () => new DataParameterStringPropertyEditorControl());
+        RegisterType(typeof(DataParameterPointPropertyEditorSlot), () => new DataParameterPointPropertyEditorControl());
         RegisterType(typeof(DataParameterBlendModePropertyEditorSlot), () => new DataParameterBlendModePropertyEditorControl());
     }
 

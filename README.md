@@ -9,7 +9,7 @@ Some ideas I have for the future:
 The canvas can be exported by pressing CTRL+E
 
 ## Preview so far
-![](PicNetStudio.Avalonia_2024-11-10_21.17.27.png)
+![](PicNetStudio.Avalonia_2024-11-17_23.58.51.png~~~~~~~~)
 
 ## Contributing
 Feel free to contribute whatever you want if you think it'll make the editor better!

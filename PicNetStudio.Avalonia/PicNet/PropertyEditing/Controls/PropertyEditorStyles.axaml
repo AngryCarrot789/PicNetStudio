@@ -8,7 +8,9 @@
     <PathGeometry x:Key="ActiveCheckGeometry">F1 M 9.97498,1.22334L 4.6983,9.09834L 4.52164,9.09834L 0,5.19331L 1.27664,3.52165L 4.255,6.08833L 8.33331,1.52588e-005L 9.97498,1.22334 Z</PathGeometry>
     <SolidColorBrush x:Key="SeparatorMouseOverBrush" Color="{DynamicResource AColour.AccentTone2.Border.Static}"/>
 
-    <ControlTheme x:Key="HierarchicalExpanderToggleButtonStyle" TargetType="{x:Type ToggleButton}">
+    <!-- ####################### TOGGLE BUTTON THEMES ####################### -->
+
+    <ControlTheme x:Key="PrimaryHierarchicalExpanderToggleButtonStyle" TargetType="{x:Type ToggleButton}">
         <Setter Property="Background" Value="{DynamicResource ABrush.Tone5.Background.Static}"/>
         <Setter Property="HorizontalContentAlignment" Value="Left"/>
         <Setter Property="Template">
@@ -57,24 +59,27 @@
     </ControlTheme>
 
     <ControlTheme x:Key="SecondaryHierarchicalExpanderToggleButtonStyle" TargetType="{x:Type ToggleButton}">
-        <Setter Property="Background" Value="{DynamicResource ABrush.Tone5.Background.Static}"/>
-        <Setter Property="HorizontalContentAlignment" Value="Left"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type ToggleButton}">
-                    <Border Padding="{TemplateBinding Padding}" Background="{TemplateBinding Background}">
-                        <Grid Margin="0,2" HorizontalAlignment="Left">
+                    <Border Padding="0">
+                        <DockPanel Background="Transparent">
+                            <!-- original:  M 1,1.5 L 4.5,5 L 8,1.5  -->
+                            <!-- Pointing down:  M 1,0 L 5,4.5 L 9,0  -->
+                            <!-- Pointing right: M 1,0 L 5,4 L 1,8 -->
                             <Path x:Name="arrow" Data="M 2,0 L 6,4 L 2,8"
-                                  HorizontalAlignment="Left"
+                                  HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                   Stroke="{DynamicResource Expander.Static.Arrow.Stroke}"
                                   StrokeThickness="2" VerticalAlignment="Center"
-                                  Width="10" Margin="5,-1,0,0"/>
-                            <ContentPresenter Margin="19,0,0,0" x:Name="contentPresenter"
+                                  Width="10" Margin="5,1,0,0"/>
+                            <ContentPresenter Margin="4,0,0,0" x:Name="contentPresenter"
                                               Focusable="False" RecognizesAccessKey="True"
+                                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                               Content="{TemplateBinding Content}"
                                               ContentTemplate="{TemplateBinding ContentTemplate}"
                                               CornerRadius="{TemplateBinding CornerRadius}"/>
-                        </Grid>
+                            <Separator x:Name="PART_Separator" Margin="8,0,0,0" IsHitTestVisible="True"/>
+                        </DockPanel>
                     </Border>
                 </ControlTemplate>
             </Setter.Value>
@@ -82,18 +87,24 @@
         <Style Selector="^:checked /template/ Path#arrow">
             <Setter Property="Data" Value="M 0,0 L 4,4.5 L 8,0"/>
         </Style>
-        <Style Selector="^[IsPointerOver=true] /template/ Path#arrow">
+        <Style Selector="^:pointerover /template/ Path#arrow">
             <Setter Property="Stroke" Value="{DynamicResource Expander.MouseOver.Arrow.Stroke}"/>
         </Style>
-        <Style Selector="^[IsPressed=true] /template/ Path#arrow">
+        <Style Selector="^:pointerover /template/ Separator#PART_Separator">
+            <Setter Property="Background" Value="{DynamicResource SeparatorMouseOverBrush}"/>
+        </Style>
+        <Style Selector="^[IsPressed=True] /template/ Path#arrow">
             <Setter Property="Stroke" Value="{DynamicResource Expander.Pressed.Arrow.Stroke}"/>
         </Style>
-        <Style Selector="^:disabled /template/ Path#arrow">
+        <Style Selector="^[IsEnabled=False] /template/ Path#arrow">
             <Setter Property="Stroke" Value="{DynamicResource Expander.Disabled.Arrow.Stroke}"/>
         </Style>
     </ControlTheme>
+    
+    <!-- ################################## EXPANDER THEMES ################################## -->
 
-    <ControlTheme x:Key="HierarchicalExpanderStyle" TargetType="{x:Type Expander}">
+    <ControlTheme x:Key="PrimaryHierarchicalExpanderStyle" TargetType="{x:Type Expander}">
+        <Setter Property="Background" Value="{DynamicResource ABrush.Tone6.Background.Static}"/>
         <Setter Property="Foreground" Value="{DynamicResource ABrush.Foreground.Static}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource PanelBorderBrush}"/>
         <Setter Property="BorderThickness" Value="0"/>
@@ -122,7 +133,7 @@
                                                   VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                                                   HorizontalAlignment="Stretch"
                                                   Background="{TemplateBinding Background}"
-                                                  Theme="{StaticResource HierarchicalExpanderToggleButtonStyle}"
+                                                  Theme="{StaticResource PrimaryHierarchicalExpanderToggleButtonStyle}"
                                                   Margin="0,0,46,0"/>
                                     <Button DockPanel.Dock="Right" x:Name="PART_CollapseHierarchyButton" HorizontalAlignment="Right" Width="23" BorderThickness="0" Background="Transparent">
                                         <TextBlock Text="&gt;&lt;" FontSize="12">
@@ -166,54 +177,7 @@
         </Style>
     </ControlTheme>
 
-    <ControlTheme x:Key="HierarchicalExpanderToggleButtonStyle_OLD" TargetType="{x:Type ToggleButton}">
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="{x:Type ToggleButton}">
-                    <Border Padding="0">
-                        <DockPanel Background="Transparent">
-                            <!-- original:  M 1,1.5 L 4.5,5 L 8,1.5  -->
-                            <!-- Pointing down:  M 1,0 L 5,4.5 L 9,0  -->
-                            <!-- Pointing right: M 1,0 L 5,4 L 1,8 -->
-                            <Path x:Name="arrow" Data="M 2,0 L 6,4 L 2,8"
-                                  HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                  Stroke="{DynamicResource Expander.Static.Arrow.Stroke}"
-                                  StrokeThickness="2" VerticalAlignment="Center"
-                                  Width="10" Margin="5,1,0,0"/>
-                            <ContentPresenter Margin="4,0,0,0" x:Name="contentPresenter"
-                                              Focusable="False" RecognizesAccessKey="True"
-                                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                              Content="{TemplateBinding Content}"
-                                              ContentTemplate="{TemplateBinding ContentTemplate}"
-                                              CornerRadius="{TemplateBinding CornerRadius}"/>
-                            <Separator x:Name="PART_Separator" Margin="8,0,0,0" IsHitTestVisible="True"/>
-                        </DockPanel>
-                    </Border>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-        <Style Selector="^:checked /template/ Path#arrow">
-            <Setter Property="Data" Value="M 0,0 L 4,4.5 L 8,0"/>
-        </Style>
-        <Style Selector="^[IsPointerOver=True] /template/ Path#arrow">
-            <Setter Property="Stroke" Value="{DynamicResource Expander.MouseOver.Arrow.Stroke}"/>
-        </Style>
-        <Style Selector="^[IsPointerOver=True] /template/ Separator#PART_Separator">
-            <Setter Property="Background" Value="{DynamicResource SeparatorMouseOverBrush}"/>
-        </Style>
-        <Style Selector="^[IsPressed=True] /template/ Path#arrow">
-            <Setter Property="Stroke" Value="{DynamicResource Expander.Pressed.Arrow.Stroke}"/>
-        </Style>
-        <Style Selector="^[IsEnabled=False] /template/ Path#arrow">
-            <Setter Property="Stroke" Value="{DynamicResource Expander.Disabled.Arrow.Stroke}"/>
-        </Style>
-    </ControlTheme>
-
-    <ControlTheme x:Key="PrimaryHierarchialExpanderStyle" TargetType="{x:Type Expander}" BasedOn="{StaticResource HierarchicalExpanderStyle}">
-        <Setter Property="Background" Value="{DynamicResource ABrush.Tone6.Background.Static}"/>
-    </ControlTheme>
-    
-    <ControlTheme x:Key="SecondaryHierarchialExpanderStyle" TargetType="{x:Type Expander}">
+    <ControlTheme x:Key="SecondaryHierarchicalExpanderStyle" TargetType="{x:Type Expander}">
         <Setter Property="Foreground" Value="{DynamicResource ABrush.Foreground.Static}"/>
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
@@ -243,8 +207,9 @@
                                           Padding="{TemplateBinding Padding}"
                                           VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                                           HorizontalAlignment="Stretch"
-                                          Theme="{StaticResource HierarchicalExpanderToggleButtonStyle_OLD}"/>
-                            
+                                          Theme="{StaticResource SecondaryHierarchicalExpanderToggleButtonStyle}"
+                                          IsPointerOver="{Binding (l:ExpanderHelper.IsPointerOverEx), RelativeSource={RelativeSource TemplatedParent}, Mode=OneWayToSource}"/>
+
                             <ContentPresenter x:Name="ExpandSite" DockPanel.Dock="Bottom" Focusable="false"
                                               HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                               Margin="{TemplateBinding Padding}" IsVisible="False"
@@ -260,17 +225,17 @@
         <Style Selector="^:expanded /template/ ContentPresenter#ExpandSite">
             <Setter Property="IsVisible" Value="true"/>
         </Style>
+        <Style Selector="^[(l|ExpanderHelper.IsPointerOverEx)=True] /template/ Separator#PART_Separator">
+            <Setter Property="Background" Value="{DynamicResource SeparatorMouseOverBrush}"/>
+        </Style>
         <Style Selector="^[IsEnabled=False]">
             <Setter Property="Foreground" Value="{DynamicResource ABrush.Foreground.Disabled}"/>
         </Style>
-        <Style Selector="^:expanded /template/ Separator#PART_Separator">
-            <Setter Property="Background" Value="{DynamicResource SeparatorMouseOverBrush}"/>
-        </Style>
     </ControlTheme>
 
-    <l:GroupTypeToStyleConverter x:Key="GroupTypeToHierarchialExpanderStyleConverter"
-                                 PrimaryExpander="{StaticResource PrimaryHierarchialExpanderStyle}"
-                                 SecondaryExpander="{StaticResource SecondaryHierarchialExpanderStyle}"/>
+    <l:GroupTypeToStyleConverter x:Key="GroupTypeToHierarchicalExpanderStyleConverter"
+                                 PrimaryExpander="{StaticResource PrimaryHierarchicalExpanderStyle}"
+                                 SecondaryExpander="{StaticResource SecondaryHierarchicalExpanderStyle}"/>
 
     <!-- ################################## Property Editor Styles ################################## -->
 
@@ -298,7 +263,7 @@
                         <Expander x:Name="PART_Expander" Grid.ColumnSpan="3" Margin="0,0,0,0"
                                   FontWeight="Normal"
                                   IsExpanded="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=IsExpanded, Mode=TwoWay}"
-                                  Theme="{TemplateBinding GroupType, Converter={StaticResource GroupTypeToHierarchialExpanderStyleConverter}}">
+                                  Theme="{TemplateBinding GroupType, Converter={StaticResource GroupTypeToHierarchicalExpanderStyleConverter}}">
                             <l:PropertyEditorItemsPanel x:Name="PART_Panel" Margin="0,0,0,0" Background="Transparent"/>
                         </Expander>
                     </Grid>
@@ -353,6 +318,10 @@
     </ControlTheme>
 
     <Design.PreviewWith>
+        <!--
         <l:PropertyEditorGroupControl Width="250" Height="100"/>
+        -->
+        <Expander Width="250" Height="100" Theme="{StaticResource SecondaryHierarchicalExpanderStyle}">
+        </Expander>
     </Design.PreviewWith>
 </ResourceDictionary>

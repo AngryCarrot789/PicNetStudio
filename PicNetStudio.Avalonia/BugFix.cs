@@ -23,7 +23,7 @@ using Avalonia.VisualTree;
 
 namespace PicNetStudio.Avalonia;
 
-public class BugFix {
+public static class BugFix {
     public static void TextBox_FocusSelectAll(TextBox textBox) {
         textBox.Focus();
         textBox.SelectAll();

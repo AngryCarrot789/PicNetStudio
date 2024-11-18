@@ -19,17 +19,12 @@
 
 using System;
 using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Controls.ApplicationLifetimes;
 using PicNetStudio.Avalonia.CommandSystem;
 using PicNetStudio.Avalonia.PicNet.Commands;
 using PicNetStudio.Avalonia.PicNet.Tools.Core;
+using PicNetStudio.Avalonia.Services;
 using PicNetStudio.Avalonia.Services.Files;
 using PicNetStudio.Avalonia.Services.Messages;
-using PicNetStudio.Avalonia.Services.Messages.Controls;
 using PicNetStudio.Avalonia.Shortcuts.Avalonia;
 using PicNetStudio.Avalonia.Tasks;
 using PicNetStudio.Avalonia.Utils;
@@ -114,6 +109,7 @@ public abstract class RZApplication {
         manager.Register("command.generic.ExportImage", new ExportImageCommand());
         manager.Register("command.generic.ExportCanvasToClipboard", new ExportCanvasToClipboardCommand());
         manager.Register("command.layertree.CreateNewRasterLayer", new CreateNewRasterLayerCommand());
+        manager.Register("command.layertree.CreateNewTextLayerCommand", new CreateNewTextLayerCommand());
         manager.Register("command.layertree.DeleteSelectedLayers", new DeleteSelectedLayersCommand());
         manager.Register("command.layertree.GroupSelectionIntoComposition", new GroupSelectionIntoCompositionCommand());
         manager.Register("command.layertree.item.EditLayerNameCommand", new EditLayerNameCommand());
@@ -139,75 +135,7 @@ public abstract class RZApplication {
         instance.OnInitialise();
     }
 
-    private class MessageDialogServiceImpl : IMessageDialogService {
-        public Task<MessageBoxResult> ShowMessage(string caption, string message, MessageBoxButton buttons = MessageBoxButton.OK) {
-            MessageBoxData data = new MessageBoxData(caption, message) { Buttons = buttons };
-            data.SetDefaultButtonText();
-            return this.ShowMessage(data);
-        }
-
-        public Task<MessageBoxResult> ShowMessage(string caption, string header, string message, MessageBoxButton buttons = MessageBoxButton.OK) {
-            MessageBoxData data = new MessageBoxData(caption, header, message) { Buttons = buttons };
-            data.SetDefaultButtonText();
-            return this.ShowMessage(data);
-        }
-
-        public async Task<MessageBoxResult> ShowMessage(MessageBoxData data) {
-            Validate.NotNull(data);
-
-            if (Application.Current!.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop) {
-                Window? parent = desktop.Windows.FirstOrDefault(x => x.IsActive) ?? desktop.MainWindow;
-                if (parent == null) {
-                    return MessageBoxResult.None;
-                }
-                
-                MessageBoxDialog dialog = new MessageBoxDialog {
-                    MessageBoxData = data
-                };
-
-                MessageBoxResult? result = await dialog.ShowDialog<MessageBoxResult?>(parent);
-                return result ?? MessageBoxResult.None;
-            }
-
-            return MessageBoxResult.None;
-        }
-    }
-
-    private class InputDialogServiceImpl : IUserInputDialogService {
-        public Task<bool?> ShowInputDialogAsync(SingleUserInputData info) {
-            return ShowDialogAsync(info);
-        }
-
-        public Task<bool?> ShowInputDialogAsync(DoubleUserInputData info) {
-            return ShowDialogAsync(info);
-        }
-
-        private static async Task<bool?> ShowDialogAsync(UserInputData info) {
-            Validate.NotNull(info);
-
-            if (Application.Current!.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop) {
-                Window? parent = desktop.Windows.FirstOrDefault(x => x.IsActive) ?? desktop.MainWindow;
-                if (parent == null) {
-                    return null;
-                }
-                
-                UserInputDialog dialog = new UserInputDialog {
-                    UserInputData = info
-                };
-
-                bool? result = await dialog.ShowDialog<bool?>(parent);
-                if (result == true && dialog.DialogResult == true) {
-                    return true;
-                }
-                
-                return result;
-            }
-
-            return null;
-        }
-    }
-
-    private class DummyFilePickDialogService : IFilePickDialogService {
+    public class DummyFilePickDialogService : IFilePickDialogService {
         public string OpenFile(string message, string? filter = null, string? initialDirectory = null) {
             return null;
         }

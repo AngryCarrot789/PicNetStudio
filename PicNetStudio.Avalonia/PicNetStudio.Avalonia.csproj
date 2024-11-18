@@ -18,7 +18,6 @@
         <PackageReference Include="Avalonia.Controls.ColorPicker" Version="11.2.999-cibuild0048720-alpha" />
         <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
         <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.2.999-cibuild0048720-alpha" />
-        <PackageReference Include="TreeDataGridEx" Version="11.0.0" />
     </ItemGroup>
 
     <ItemGroup>
@@ -55,5 +54,20 @@
         <AvaloniaResource Include="Resources\Fonts\Oxanium\Oxanium-SemiBold.ttf" />
         <None Remove="Resources\Fonts\Oxanium\Oxanium-VariableFont_wght.ttf" />
         <AvaloniaResource Include="Resources\Fonts\Oxanium\Oxanium-VariableFont_wght.ttf" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <AdditionalFiles Include="Services\Messages\Classic\MessageBoxWindow.axaml" />
+      <AdditionalFiles Include="Services\Messages\Controls\DoubleUserInputControl.axaml" />
+      <AdditionalFiles Include="Services\Messages\Controls\MessageBoxDialog.axaml" />
+      <AdditionalFiles Include="Services\Messages\Controls\SingleUserInputControl.axaml" />
+      <AdditionalFiles Include="Services\Messages\Controls\UserInputDialog.axaml" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <UpToDateCheckInput Remove="Services\Messages\Controls\DoubleUserInputControl.axaml" />
+      <UpToDateCheckInput Remove="Services\Messages\Controls\MessageBoxDialog.axaml" />
+      <UpToDateCheckInput Remove="Services\Messages\Controls\SingleUserInputControl.axaml" />
+      <UpToDateCheckInput Remove="Services\Messages\Controls\UserInputDialog.axaml" />
     </ItemGroup>
 </Project>

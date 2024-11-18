@@ -25,6 +25,7 @@ using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using PicNetStudio.Avalonia.PicNet.Layers;
+using PicNetStudio.Avalonia.PicNet.Layers.Core;
 using PicNetStudio.Avalonia.Utils;
 using PicNetStudio.Avalonia.Utils.RDA;
 using SkiaSharp;
@@ -141,8 +142,7 @@ public class CanvasViewPortControl : TemplatedControl, ICanvasElement {
     }
 
     private void UpdateCursorForActiveLayer(BaseLayerTreeObject? layer) {
-        if (this.PART_SkiaViewPort != null)
-            this.PART_SkiaViewPort.Cursor = new Cursor(!(layer is RasterLayer) ? StandardCursorType.No : StandardCursorType.Cross);
+        this.Cursor = new Cursor(!(layer is RasterLayer) ? StandardCursorType.No : StandardCursorType.Cross);
     }
 
     private void OnResolutionChanged(Canvas canvas, PixelSize oldSize, PixelSize newSize) {

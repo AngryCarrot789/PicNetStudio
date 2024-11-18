@@ -22,8 +22,11 @@ using PicNetStudio.Avalonia.Utils;
 using PicNetStudio.Avalonia.Utils.Accessing;
 using SkiaSharp;
 
-namespace PicNetStudio.Avalonia.PicNet.Layers;
+namespace PicNetStudio.Avalonia.PicNet.Layers.Core;
 
+/// <summary>
+/// A pixel/image layer, which supports pixels being drawn directly into it
+/// </summary>
 public class RasterLayer : BaseVisualLayer {
     public static readonly DataParameterFloat ChannelRParameter = DataParameter.Register(new DataParameterFloat(typeof(RasterLayer), nameof(ChannelR), 1.0f, 0.0f, 1.0f, ValueAccessors.Reflective<float>(typeof(RasterLayer), nameof(channelR))));
     public static readonly DataParameterFloat ChannelGParameter = DataParameter.Register(new DataParameterFloat(typeof(RasterLayer), nameof(ChannelG), 1.0f, 0.0f, 1.0f, ValueAccessors.Reflective<float>(typeof(RasterLayer), nameof(channelG))));
@@ -35,6 +38,10 @@ public class RasterLayer : BaseVisualLayer {
     private float channelB = ChannelBParameter.DefaultValue;
     private float channelA = ChannelAParameter.DefaultValue;
 
+    // TODO: Make channels an effect
+    // and maybe use internal effect detection to improve performance;
+    // RenderLayer uses the channels in the paint when drawing the bitmap
+    
     public float ChannelR {
         get => this.channelR;
         set => DataParameter.SetValueHelper(this, ChannelRParameter, ref this.channelR, value);
@@ -70,15 +77,15 @@ public class RasterLayer : BaseVisualLayer {
         base.LoadDataIntoClone(clone);
 
         RasterLayer raster = (RasterLayer) clone;
-        if (this.Bitmap.HasPixels) {
-            if (!raster.Bitmap.HasPixels || raster.Bitmap.Size != this.Bitmap.Size)
+        if (this.Bitmap.IsInitialised) {
+            if (!raster.Bitmap.IsInitialised || raster.Bitmap.Size != this.Bitmap.Size)
                 raster.Bitmap.InitialiseBitmap(this.Bitmap.Size);
             raster.Bitmap.Paste(this.Bitmap);
         }
     }
 
     public override void RenderLayer(ref RenderContext ctx) {
-        if (this.Bitmap.HasPixels) {
+        if (this.Bitmap.IsInitialised) {
             using SKPaint paint = new SKPaint();
             paint.Color = RenderUtils.BlendAlpha(SKColors.White, this.Opacity);
             paint.BlendMode = this.BlendMode;

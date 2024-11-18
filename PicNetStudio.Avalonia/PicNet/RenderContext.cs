@@ -36,7 +36,15 @@ public readonly struct RenderContext {
 
     public readonly bool IsExporting;
 
-    public RenderContext(Canvas myCanvas, SKSurface surface, bool isExport) {
+    /// <summary>
+    /// True when invalidating the entire canvas, False when just
+    /// re-drawing the root level layers and using cached bitmaps.
+    /// This is just a hint and may be ignored
+    /// </summary>
+    public readonly bool FullInvalidateHint;
+    
+    public RenderContext(Canvas myCanvas, SKSurface surface, bool isExport, bool fullInvalidateHint) {
+        this.FullInvalidateHint = fullInvalidateHint;
         this.Surface = surface;
         this.Canvas = surface.Canvas;
         this.MyCanvas = myCanvas;

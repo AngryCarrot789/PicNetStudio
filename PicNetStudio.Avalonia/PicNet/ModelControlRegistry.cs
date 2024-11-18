@@ -20,6 +20,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Controls;
 
 namespace PicNetStudio.Avalonia.PicNet;
@@ -46,25 +47,34 @@ public class ModelControlRegistry<TModel, TControl> where TControl : Control whe
         this.constructors[typeof(TSpecificModel)] = constructor;
     }
 
+    public bool TryGetNewInstance(TModel model, [NotNullWhen(true)] out TControl? control) {
+        return (control = this.NewInstanceInternal(model, false)) != null;
+    }
+
     public TControl NewInstance(TModel model) {
+        TControl? control = this.NewInstanceInternal(model, true);
+        return control ?? throw new Exception("No such content control for resource type: " + model.GetType().Name);
+    }
+    
+    private TControl? NewInstanceInternal(TModel model, bool logBaseTypeScan) {
         if (model == null) {
             throw new ArgumentNullException(nameof(model));
         }
 
-        // Just try to find a base control type. It should be found first try unless I forgot to register a new control type
         bool hasLogged = false;
+        // Just try to find a base control type. It should be found first try unless I forgot to register a new control type
         for (Type? type = model.GetType(); type != null; type = type.BaseType) {
             if (this.constructors.TryGetValue(type, out Delegate? function)) {
                 return function is Func<TModel, TControl> biFunc ? biFunc(model) : ((Func<TControl>) function)();
             }
 
-            if (!hasLogged) {
+            if (logBaseTypeScan && !hasLogged) {
                 hasLogged = true;
                 Debugger.Break();
                 Debug.WriteLine("Could not find control for resource type on first try. Scanning base types");
             }
         }
 
-        throw new Exception("No such content control for resource type: " + model.GetType().Name);
+        return null;
     }
 }

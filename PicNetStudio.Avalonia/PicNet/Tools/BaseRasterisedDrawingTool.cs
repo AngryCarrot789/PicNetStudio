@@ -20,7 +20,7 @@
 using System;
 using Avalonia;
 using Avalonia.Input;
-using PicNetStudio.Avalonia.PicNet.Layers;
+using PicNetStudio.Avalonia.PicNet.Layers.Core;
 
 namespace PicNetStudio.Avalonia.PicNet.Tools;
 
@@ -129,7 +129,7 @@ public abstract class BaseRasterisedDrawingTool : BaseDrawingTool {
             selection.FinishClip(bitmap);
         }
         
-        document.Canvas.RaiseRenderInvalidated();
+        bitmapLayer.InvalidateVisual();
         tool.lastDragDrawPoint = mPos;
         return true;
     }

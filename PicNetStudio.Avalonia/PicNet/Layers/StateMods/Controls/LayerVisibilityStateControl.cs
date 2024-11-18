@@ -19,6 +19,7 @@
 
 using Avalonia.Controls.Primitives;
 using PicNetStudio.Avalonia.Bindings;
+using PicNetStudio.Avalonia.PicNet.Layers.Core;
 using PicNetStudio.Avalonia.Utils;
 
 namespace PicNetStudio.Avalonia.PicNet.Layers.StateMods.Controls;
@@ -26,7 +27,7 @@ namespace PicNetStudio.Avalonia.PicNet.Layers.StateMods.Controls;
 /// <summary>
 /// A layer state modifier control that controls the visibility
 /// </summary>
-public class LayerVisibilityStateControl : BaseLayerStateModifierControl {
+public class LayerVisibilityStateControl : LayerStateModifierControl {
     private ToggleButton PART_ToggleRender;
     private ToggleButton PART_ToggleExport;
 

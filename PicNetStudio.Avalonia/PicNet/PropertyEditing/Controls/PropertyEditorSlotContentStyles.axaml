@@ -86,6 +86,33 @@
         </Setter>
     </ControlTheme>
 
+    <ControlTheme x:Key="{x:Type dt:DataParameterPointPropertyEditorControl}" TargetType="{x:Type dt:DataParameterPointPropertyEditorControl}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type dt:DataParameterPointPropertyEditorControl}">
+                    <Grid Margin="5,0,2,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="{Binding RelativeSource={RelativeSource AncestorType={x:Type l:PropertyEditorControl}}, Path=ColumnWidth0, Mode=TwoWay}"/>
+                            <ColumnDefinition Width="{Binding RelativeSource={RelativeSource AncestorType={x:Type l:PropertyEditorControl}}, Path=ColumnWidth1, Mode=TwoWay}"/>
+                            <ColumnDefinition Width="{Binding RelativeSource={RelativeSource AncestorType={x:Type l:PropertyEditorControl}}, Path=ColumnWidth2, Mode=TwoWay}"/>
+                        </Grid.ColumnDefinitions>
+                        <CheckBox x:Name="PART_DisplayNameCheckBox" VerticalAlignment="Center" Grid.Row="0" Grid.Column="0"
+                                  Theme="{TemplateBinding IsCheckBoxToggleable, Converter={StaticResource IsCheckBoxToggleableToStyleConverter}}"/>
+                        <Grid Grid.Row="0" Grid.Column="2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="2"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <d:NumberDragger x:Name="PART_DraggerX" Height="20" Grid.Column="0" BorderBrush="Black" Padding="4,2"/>
+                            <d:NumberDragger x:Name="PART_DraggerY" Height="20" Grid.Column="2" BorderBrush="Black" Padding="4,2"/>
+                        </Grid>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </ControlTheme>
+
     <ControlTheme x:Key="{x:Type dt:DataParameterBooleanPropertyEditorControl}" TargetType="{x:Type dt:DataParameterBooleanPropertyEditorControl}">
         <Setter Property="Template">
             <Setter.Value>
@@ -136,8 +163,31 @@
                         </Grid.ColumnDefinitions>
                         <CheckBox x:Name="PART_DisplayNameCheckBox" VerticalAlignment="Center" Grid.Row="0" Grid.Column="0"
                                   Theme="{TemplateBinding IsCheckBoxToggleable, Converter={StaticResource IsCheckBoxToggleableToStyleConverter}}"/>
-                        <ComboBox x:Name="PART_ComboBox" Grid.Row="0" Grid.Column="2"/>
+                        <ComboBox x:Name="PART_ComboBox" Grid.Row="0" Grid.Column="2">
+                            <ToolTip.Tip>
+                                <bm:BlendModeToolTip x:Name="PART_ComboToolTip"/>
+                            </ToolTip.Tip>
+                        </ComboBox>
                     </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type bm:BlendModeToolTip}" TargetType="{x:Type bm:BlendModeToolTip}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type bm:BlendModeToolTip}">
+                    <Panel>
+                        <TextBlock x:Name="PART_TextBlock">
+                            <Run x:Name="PART_HeaderRun" FontSize="16" TextDecorations="Underline"/>
+                            <LineBreak/>
+                            <Run x:Name="PART_DescriptionRun" FontSize="12"/>
+                        </TextBlock>
+                        <TextBlock HorizontalAlignment="Right" VerticalAlignment="Top">
+                            <Run x:Name="PART_EnumNameRun" FontSize="14" TextDecorations="Underline"/>
+                        </TextBlock>
+                    </Panel>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>

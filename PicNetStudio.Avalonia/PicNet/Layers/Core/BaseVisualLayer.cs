@@ -23,7 +23,7 @@ using PicNetStudio.Avalonia.PicNet.Effects;
 using PicNetStudio.Avalonia.Utils.Accessing;
 using SkiaSharp;
 
-namespace PicNetStudio.Avalonia.PicNet.Layers;
+namespace PicNetStudio.Avalonia.PicNet.Layers.Core;
 
 public delegate void BaseVisualLayerRenderInvalidatedEventHandler(BaseVisualLayer layer);
 
@@ -35,11 +35,26 @@ public abstract class BaseVisualLayer : BaseLayerTreeObject {
     public static readonly DataParameterBool IsRenderVisibleParameter = DataParameter.Register(new DataParameterBool(typeof(BaseVisualLayer), nameof(IsVisible), true, ValueAccessors.Reflective<bool>(typeof(BaseVisualLayer), nameof(isVisible))));
     public static readonly DataParameterBool IsExportVisibleParameter = DataParameter.Register(new DataParameterBool(typeof(BaseVisualLayer), nameof(IsExportVisible), true, ValueAccessors.Reflective<bool>(typeof(BaseVisualLayer), nameof(isExportVisible))));
     public static readonly DataParameter<SKBlendMode> BlendModeParameter = DataParameter.Register(new DataParameter<SKBlendMode>(typeof(BaseVisualLayer), nameof(BlendMode), SKBlendMode.SrcOver, ValueAccessors.Reflective<SKBlendMode>(typeof(BaseVisualLayer), nameof(blendMode))));
+    
+    public static readonly DataParameterPoint PositionParameter = DataParameter.Register(new DataParameterPoint(typeof(BaseVisualLayer), nameof(Position), default, ValueAccessors.Reflective<SKPoint>(typeof(BaseVisualLayer), nameof(position))));
+    public static readonly DataParameterPoint ScaleParameter = DataParameter.Register(new DataParameterPoint(typeof(BaseVisualLayer), nameof(Scale), new SKPoint(1.0F, 1.0F), ValueAccessors.Reflective<SKPoint>(typeof(BaseVisualLayer), nameof(scale))));
+    public static readonly DataParameterPoint ScaleOriginParameter = DataParameter.Register(new DataParameterPoint(typeof(BaseVisualLayer), nameof(ScaleOrigin), default, ValueAccessors.Reflective<SKPoint>(typeof(BaseVisualLayer), nameof(scaleOrigin))));
+    public static readonly DataParameterDouble RotationParameter = DataParameter.Register(new DataParameterDouble(typeof(BaseVisualLayer), nameof(Rotation), default, ValueAccessors.Reflective<double>(typeof(BaseVisualLayer), nameof(rotation))));
+    public static readonly DataParameterPoint RotationOriginParameter = DataParameter.Register(new DataParameterPoint(typeof(BaseVisualLayer), nameof(RotationOrigin), default, ValueAccessors.Reflective<SKPoint>(typeof(BaseVisualLayer), nameof(rotationOrigin))));
 
     private float opacity = OpacityParameter.DefaultValue;
     private bool isVisible = IsRenderVisibleParameter.DefaultValue;
     private bool isExportVisible = IsExportVisibleParameter.DefaultValue;
     private SKBlendMode blendMode = BlendModeParameter.DefaultValue;
+    
+    private SKPoint position = PositionParameter.DefaultValue;
+    private SKPoint scale = ScaleParameter.DefaultValue;
+    private SKPoint scaleOrigin = ScaleOriginParameter.DefaultValue;
+    private double rotation = RotationParameter.DefaultValue;
+    private SKPoint rotationOrigin = RotationOriginParameter.DefaultValue;
+    private SKMatrix thisLayerTransformationMatrix;
+    private SKMatrix absoluteTransformationMatrix;
+    protected bool isMatrixDirty = true;
 
     /// <summary>
     /// Gets or sets the opacity of this layer
@@ -72,6 +87,54 @@ public abstract class BaseVisualLayer : BaseLayerTreeObject {
         get => this.blendMode;
         set => DataParameter.SetValueHelper(this, BlendModeParameter, ref this.blendMode, value);
     }
+    
+    public SKPoint Position {
+        get => this.position;
+        set => DataParameter.SetValueHelper(this, PositionParameter, ref this.position, value);
+    }
+    
+    public SKPoint Scale {
+        get => this.scale;
+        set => DataParameter.SetValueHelper(this, ScaleParameter, ref this.scale, value);
+    }
+    
+    public SKPoint ScaleOrigin {
+        get => this.scaleOrigin;
+        set => DataParameter.SetValueHelper(this, ScaleOriginParameter, ref this.scaleOrigin, value);
+    }
+    
+    public double Rotation {
+        get => this.rotation;
+        set => DataParameter.SetValueHelper(this, RotationParameter, ref this.rotation, value);
+    }
+    
+    public SKPoint RotationOrigin {
+        get => this.rotationOrigin;
+        set => DataParameter.SetValueHelper(this, RotationOriginParameter, ref this.rotationOrigin, value);
+    }
+    
+    /// <summary>
+    /// Gets (or calculates, if dirty) this clip's final transformation matrix, which is a concatenation of
+    /// our <see cref="TransformationMatrix"/> and our parent track's transformation matrix (or identity, if not in a track yet)
+    /// </summary>
+    public SKMatrix AbsoluteTransformationMatrix {
+        get {
+            if (this.isMatrixDirty)
+                this.GenerateMatrices();
+            return this.absoluteTransformationMatrix;
+        }
+    }
+
+    /// <summary>
+    /// Gets (or calculates, if dirty) this clip's transformation matrix entirely based on our transformation properties (therefore does not contain our track's matrix)
+    /// </summary>
+    public SKMatrix TransformationMatrix {
+        get {
+            if (this.isMatrixDirty)
+                this.GenerateMatrices();
+            return this.thisLayerTransformationMatrix;
+        }
+    }
 
     /// <summary>
     /// Returns true if this layer type handles its own opacity calculations in order for a more
@@ -88,7 +151,16 @@ public abstract class BaseVisualLayer : BaseLayerTreeObject {
     }
 
     static BaseVisualLayer() {
+        // TODO: Maybe we can optimise with invalidation and re-paint events?
+        // Maybe i'm not thinking about it right but we make it so the cached
+        // visual never has the composition layer opacity applied; we use it
+        // when drawing the cache into a surface. Maybe that's overall slower
+        // than re-drawing the composition layer when its opacity changes?
+        // Not sure...
         SetParameterAffectsRender(OpacityParameter, IsRenderVisibleParameter, BlendModeParameter);
+        
+        
+        DataParameter.AddMultipleHandlers((p, o) => ((BaseVisualLayer) o.TransferableData.Owner).InvalidateTransformationMatrix(), PositionParameter, ScaleParameter, ScaleOriginParameter, RotationParameter, RotationOriginParameter);
     }
 
     /// <summary>
@@ -105,7 +177,13 @@ public abstract class BaseVisualLayer : BaseLayerTreeObject {
         
         DataParameter.AddMultipleHandlers(OnDataParameterChangedToInvalidateVisual, parameters);
     }
-    
+
+    private void GenerateMatrices() {
+        this.thisLayerTransformationMatrix = MatrixUtils.CreateTransformationMatrix(this.Position, this.Scale, this.Rotation, this.ScaleOrigin, this.RotationOrigin);
+        this.absoluteTransformationMatrix = this.ParentLayer != null ? this.ParentLayer.thisLayerTransformationMatrix.PreConcat(this.thisLayerTransformationMatrix) : this.thisLayerTransformationMatrix;
+        this.isMatrixDirty = false;
+    }
+
     protected override void OnEffectAdded(int index, BaseLayerEffect effect) {
         base.OnEffectAdded(index, effect);
         this.InvalidateVisual();
@@ -133,4 +211,15 @@ public abstract class BaseVisualLayer : BaseLayerTreeObject {
     /// </summary>
     /// <param name="ctx">Render context</param>
     public abstract void RenderLayer(ref RenderContext ctx);
+
+    public virtual void InvalidateTransformationMatrix() {
+        this.isMatrixDirty = true;
+        this.InvalidateVisual();
+    }
+
+    internal static void InternalInvalidateTransformationMatrixFromParent(BaseVisualLayer? layer) {
+        if (layer != null) {
+            layer.isMatrixDirty = true;
+        }
+    }
 }

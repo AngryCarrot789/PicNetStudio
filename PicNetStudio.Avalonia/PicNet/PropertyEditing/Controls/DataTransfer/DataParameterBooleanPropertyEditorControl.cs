@@ -28,7 +28,7 @@ namespace PicNetStudio.Avalonia.PicNet.PropertyEditing.Controls.DataTransfer;
 public class DataParameterBooleanPropertyEditorControl : BaseDataParameterPropertyEditorControl {
     protected CheckBox checkBox;
 
-    public new DataParameterBooleanPropertyEditorSlot SlotModel => (DataParameterBooleanPropertyEditorSlot) base.SlotControl.Model;
+    public new DataParameterBoolPropertyEditorSlot SlotModel => (DataParameterBoolPropertyEditorSlot) base.SlotControl.Model;
 
     public DataParameterBooleanPropertyEditorControl() {
     }

@@ -17,6 +17,7 @@
 // along with PicNetStudio. If not, see <https://www.gnu.org/licenses/>.
 // 
 
+using System;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
@@ -36,7 +37,7 @@ public class SKAsyncViewPort : Control {
     private SKSurface? targetSurface;
     private SKImageInfo skImageInfo;
     private bool ignorePixelScaling;
-    private ILockedFramebuffer lockKey;
+    private ILockedFramebuffer? lockKey;
 
     public SKPoint FeedbackZoomOrigin;
     public SKPoint FeedbackZoomSize;
@@ -102,7 +103,8 @@ public class SKAsyncViewPort : Control {
         // SKImageInfo info = this.skImageInfo;
         // this.lockKey.AddDirtyRect(new Int32Rect(0, 0, info.Width, info.Height));
         this.PreRenderExtension?.Invoke(this, this.targetSurface!);
-        this.lockKey.Dispose();
+        this.lockKey!.Dispose();
+        this.lockKey = null;
         if (invalidateVisual)
             this.InvalidateVisual();
         this.targetSurface!.Dispose();
@@ -119,6 +121,19 @@ public class SKAsyncViewPort : Control {
         }
     }
 
+    /// <summary>
+    /// A method that disposes our bitmap to save on some memory
+    /// </summary>
+    public void DisposeBitmaps() {
+        if (this.targetSurface != null)
+            throw new InvalidOperationException("Currently rendering; cannot dispose");
+        
+        this.CanvasSize = default;
+        this.skImageInfo = default;
+        this.bitmap?.Dispose();
+        this.bitmap = default;
+    }
+    
     protected override void OnSizeChanged(SizeChangedEventArgs e) {
         base.OnSizeChanged(e);
         this.InvalidateVisual();

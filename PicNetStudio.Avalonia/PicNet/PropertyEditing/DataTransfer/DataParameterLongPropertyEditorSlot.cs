@@ -30,7 +30,7 @@ public class DataParameterLongPropertyEditorSlot : DataParameterFormattableNumbe
         set {
             long oldVal = this.value;
             this.value = value;
-            bool useAddition = this.IsMultiHandler;
+            bool useAddition = false;//this.IsMultiHandler; TODO: Fix with new NumberDragger
             long change = value - oldVal;
             DataParameterLong parameter = this.Parameter;
             for (int i = 0, c = this.Handlers.Count; i < c; i++) {
@@ -39,7 +39,7 @@ public class DataParameterLongPropertyEditorSlot : DataParameterFormattableNumbe
                 parameter.SetValue(obj, newValue);
             }
 
-            this.OnValueChanged();
+            this.OnValueChanged(this.lastQueryHasMultipleValues && useAddition, true);
         }
     }
 
@@ -58,6 +58,8 @@ public class DataParameterLongPropertyEditorSlot : DataParameterFormattableNumbe
     }
 
     public override void QueryValueFromHandlers() {
-        this.value = GetEqualValue(this.Handlers, (x) => this.Parameter.GetValue((ITransferableData) x), out long d) ? d : default;
+        this.HasMultipleValues = !GetEqualValue(this.Handlers, (x) => this.Parameter.GetValue((ITransferableData) x), out this.value);
+        if (this.HasMultipleValues)
+            this.value = Math.Abs(this.Parameter.Maximum - this.Parameter.Minimum) / 2;
     }
 }

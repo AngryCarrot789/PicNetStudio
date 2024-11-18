@@ -27,6 +27,7 @@ namespace PicNetStudio.Avalonia.PicNet.Layers.CustomParameters.BlendMode;
 
 public class DataParameterBlendModePropertyEditorControl : BaseDataParameterPropertyEditorControl {
     protected ComboBox comboBox;
+    protected BlendModeToolTip PART_ComboToolTip;
 
     public new DataParameterBlendModePropertyEditorSlot? SlotModel => (DataParameterBlendModePropertyEditorSlot?) base.SlotControl!.Model;
 
@@ -36,6 +37,7 @@ public class DataParameterBlendModePropertyEditorControl : BaseDataParameterProp
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e) {
         base.OnApplyTemplate(e);
         this.comboBox = e.NameScope.GetTemplateChild<ComboBox>("PART_ComboBox");
+        this.PART_ComboToolTip = e.NameScope.GetTemplateChild<BlendModeToolTip>("PART_ComboToolTip");
         if (this.IsConnected)
             this.comboBox.SelectionChanged += this.OnSelectionChanged;
     }
@@ -46,6 +48,7 @@ public class DataParameterBlendModePropertyEditorControl : BaseDataParameterProp
 
     protected override void UpdateControlValue() {
         DataParameterBlendModePropertyEditorSlot slot = this.SlotModel!;
+        this.PART_ComboToolTip.CurrentBlendMode = slot.Value;
         if (slot.TranslationInfo != null && slot.TranslationInfo.EnumToText.TryGetValue(slot.Value, out string? text)) {
             this.comboBox.SelectedItem = text;
         }

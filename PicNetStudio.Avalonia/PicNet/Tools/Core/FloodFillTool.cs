@@ -20,7 +20,7 @@
 using System;
 using System.Collections.Generic;
 using Avalonia.Input;
-using PicNetStudio.Avalonia.PicNet.Layers;
+using PicNetStudio.Avalonia.PicNet.Layers.Core;
 using SkiaSharp;
 
 namespace PicNetStudio.Avalonia.PicNet.Tools.Core;
@@ -44,8 +44,8 @@ public class FloodFillTool : BaseDrawingTool {
 
         SKColor replaceColour = cursor == EnumCursorType.Primary ? document.Editor!.PrimaryColour : document.Editor!.SecondaryColour;
         DrawPixels(bitmapLayer.Bitmap, (int) Math.Floor(x), (int) Math.Floor(y), (uint) replaceColour);
-
-        document.Canvas.RaiseRenderInvalidated();
+        
+        bitmapLayer.InvalidateVisual();
         return true;
     }
 

@@ -23,10 +23,13 @@ using PicNetStudio.Avalonia.PicNet.Controls.Dragger;
 
 namespace PicNetStudio.Avalonia.PicNet.PropertyEditing.DataTransfer;
 
-public delegate void ValueFormatterChangedEventHandler(DataParameterFormattableNumberPropertyEditorSlot sender, IValueFormatter oldValueFormatter, IValueFormatter newValueFormatter);
+public delegate void SlotValueFormatterChangedEventHandler(DataParameterFormattableNumberPropertyEditorSlot sender, IValueFormatter oldValueFormatter, IValueFormatter newValueFormatter);
+
+public delegate void SlotValueFormatterForAdditionChangedEventHandler(DataParameterFormattableNumberPropertyEditorSlot sender, IValueFormatter oldValueFormatterForAddition, IValueFormatter newValueFormatterForAddition);
 
 public abstract class DataParameterFormattableNumberPropertyEditorSlot : DataParameterPropertyEditorSlot {
     private IValueFormatter valueFormatter;
+    private IValueFormatter valueFormatterForAddition;
 
     /// <summary>
     /// Gets or sets the value formatter used to format our numeric value in the UI
@@ -43,9 +46,9 @@ public abstract class DataParameterFormattableNumberPropertyEditorSlot : DataPar
         }
     }
 
-    public event ValueFormatterChangedEventHandler? ValueFormatterChanged;
+    public event SlotValueFormatterChangedEventHandler? ValueFormatterChanged;
+    public event SlotValueFormatterForAdditionChangedEventHandler? ValueFormatterForAdditionChanged;
 
     protected DataParameterFormattableNumberPropertyEditorSlot(DataParameter parameter, Type applicableType, string? displayName = null) : base(parameter, applicableType, displayName) {
-        
     }
 }

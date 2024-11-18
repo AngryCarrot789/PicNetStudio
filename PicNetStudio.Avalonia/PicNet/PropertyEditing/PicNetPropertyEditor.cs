@@ -17,9 +17,10 @@
 // along with PicNetStudio. If not, see <https://www.gnu.org/licenses/>.
 // 
 
-using System.Collections.Generic;
+using System.Linq;
 using PicNetStudio.Avalonia.PicNet.Controls.Dragger;
 using PicNetStudio.Avalonia.PicNet.Layers;
+using PicNetStudio.Avalonia.PicNet.Layers.Core;
 using PicNetStudio.Avalonia.PicNet.Layers.CustomParameters.BlendMode;
 using PicNetStudio.Avalonia.PicNet.PropertyEditing.Core;
 using PicNetStudio.Avalonia.PicNet.PropertyEditing.DataTransfer;
@@ -45,26 +46,49 @@ public class PicNetPropertyEditor : BasePropertyEditor {
 
             layer.AddItem(new LayerNamePropertyEditorSlot());
             layer.AddItem(new DataParameterBlendModePropertyEditorSlot(BaseVisualLayer.BlendModeParameter, typeof(BaseVisualLayer)));
-            layer.AddItem(new DataParameterFloatPropertyEditorSlot(BaseVisualLayer.OpacityParameter, typeof(BaseVisualLayer), "Opacity", DragStepProfile.UnitOne) {ValueFormatter = UnitToPercentFormatter.Standard});
+            layer.AddItem(new DataParameterFloatPropertyEditorSlot(BaseVisualLayer.OpacityParameter, typeof(BaseVisualLayer), "Opacity", DragStepProfile.UnitOne) {ValueFormatter = UnitToPercentFormatter.Standard });
+            
+            {
+                SimplePropertyEditorGroup transform = new SimplePropertyEditorGroup(typeof(BaseVisualLayer), GroupType.SecondaryExpander) { DisplayName = "Motion/Transformation" };
+                transform.AddItem(new DataParameterPointPropertyEditorSlot(BaseVisualLayer.PositionParameter, typeof(BaseVisualLayer), "Position") {StepProfileX = DragStepProfile.InfPixelRange, StepProfileY = DragStepProfile.InfPixelRange});
+                transform.AddItem(new DataParameterPointPropertyEditorSlot(BaseVisualLayer.ScaleParameter, typeof(BaseVisualLayer), "Scale") {StepProfileX = DragStepProfile.UnitOne, StepProfileY = DragStepProfile.UnitOne});
+                transform.AddItem(new DataParameterDoublePropertyEditorSlot(BaseVisualLayer.RotationParameter, typeof(BaseVisualLayer), "Rotation", DragStepProfile.Rotation));
+                transform.AddItem(new DataParameterPointPropertyEditorSlot(BaseVisualLayer.ScaleOriginParameter, typeof(BaseVisualLayer), "Scale Origin") {StepProfileX = DragStepProfile.InfPixelRange, StepProfileY = DragStepProfile.InfPixelRange});
+                transform.AddItem(new DataParameterPointPropertyEditorSlot(BaseVisualLayer.RotationOriginParameter, typeof(BaseVisualLayer), "Rotation Origin") {StepProfileX = DragStepProfile.InfPixelRange, StepProfileY = DragStepProfile.InfPixelRange});
+                layer.AddItem(transform);
+            }
+            
+            {
+                SimplePropertyEditorGroup channelGroup = new SimplePropertyEditorGroup(typeof(RasterLayer), GroupType.SecondaryExpander) { DisplayName = "Channels" };
+                channelGroup.AddItem(new DataParameterFloatPropertyEditorSlot(RasterLayer.ChannelRParameter, typeof(RasterLayer), "Channel R", DragStepProfile.UnitOne) { ValueFormatter = UnitToPercentFormatter.Standard });
+                channelGroup.AddItem(new DataParameterFloatPropertyEditorSlot(RasterLayer.ChannelGParameter, typeof(RasterLayer), "Channel G", DragStepProfile.UnitOne) { ValueFormatter = UnitToPercentFormatter.Standard });
+                channelGroup.AddItem(new DataParameterFloatPropertyEditorSlot(RasterLayer.ChannelBParameter, typeof(RasterLayer), "Channel B", DragStepProfile.UnitOne) { ValueFormatter = UnitToPercentFormatter.Standard });
+                channelGroup.AddItem(new DataParameterFloatPropertyEditorSlot(RasterLayer.ChannelAParameter, typeof(RasterLayer), "Channel A", DragStepProfile.UnitOne) { ValueFormatter = UnitToPercentFormatter.Standard });
+                layer.AddItem(channelGroup);
+            }
 
-            SimplePropertyEditorGroup channelGroup = new SimplePropertyEditorGroup(typeof(RasterLayer), GroupType.SecondaryExpander) {DisplayName = "Channels"};
-            channelGroup.AddItem(new DataParameterFloatPropertyEditorSlot(RasterLayer.ChannelRParameter, typeof(RasterLayer), "Channel R", DragStepProfile.UnitOne) {ValueFormatter = UnitToPercentFormatter.Standard});
-            channelGroup.AddItem(new DataParameterFloatPropertyEditorSlot(RasterLayer.ChannelGParameter, typeof(RasterLayer), "Channel G", DragStepProfile.UnitOne) {ValueFormatter = UnitToPercentFormatter.Standard});
-            channelGroup.AddItem(new DataParameterFloatPropertyEditorSlot(RasterLayer.ChannelBParameter, typeof(RasterLayer), "Channel B", DragStepProfile.UnitOne) {ValueFormatter = UnitToPercentFormatter.Standard});
-            channelGroup.AddItem(new DataParameterFloatPropertyEditorSlot(RasterLayer.ChannelAParameter, typeof(RasterLayer), "Channel A", DragStepProfile.UnitOne) {ValueFormatter = UnitToPercentFormatter.Standard});
-            layer.AddItem(channelGroup);
+            {
+                SimplePropertyEditorGroup textGroup = new SimplePropertyEditorGroup(typeof(TextLayer), GroupType.SecondaryExpander) { DisplayName = "Channels" };
+                textGroup.AddItem(new DataParameterStringPropertyEditorSlot(TextLayer.FontFamilyParameter, typeof(TextLayer), "Font Family"));
+                textGroup.AddItem(new DataParameterDoublePropertyEditorSlot(TextLayer.FontSizeParameter, typeof(TextLayer), "Font Size", DragStepProfile.FontSize));
+                textGroup.AddItem(new DataParameterDoublePropertyEditorSlot(TextLayer.BorderThicknessParameter, typeof(TextLayer), "Stroke Width", DragStepProfile.Pixels));
+                textGroup.AddItem(new DataParameterFloatPropertyEditorSlot(TextLayer.SkewXParameter, typeof(TextLayer), "Skew X", DragStepProfile.Pixels));
+                textGroup.AddItem(new DataParameterBoolPropertyEditorSlot(TextLayer.IsAntiAliasedParameter, typeof(TextLayer), "Anti Alias"));
+                textGroup.AddItem(new DataParameterStringPropertyEditorSlot(TextLayer.TextParameter, typeof(TextLayer), "Font Family") {AnticipatedLineCount = 8});
+                layer.AddItem(textGroup);
+            }
         }
 
         this.Root.AddItem(this.BaseLayerObjectGroup);
     }
-
-    public void UpdateSelectedLayerSelection(IEnumerable<BaseLayerTreeObject>? selection) {
+    
+    public void UpdateSelectedLayerSelection(ISelectionManager<BaseLayerTreeObject> selection, bool clear) {
         (this.delayedUpdate ??= new RapidDispatchAction(() => {
-            if (selection == null) {
+            if (clear) {
                 this.BaseLayerObjectGroup.ClearHierarchy();
             }
             else {
-                this.BaseLayerObjectGroup.SetupHierarchyState(new List<object>(selection));
+                this.BaseLayerObjectGroup.SetupHierarchyState(selection.SelectedItems.ToList());
             }
         })).InvokeAsync();
     }

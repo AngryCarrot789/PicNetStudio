@@ -136,16 +136,16 @@ public class RateLimitedDispatchAction : IDispatchAction {
 
     private async Task TaskMain() {
         long lastExecTime = Interlocked.Read(ref this.lastExecutionTime);
-        long interval = Time.GetSystemTicks() - lastExecTime;
-
+        long currInterval = Time.GetSystemTicks() - lastExecTime;
+        
         do {
             // We will sleep at least twice, even if InvokeAsync is only called once.
             // This is so that we don't need to keep creating lots of tasks when
             // InvokeAsync is called very often
 
             long minInterval = Interlocked.Read(ref this.minIntervalTicks);
-            if (interval < minInterval) {
-                await Task.Delay(new TimeSpan(minInterval - interval));
+            if (currInterval < minInterval) {
+                await Task.Delay(new TimeSpan(minInterval - currInterval));
             }
 
             int myState;
@@ -197,7 +197,7 @@ public class RateLimitedDispatchAction : IDispatchAction {
             }
 
             lastExecTime = Time.GetSystemTicks();
-            interval = 0;
+            currInterval = 0;
         } while (true);
     }
 

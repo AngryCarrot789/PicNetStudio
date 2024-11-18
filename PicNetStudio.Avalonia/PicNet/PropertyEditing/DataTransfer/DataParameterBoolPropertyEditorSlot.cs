@@ -22,28 +22,28 @@ using PicNetStudio.Avalonia.DataTransfer;
 
 namespace PicNetStudio.Avalonia.PicNet.PropertyEditing.DataTransfer;
 
-public class DataParameterBooleanPropertyEditorSlot : DataParameterPropertyEditorSlot {
+public class DataParameterBoolPropertyEditorSlot : DataParameterPropertyEditorSlot {
     private bool value;
 
     public bool Value {
         get => this.value;
         set {
             this.value = value;
-            DataParameterBool parameter = this.DataParameter;
+            DataParameterBool parameter = this.Parameter;
             for (int i = 0, c = this.Handlers.Count; i < c; i++) {
                 parameter.SetValue((ITransferableData) this.Handlers[i], value);
             }
 
-            this.OnValueChanged();
+            this.OnValueChanged(false, true);
         }
     }
 
-    public new DataParameterBool DataParameter => (DataParameterBool) base.Parameter;
+    public new DataParameterBool Parameter => (DataParameterBool) base.Parameter;
 
-    public DataParameterBooleanPropertyEditorSlot(DataParameterBool parameter, Type applicableType, string displayName) : base(parameter, applicableType, displayName) {
+    public DataParameterBoolPropertyEditorSlot(DataParameterBool parameter, Type applicableType, string displayName) : base(parameter, applicableType, displayName) {
     }
 
     public override void QueryValueFromHandlers() {
-        this.value = GetEqualValue(this.Handlers, (x) => this.DataParameter.GetValue((ITransferableData) x), out bool d) ? d : default;
+        this.HasMultipleValues = !GetEqualValue(this.Handlers, (x) => this.Parameter.GetValue((ITransferableData) x), out this.value);
     }
 }

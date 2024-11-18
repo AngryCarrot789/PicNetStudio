@@ -166,6 +166,7 @@ public abstract class PropertyEditorSlot : BasePropertyEditorItem {
         EqualityComparer<T> comparator = EqualityComparer<T>.Default;
         for (int i = 1; i < count; i++) {
             if (!comparator.Equals(getter(objects[i]), equal)) {
+                equal = default;
                 return false;
             }
         }

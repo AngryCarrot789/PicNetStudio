@@ -17,6 +17,8 @@
 // along with PicNetStudio. If not, see <https://www.gnu.org/licenses/>.
 // 
 
+using PicNetStudio.Avalonia.PicNet.Layers.Core;
+
 namespace PicNetStudio.Avalonia.PicNet.Layers;
 
 public class LayerTypeFactory : ReflectiveObjectFactory<BaseLayerTreeObject> {

@@ -30,7 +30,7 @@ public class DataParameterDoublePropertyEditorSlot : DataParameterFormattableNum
         set {
             double oldVal = this.value;
             this.value = value;
-            bool useAddition = this.IsMultiHandler;
+            bool useAddition = false;//this.IsMultiHandler; TODO: Fix with new NumberDragger
             double change = value - oldVal;
             DataParameterDouble parameter = this.Parameter;
             for (int i = 0, c = this.Handlers.Count; i < c; i++) {
@@ -39,7 +39,7 @@ public class DataParameterDoublePropertyEditorSlot : DataParameterFormattableNum
                 parameter.SetValue(obj, newValue);
             }
 
-            this.OnValueChanged();
+            this.OnValueChanged(this.lastQueryHasMultipleValues && useAddition, true);
         }
     }
 
@@ -50,7 +50,7 @@ public class DataParameterDoublePropertyEditorSlot : DataParameterFormattableNum
     public DataParameterDoublePropertyEditorSlot(DataParameterDouble parameter, Type applicableType, string displayName, DragStepProfile stepProfile) : base(parameter, applicableType, displayName) {
         this.StepProfile = stepProfile;
     }
-
+    
     public DataParameterDoublePropertyEditorSlot(DataParameterDouble parameter, DataParameter<bool> isEditableParameter, bool invertIsEditable, Type applicableType, string displayName, DragStepProfile stepProfile) : base(parameter, applicableType, displayName) {
         this.StepProfile = stepProfile;
         this.IsEditableDataParameter = isEditableParameter;
@@ -58,6 +58,8 @@ public class DataParameterDoublePropertyEditorSlot : DataParameterFormattableNum
     }
 
     public override void QueryValueFromHandlers() {
-        this.value = GetEqualValue(this.Handlers, (x) => this.Parameter.GetValue((ITransferableData) x), out double d) ? d : default;
+        this.HasMultipleValues = !GetEqualValue(this.Handlers, (x) => this.Parameter.GetValue((ITransferableData) x), out this.value);
+        if (this.HasMultipleValues)
+            this.value = Math.Abs(this.Parameter.Maximum - this.Parameter.Minimum) / 2.0D;
     }
 }

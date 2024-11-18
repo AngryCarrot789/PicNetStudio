@@ -22,10 +22,13 @@ using PicNetStudio.Avalonia.DataTransfer;
 
 namespace PicNetStudio.Avalonia.PicNet.PropertyEditing.DataTransfer;
 
-public class DataParameterStringPropertyEditorSlot : DataParameterPropertyEditorSlot {
-    private string value;
+public delegate void SlotAnticipatedLineCountChangedEventHandler(DataParameterStringPropertyEditorSlot sender);
 
-    public string Value {
+public class DataParameterStringPropertyEditorSlot : DataParameterPropertyEditorSlot {
+    private string? value;
+    private int anticipatedLineCount = -1;
+
+    public string? Value {
         get => this.value;
         set {
             this.value = value;
@@ -34,9 +37,28 @@ public class DataParameterStringPropertyEditorSlot : DataParameterPropertyEditor
                 parameter.SetValue((ITransferableData) this.Handlers[i], value);
             }
 
-            this.OnValueChanged();
+            this.OnValueChanged(false, true);
         }
     }
+
+    /// <summary>
+    /// Gets or sets the number of lines that will probably be taken up by this property. Default is -1, which means ignored. Value must be -1 or greater than 0
+    /// </summary>
+    public int AnticipatedLineCount {
+        get => this.anticipatedLineCount;
+        set {
+            if (value < 0 && value != -1)
+                throw new ArgumentOutOfRangeException(nameof(value), "Value must be -1 or greater than zero");
+            
+            if (this.anticipatedLineCount == value)
+                return;
+
+            this.anticipatedLineCount = value;
+            this.AnticipatedLineCountChanged?.Invoke(this);
+        }
+    }
+
+    public event SlotAnticipatedLineCountChangedEventHandler? AnticipatedLineCountChanged;
 
     public new DataParameterString Parameter => (DataParameterString) base.Parameter;
 
@@ -44,6 +66,6 @@ public class DataParameterStringPropertyEditorSlot : DataParameterPropertyEditor
     }
 
     public override void QueryValueFromHandlers() {
-        this.value = GetEqualValue(this.Handlers, (x) => this.Parameter.GetValue((ITransferableData) x), out string d) ? d : default;
+        this.HasMultipleValues = !GetEqualValue(this.Handlers, (x) => this.Parameter.GetValue((ITransferableData) x), out this.value);
     }
 }

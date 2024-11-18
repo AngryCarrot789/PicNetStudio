@@ -17,7 +17,9 @@
 // along with PicNetStudio. If not, see <https://www.gnu.org/licenses/>.
 // 
 
+using Avalonia;
 using PicNetStudio.Avalonia.PicNet.Layers;
+using PicNetStudio.Avalonia.PicNet.Layers.Core;
 using PicNetStudio.Avalonia.Utils;
 using PicNetStudio.Avalonia.Utils.Collections.Observable;
 using SkiaSharp;
@@ -32,6 +34,18 @@ public static class LayerRenderer {
         RenderLayer(ref context, context.MyCanvas.RootComposition);
     }
 
+    private static bool CanDrawCompositionCachedVisual(CompositionLayer layer) {
+        bool isInvalid = CompositionLayer.InternalGetAndResetVisualInvalidState(layer);
+        if (isInvalid)
+            return false;
+
+        PNBitmap pnb = layer.cachedVisualHierarchy;
+        return pnb.IsInitialised && layer.Canvas != null && pnb.Size == layer.Canvas.Size;
+    }
+
+    private static SKSurface? TempSubSurface;
+    private static SKImageInfo TempSubSurfaceInfo;
+
     /// <summary>
     /// Main method for drawing layers
     /// </summary>
@@ -42,30 +56,77 @@ public static class LayerRenderer {
             return;
         }
 
+        int topLevelMatrixRestore = ctx.Canvas.Save();
+        ctx.Canvas.SetMatrix(ctx.Canvas.TotalMatrix.PreConcat(layer.TransformationMatrix));
+        
         SKPaint? layerPaint = null;
         int restoreIndex;
-        if (layer is CompositionLayer compositeLayer) {
-            bool isUsingCustomBlend = compositeLayer.BlendMode != BaseVisualLayer.BlendModeParameter.DefaultValue;
-            bool isOpacityLayerReqd = IsOpacityLayerRequired(layer);
+        if (layer is CompositionLayer compLayer) {
+            // TODO: see below for need to fix
+            bool isCacheDirty;
+            PNBitmap cache = compLayer.cachedVisualHierarchy;
+            if (CompositionLayer.InternalGetAndResetVisualInvalidState(compLayer)) {
+                isCacheDirty = true;
+            }
+            else {
+                isCacheDirty = !cache.IsInitialised || compLayer.Canvas == null || cache.Size != compLayer.Canvas.Size;
+            }
 
-            if (isOpacityLayerReqd || isUsingCustomBlend) {
+            bool isUsingCustomBlend = compLayer.BlendMode != BaseVisualLayer.BlendModeParameter.DefaultValue;
+            bool isOpacityLayerReqd = IsOpacityLayerRequired(compLayer);
+            if (isCacheDirty || isOpacityLayerReqd || isUsingCustomBlend) {
                 layerPaint = new SKPaint();
                 if (isOpacityLayerReqd)
-                    layerPaint.Color = new SKColor(255, 255, 255, RenderUtils.DoubleToByte255(layer.Opacity));
+                    layerPaint.Color = new SKColor(255, 255, 255, RenderUtils.DoubleToByte255(compLayer.Opacity));
                 if (isUsingCustomBlend)
-                    layerPaint.BlendMode = compositeLayer.BlendMode;
+                    layerPaint.BlendMode = compLayer.BlendMode;
                 restoreIndex = ctx.Canvas.SaveLayer(layerPaint);
             }
             else {
                 restoreIndex = ctx.Canvas.Save();
             }
 
-            ReadOnlyObservableList<BaseLayerTreeObject> layers = compositeLayer.Layers;
-            for (int i = layers.Count - 1; i >= 0; i--) {
-                if (layers[i] is BaseVisualLayer visualLayer)
-                    RenderLayer(ref ctx, visualLayer);
+            if (!isCacheDirty) {
+                // Draw clean cached surface
+                ctx.Canvas.DrawBitmap(cache.Bitmap, 0, 0, null);
             }
+            else {
+                // Cache is dirty, first ensure cache is initialised
+                bool canDrawIntoCache = compLayer.ParentLayer != null && compLayer.Canvas != null;
+                if (canDrawIntoCache && (!cache.IsInitialised || cache.Size != compLayer.Canvas!.Size)) {
+                    cache.InitialiseBitmap(compLayer.Canvas!.Size);
+                }
 
+                ReadOnlyObservableList<BaseLayerTreeObject> layers = compLayer.Layers;
+                if (canDrawIntoCache && cache.IsInitialised) {
+                    // Generate temporary rendering surface to draw the layer into
+                    PixelSize size = ctx.MyCanvas.Size;
+                    SKImageInfo frameInfo = new SKImageInfo(size.Width, size.Height, SKImageInfo.PlatformColorType, SKAlphaType.Premul);
+                    if (TempSubSurface == null || TempSubSurfaceInfo != frameInfo) {
+                        TempSubSurface?.Dispose();
+                        TempSubSurface = SKSurface.Create(frameInfo);
+                    }
+
+                    TempSubSurface.Canvas.Clear(SKColor.Empty);
+                    RenderContext subCtx = new RenderContext(ctx.MyCanvas, TempSubSurface, ctx.IsExporting, ctx.FullInvalidateHint);
+                    for (int i = layers.Count - 1; i >= 0; i--) {
+                        if (layers[i] is BaseVisualLayer visualLayer)
+                            RenderLayer(ref subCtx, visualLayer);
+                    }
+
+                    cache.Canvas!.Clear(SKColor.Empty);
+                    TempSubSurface.Draw(cache.Canvas, 0, 0, null);   // Draw temp surface into cache
+                    ctx.Canvas.DrawBitmap(cache.Bitmap, 0, 0, null); // Draw cache into ctx rendering surface
+                }
+                else {
+                    // Render layer without cache writing. Used for the root layer container
+                    for (int i = layers.Count - 1; i >= 0; i--) {
+                        if (layers[i] is BaseVisualLayer visualLayer)
+                            RenderLayer(ref ctx, visualLayer);
+                    }
+                }
+            }
+            
             ctx.Canvas.RestoreToCount(restoreIndex);
             layerPaint?.Dispose();
         }
@@ -74,6 +135,8 @@ public static class LayerRenderer {
             layer.RenderLayer(ref ctx);
             EndOpacitySection(ctx.Canvas, restoreIndex, layerPaint);
         }
+        
+        ctx.Canvas.RestoreToCount(topLevelMatrixRestore);
     }
 
     /// <summary>

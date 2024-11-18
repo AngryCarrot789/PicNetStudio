@@ -37,6 +37,7 @@ public class NumberDragger : RangeBase {
     public static readonly StyledProperty<int> NonFormattedRoundedPlacesForEditProperty = AvaloniaProperty.Register<NumberDragger, int>("NonFormattedRoundedPlacesForEdit", 6);
     public static readonly StyledProperty<IValueFormatter?> ValueFormatterProperty = AvaloniaProperty.Register<NumberDragger, IValueFormatter?>("ValueFormatter");
     public static readonly StyledProperty<TextAlignment> TextAlignmentProperty = TextBlock.TextAlignmentProperty.AddOwner<NumberDragger>();
+    public static readonly StyledProperty<string?> TextPreviewOverrideProperty = AvaloniaProperty.Register<NumberDragger, string?>("TextPreviewOverride");
 
     private TextBlock? PART_TextBlock;
     private TextBox? PART_TextBox;
@@ -59,33 +60,57 @@ public class NumberDragger : RangeBase {
         set => this.SetValue(DragDirectionProperty, value);
     }
     
+    /// <summary>
+    /// Gets or sets if the mouse cursor should be locked in place while dragging. Only
+    /// supported on windows, will crash on other operating systems due to this using Win32 functions
+    /// </summary>
     public bool LockCursorOnDrag {
         get => this.GetValue(LockCursorOnDragProperty);
         set => this.SetValue(LockCursorOnDragProperty, value);
     }
 
     /// <summary>
-    /// Gets or sets the number of rounded places to use when rounding the value for preview in
-    /// the control when not editing. This value is ignored when a <see cref="ValueFormatter"/> is present
+    /// Gets or sets the number of rounded places to use for the value in the value preview when
+    /// not editing. This value is ignored when a <see cref="ValueFormatter"/> is present
     /// </summary>
     public int NonFormattedRoundedPlaces {
         get => this.GetValue(NonFormattedRoundedPlacesProperty);
         set => this.SetValue(NonFormattedRoundedPlacesProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the number of rounded places to use for the value in the text box when
+    /// editing the value. This value is ignored when a <see cref="ValueFormatter"/> is present
+    /// </summary>
     public int NonFormattedRoundedPlacesForEdit {
         get => this.GetValue(NonFormattedRoundedPlacesForEditProperty);
         set => this.SetValue(NonFormattedRoundedPlacesForEditProperty, value);
     }
     
+    /// <summary>
+    /// Gets or sets the value formatter used to post-process the final effective
+    /// <see cref="RangeBase.Value"/> into a string presentable to use user
+    /// </summary>
     public IValueFormatter? ValueFormatter {
         get => this.GetValue(ValueFormatterProperty);
         set => this.SetValue(ValueFormatterProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the text alignment used for the preview and editor text
+    /// </summary>
     public TextAlignment TextAlignment {
         get => this.GetValue(TextAlignmentProperty);
         set => this.SetValue(TextAlignmentProperty, value);
+    }
+    
+    /// <summary>
+    /// Gets or sets the text that is shown instead of the actual (non-editing formatted) value.
+    /// Null by default, which disables this feature. This text is not shown when editing via the text box
+    /// </summary>
+    public string? TextPreviewOverride {
+        get => this.GetValue(TextPreviewOverrideProperty);
+        set => this.SetValue(TextPreviewOverrideProperty, value);
     }
 
     public bool EditState {
@@ -104,7 +129,11 @@ public class NumberDragger : RangeBase {
     }
     
     public NumberDragger() {
+    }
+
+    static NumberDragger() {
         ValueProperty.Changed.AddClassHandler<NumberDragger, double>((o, e) => o.OnValueChanged(e.OldValue.GetValueOrDefault(), e.NewValue.GetValueOrDefault()));
+        TextPreviewOverrideProperty.Changed.AddClassHandler<NumberDragger, string?>((o, e) => o.UpdateTextBlockOnly());
     }
 
     private string GetValueToString(bool isEditing) => this.GetValueToString(this.Value, isEditing);
@@ -119,10 +148,19 @@ public class NumberDragger : RangeBase {
         }
     }
 
+    private void UpdateTextBlockOnly() {
+        string? reff = null;
+        this.UpdateTextBlockOnly(ref reff);
+    }
+    
+    private void UpdateTextBlockOnly(ref string? textBlock) {
+        if (this.PART_TextBlock != null)
+            this.PART_TextBlock.Text = this.TextPreviewOverride ?? (textBlock = this.GetValueToString(false));
+    }
+    
     private void UpdateTextBlockAndBox() {
         string? textBlock = null;
-        if (this.PART_TextBlock != null)
-            this.PART_TextBlock.Text = textBlock = this.GetValueToString(false);
+        this.UpdateTextBlockOnly(ref textBlock);
         if (this.PART_TextBox != null)
             this.PART_TextBox.Text = this.isEditing ? this.GetValueToString(true) : (textBlock ?? this.GetValueToString(false));
     }
@@ -288,7 +326,7 @@ public class NumberDragger : RangeBase {
             this.Value = coercedNewValue;
         }
 
-        if (this.LockCursorOnDrag) {
+        if (this.LockCursorOnDrag && OperatingSystem.IsWindows()) {
             PixelPoint sp = this.PointToScreen(this.lastClickPos);
             CursorUtils.SetCursorPos(sp.X, sp.Y);
         }

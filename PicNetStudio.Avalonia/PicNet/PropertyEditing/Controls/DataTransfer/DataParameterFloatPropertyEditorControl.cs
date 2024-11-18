@@ -42,7 +42,7 @@ public class DataParameterFloatPropertyEditorControl : BaseNumberDraggerDataPara
         DataParameterFloat param = slot.Parameter;
         this.dragger.Minimum = param.Minimum;
         this.dragger.Maximum = param.Maximum;
-
+        
         DragStepProfile profile = slot.StepProfile;
         this.dragger.TinyChange = profile.TinyStep;
         this.dragger.SmallChange = profile.SmallStep;

@@ -31,7 +31,7 @@ public abstract class BaseDataParameterPropertyEditorControl : BasePropEditContr
     public static readonly StyledProperty<bool> IsCheckBoxToggleableProperty = AvaloniaProperty.Register<BaseDataParameterPropertyEditorControl, bool>("IsCheckBoxToggleable");
 
     protected ITransferableData singleHandler;
-    protected CheckBox displayNameCheckBox;
+    protected CheckBox? displayNameCheckBox;
     protected bool IsUpdatingPrimaryControl;
     protected bool isUpdatingCheckBoxControl;
 
@@ -53,7 +53,7 @@ public abstract class BaseDataParameterPropertyEditorControl : BasePropEditContr
 
     protected virtual void OnDisplayNameCheckChanged(object? sender, RoutedEventArgs e) {
         if (this.IsCheckBoxToggleable && !this.isUpdatingCheckBoxControl && this.SlotModel != null) {
-            bool value = this.displayNameCheckBox.IsChecked ?? false;
+            bool value = this.displayNameCheckBox!.IsChecked ?? false;
             this.SlotModel.IsEditable = this.SlotModel.InvertIsEditableForParameter ? !value : value;
         }
     }
@@ -87,18 +87,18 @@ public abstract class BaseDataParameterPropertyEditorControl : BasePropEditContr
         slot.DisplayNameChanged += this.OnSlotDisplayNameChanged;
         slot.ValueChanged += this.OnSlotValueChanged;
         slot.IsEditableChanged += this.SlotOnIsEditableChanged;
-        this.displayNameCheckBox.Content = slot.DisplayName;
+        this.displayNameCheckBox!.Content = slot.DisplayName;
         this.IsCheckBoxToggleable = slot.IsEditableDataParameter != null;
         this.OnHandlerListChanged(true);
     }
 
     protected override void OnDisconnected() {
-        DataParameterPropertyEditorSlot slot = this.SlotModel;
+        DataParameterPropertyEditorSlot slot = this.SlotModel!;
         slot.DisplayNameChanged -= this.OnSlotDisplayNameChanged;
         slot.HandlersLoaded -= this.OnHandlersChanged;
         slot.HandlersCleared -= this.OnHandlersChanged;
         slot.ValueChanged -= this.OnSlotValueChanged;
-        this.SlotModel.IsEditableChanged -= this.SlotOnIsEditableChanged;
+        slot.IsEditableChanged -= this.SlotOnIsEditableChanged;
         this.OnHandlerListChanged(false);
     }
 
@@ -108,10 +108,10 @@ public abstract class BaseDataParameterPropertyEditorControl : BasePropEditContr
 
     private void UpdateCanEdit() {
         this.isUpdatingCheckBoxControl = true;
-        DataParameterPropertyEditorSlot slot = this.SlotModel;
-        bool value = this.SlotModel.IsEditable;
+        DataParameterPropertyEditorSlot slot = this.SlotModel!;
+        bool value = slot.IsEditable;
         value = slot.InvertIsEditableForParameter ? !value : value;
-        this.displayNameCheckBox.IsChecked = value;
+        this.displayNameCheckBox!.IsChecked = value;
         this.isUpdatingCheckBoxControl = false;
         this.OnCanEditValueChanged(value);
     }
@@ -128,7 +128,7 @@ public abstract class BaseDataParameterPropertyEditorControl : BasePropEditContr
     }
 
     private void OnHandlerListChanged(bool connect) {
-        DataParameterPropertyEditorSlot slot = this.SlotModel;
+        DataParameterPropertyEditorSlot? slot = this.SlotModel;
         if (connect) {
             if (slot != null && slot.Handlers.Count == 1) {
                 this.singleHandler = (ITransferableData) slot.Handlers[0];

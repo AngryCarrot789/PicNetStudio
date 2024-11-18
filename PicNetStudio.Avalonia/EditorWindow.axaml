@@ -1,47 +1,47 @@
-<c4:WindowEx x:Class="PicNetStudio.Avalonia.EditorWindow"
+<tc:WindowEx x:Class="PicNetStudio.Avalonia.EditorWindow"
              xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:aa="clr-namespace:PicNetStudio.Avalonia.Shortcuts.Avalonia"
-             xmlns:controls="clr-namespace:PicNetStudio.Avalonia.PicNet.Controls"
-             xmlns:controls1="clr-namespace:PicNetStudio.Avalonia.PicNet.Toolbars.Controls"
-             xmlns:c2="clr-namespace:PicNetStudio.Avalonia.PicNet.Layers.Controls"
-             xmlns:c3="clr-namespace:PicNetStudio.Avalonia.PicNet.PropertyEditing.Controls"
-             xmlns:c4="clr-namespace:PicNetStudio.Avalonia.Themes.Controls"
-             xmlns:nd="clr-namespace:PicNetStudio.Avalonia.PicNet.Controls.Dragger"
-             xmlns:u="clr-namespace:PicNetStudio.Avalonia.CommandSystem.Usages"
-             xmlns:commands="clr-namespace:PicNetStudio.Avalonia.PicNet.Commands"
+             xmlns:sc="clr-namespace:PicNetStudio.Avalonia.Shortcuts.Avalonia"
+             xmlns:c="clr-namespace:PicNetStudio.Avalonia.PicNet.Controls"
+             xmlns:tbc="clr-namespace:PicNetStudio.Avalonia.PicNet.Toolbars.Controls"
+             xmlns:lc="clr-namespace:PicNetStudio.Avalonia.PicNet.Layers.Controls"
+             xmlns:pec="clr-namespace:PicNetStudio.Avalonia.PicNet.PropertyEditing.Controls"
+             xmlns:tc="clr-namespace:PicNetStudio.Avalonia.Themes.Controls"
+             xmlns:drag="clr-namespace:PicNetStudio.Avalonia.PicNet.Controls.Dragger"
+             xmlns:cmdu="clr-namespace:PicNetStudio.Avalonia.CommandSystem.Usages"
+             xmlns:cmd="clr-namespace:PicNetStudio.Avalonia.PicNet.Commands"
              xmlns:ams="clr-namespace:PicNetStudio.Avalonia.AdvancedMenuService"
              mc:Ignorable="d" Width="1280" Height="720"
              Title="PicNet Studio"
-             aa:UIInputManager.FocusPath="Application/EditorWindow"
+             sc:UIInputManager.FocusPath="Application/EditorWindow"
              Background="{DynamicResource PanelBackground1}"
              TitleBarBrush="{DynamicResource ABrush.Tone7.Background.Static}"
              BorderBrush="{DynamicResource ABrush.Tone1.Border.Static}" BorderThickness="1"
              FontFamily="{StaticResource FontOxanium}">
     <Grid RowDefinitions="Auto,1,*">
         <Grid Grid.Row="2" ColumnDefinitions="50,*,0,300" RowDefinitions="30,*">
-            <controls:CanvasViewPortControl x:Name="PART_Canvas" Grid.Column="1" Grid.Row="1"
+            <c:CanvasViewPortControl x:Name="PART_Canvas" Grid.Column="1" Grid.Row="1"
                                     HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                                     Background="Transparent" BorderBrush="{DynamicResource ABrush.Tone1.Border.Static}"
                                     Focusable="True" BorderThickness="1,1,1,0"
-                                    aa:UIInputManager.FocusPath="Application/EditorWindow/Canvas">
-                <controls:CanvasViewPortControl.Styles>
-                    <Style Selector="controls|CanvasViewPortControl[IsFocused=false]">
+                                    sc:UIInputManager.FocusPath="Application/EditorWindow/Canvas">
+                <c:CanvasViewPortControl.Styles>
+                    <Style Selector="c|CanvasViewPortControl[IsFocused=false]">
                         <Setter Property="BorderBrush" Value="{DynamicResource PanelBorderBrush}"/>
                     </Style>
-                    <Style Selector="controls|CanvasViewPortControl[IsFocused=true]">
+                    <Style Selector="c|CanvasViewPortControl[IsFocused=true]">
                         <Setter Property="BorderBrush" Value="DodgerBlue"/>
                     </Style>
-                </controls:CanvasViewPortControl.Styles>
-            </controls:CanvasViewPortControl>
+                </c:CanvasViewPortControl.Styles>
+            </c:CanvasViewPortControl>
             <Border Grid.Column="0" Grid.Row="1" Background="{DynamicResource PanelBackground3}">
-                <controls1:ToolBarItemListBox x:Name="PART_ToolBar" Margin="0" Padding="1,0"/>
+                <tbc:ToolBarItemListBox x:Name="PART_ToolBar" Margin="0" Padding="1,0"/>
             </Border>
             <Border Grid.Column="3" Grid.Row="1" Background="{DynamicResource PanelBackground3}">
                 <Grid RowDefinitions="*,1,*">
-                    <DockPanel Grid.Row="0" aa:UIInputManager.FocusPath="Application/EditorWindow/LayerTree">
+                    <DockPanel Grid.Row="0" sc:UIInputManager.FocusPath="Application/EditorWindow/LayerTree">
                         <Border DockPanel.Dock="Top" Background="{DynamicResource ABrush.Tone5.Background.Static}" BorderBrush="{DynamicResource ABrush.Tone1.Border.Static}" BorderThickness="0,1,0,1">
                             <ToolTip.Tip>
                                 <TextBlock>
@@ -53,28 +53,66 @@
                             <DockPanel LastChildFill="False">
                                 <TextBlock Text="Layers" Padding="8,4" HorizontalAlignment="Left" DockPanel.Dock="Left"/>
                                 <TextBlock Text="?" DockPanel.Dock="Right" Padding="8,0" VerticalAlignment="Center"/>
+                                <ToggleButton DockPanel.Dock="Right" Padding="8,0" Background="Transparent" BorderThickness="0"
+                                              IsChecked="{Binding ElementName=PART_LayerTreeControl, Path=ViewMode, Mode=OneWay, Converter={x:Static lc:LayerViewModelToIsToggleConverter.Instance}, ConverterParameter={x:Static lc:LayerTreeViewMode.Compact}}"
+                                              Click="SetViewModeClick" Tag="{x:Static lc:LayerTreeViewMode.Compact}">
+                                    <ToolTip.Tip>
+                                        <TextBlock>
+                                            <Run Text="Compact view mode" FontSize="16" TextDecorations="Underline"/>
+                                            <LineBreak/>
+                                            <Run Text="This shows layers as thin tree nodes, for easy overview of a project"/>
+                                        </TextBlock>
+                                    </ToolTip.Tip>
+                                    <StackPanel Spacing="2" UseLayoutRounding="False">
+                                        <Rectangle Width="5" Height="1" Fill="{DynamicResource ABrush.Glyph.Static}" UseLayoutRounding="False"/>
+                                        <Rectangle Width="5" Height="1" Fill="{DynamicResource ABrush.Glyph.Static}" UseLayoutRounding="False"/>
+                                        <Rectangle Width="5" Height="1" Fill="{DynamicResource ABrush.Glyph.Static}" UseLayoutRounding="False"/>
+                                        <Rectangle Width="5" Height="1" Fill="{DynamicResource ABrush.Glyph.Static}" UseLayoutRounding="False"/>
+                                    </StackPanel>
+                                </ToggleButton>
+                                <ToggleButton DockPanel.Dock="Right" Padding="8,0" Background="Transparent" BorderThickness="0"
+                                              IsChecked="{Binding ElementName=PART_LayerTreeControl, Path=ViewMode, Mode=OneWay, Converter={x:Static lc:LayerViewModelToIsToggleConverter.Instance}, ConverterParameter={x:Static lc:LayerTreeViewMode.Enlarged}}"
+                                              Click="SetViewModeClick" Tag="{x:Static lc:LayerTreeViewMode.Enlarged}">
+                                    <ToolTip.Tip>
+                                        <TextBlock>
+                                            <Run Text="Enlarged view mode" FontSize="16" TextDecorations="Underline"/>
+                                            <LineBreak/>
+                                            <Run Text="This shows layers as fairly large tree nodes and also shows a preview of the layer"/>
+                                        </TextBlock>
+                                    </ToolTip.Tip>
+                                    <StackPanel Spacing="3" UseLayoutRounding="False">
+                                        <Rectangle Width="5" Height="4" Fill="{DynamicResource ABrush.Glyph.Static}" UseLayoutRounding="False"/>
+                                        <Rectangle Width="5" Height="4" Fill="{DynamicResource ABrush.Glyph.Static}" UseLayoutRounding="False"/>
+                                    </StackPanel>
+                                </ToggleButton>
                             </DockPanel>
                         </Border>
                         <Border DockPanel.Dock="Bottom" BorderBrush="{DynamicResource ABrush.Tone3.Border.Static}" BorderThickness="0,1,0,0" Height="24">
                             <StackPanel Orientation="Horizontal">
                                 <Button Content="+" Background="Transparent" BorderThickness="0" Width="24"
                                         ToolTip.Tip="Add a new layer above the selected layer"
-                                        u:CommandUsageManager.UsageClassType="{x:Type commands:CreateNewRasterLayerCommandUsage}"/>
+                                        cmdu:CommandUsageManager.UsageClassType="{x:Type cmd:CreateNewRasterLayerCommandUsage}"/>
+                                <Border Background="{DynamicResource ABrush.Tone3.Border.Static}" Width="1"/>
+                                <Button Content="+T" Background="Transparent" BorderThickness="0" Width="24"
+                                        ToolTip.Tip="Add a new text layer above the selected layer"
+                                        cmdu:CommandUsageManager.UsageClassType="{x:Type cmd:CreateNewTextLayerCommandUsage}"/>
                                 <Border Background="{DynamicResource ABrush.Tone3.Border.Static}" Width="1"/>
                                 <Button Content="-" Background="Transparent" BorderThickness="0" Width="24"
                                         ToolTip.Tip="Delete the selected layer(s)"
-                                        u:CommandUsageManager.UsageClassType="{x:Type commands:DeleteSelectedLayersCommandUsage}"/>
+                                        cmdu:CommandUsageManager.UsageClassType="{x:Type cmd:DeleteSelectedLayersCommandUsage}"/>
                                 <Border Background="{DynamicResource ABrush.Tone3.Border.Static}" Width="1"/>
                                 <Button Content="COMP" Background="Transparent" BorderThickness="0" Width="48"
                                         ToolTip.Tip="Places your selection into a composition layer (aka a group/folder)"
-                                        u:CommandUsageManager.UsageClassType="{x:Type commands:GroupSelectionIntoCompositionCommandUsage}"/>
+                                        cmdu:CommandUsageManager.UsageClassType="{x:Type cmd:GroupSelectionIntoCompositionCommandUsage}"/>
                                 <Border Background="{DynamicResource ABrush.Tone3.Border.Static}" Width="1"/>
                             </StackPanel>
                         </Border>
-                        <c2:LayerTreeControl x:Name="PART_LayerTreeControl"
+                        <!-- Compact by default -->
+                        <lc:LayerTreeControl x:Name="PART_LayerTreeControl"
                                              Background="Transparent"
                                              BorderBrush="Transparent"
-                                             BorderThickness="0"/>
+                                             BorderThickness="0"
+                                             ViewMode="Enlarged"/>
                     </DockPanel>
 
                     <DockPanel Grid.Row="2">
@@ -82,7 +120,7 @@
                             <TabItem Header="Property Editor">
                                 <Border Background="{DynamicResource PanelBackground3}"
                                         BorderThickness="0">
-                                    <c3:PropertyEditorControl x:Name="ThePropertyEditor" Focusable="True" Background="Transparent"/>
+                                    <pec:PropertyEditorControl x:Name="ThePropertyEditor" Focusable="True" Background="Transparent"/>
                                 </Border>
                             </TabItem>
                             <TabItem Header="Colour Picker">
@@ -97,7 +135,7 @@
             <Border Grid.Column="0" Grid.ColumnSpan="4" Grid.Row="0" Background="{DynamicResource PanelBackground3}">
                 <StackPanel Orientation="Horizontal">
                     <StackPanel>
-                        <nd:NumberDragger x:Name="PART_SpacingSlider" 
+                        <drag:NumberDragger x:Name="PART_SpacingSlider" 
                                           Minimum="1" Maximum="100"
                                           TinyChange="0.001"
                                           SmallChange="0.01"
@@ -118,4 +156,4 @@
             <MenuItem Header="Edit"/>
         </Menu>
     </Grid>
-</c4:WindowEx>
+</tc:WindowEx>

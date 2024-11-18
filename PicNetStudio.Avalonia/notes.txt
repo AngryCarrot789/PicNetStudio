@@ -1,0 +1,2 @@
+﻿TODO:
+    Shapes should have a fill and stroke slider to determine opacity for those 2 specifically, along side regular layer opacity

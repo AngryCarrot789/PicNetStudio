@@ -114,6 +114,10 @@ public abstract class BaseLayerTreeObject : ITransferableData {
     protected virtual void LoadDataIntoClone(BaseLayerTreeObject clone) {
         clone.name = this.name;
     }
+    
+    public int GetIndexInParent() {
+        return this.parentLayer != null ? this.indexInParent : -1;
+    }
 
     /// <summary>
     /// Invoked when this child layer is added to or removed from a parent object as a child.
@@ -222,6 +226,10 @@ public abstract class BaseLayerTreeObject : ITransferableData {
         }
         
         this.OnEffectRemoved(index, effect);
+    }
+
+    public override string ToString() {
+        return $"{this.GetType().Name}({this.Name})";
     }
 
     public static bool CheckHaveParentsAndAllMatch(ISelectionManager<BaseLayerTreeObject> manager, [NotNullWhen(true)] out CompositionLayer? sameParent) {

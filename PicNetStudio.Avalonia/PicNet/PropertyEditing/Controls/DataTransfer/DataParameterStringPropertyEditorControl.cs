@@ -27,7 +27,7 @@ namespace PicNetStudio.Avalonia.PicNet.PropertyEditing.Controls.DataTransfer;
 public class DataParameterStringPropertyEditorControl : BaseDataParameterPropertyEditorControl {
     protected TextBox textBox;
 
-    public new DataParameterStringPropertyEditorSlot SlotModel => (DataParameterStringPropertyEditorSlot) base.SlotControl.Model!;
+    public new DataParameterStringPropertyEditorSlot? SlotModel => (DataParameterStringPropertyEditorSlot?) base.SlotControl?.Model;
 
     public DataParameterStringPropertyEditorControl() {
     }
@@ -36,17 +36,45 @@ public class DataParameterStringPropertyEditorControl : BaseDataParameterPropert
         base.OnApplyTemplate(e);
         this.textBox = e.NameScope.GetTemplateChild<TextBox>("PART_TextBox");
         this.textBox.TextChanged += (sender, args) => this.OnControlValueChanged();
+        this.UpdateTextBoxHeight();
     }
 
     protected override void UpdateControlValue() {
-        this.textBox.Text = this.SlotModel.Value;
+        this.textBox.Text = this.SlotModel!.Value;
     }
 
     protected override void UpdateModelValue() {
-        this.SlotModel.Value = this.textBox.Text!;
+        this.SlotModel!.Value = this.textBox.Text!;
     }
 
     protected override void OnCanEditValueChanged(bool canEdit) {
         this.textBox.IsEnabled = canEdit;
+    }
+
+    protected override void OnConnected() {
+        base.OnConnected();
+        this.SlotModel!.AnticipatedLineCountChanged += this.OnAnticipatedLineCountChanged;
+    }
+
+    protected override void OnDisconnected() {
+        base.OnDisconnected();
+        this.SlotModel!.AnticipatedLineCountChanged -= this.OnAnticipatedLineCountChanged;
+    }
+    
+    private void OnAnticipatedLineCountChanged(DataParameterStringPropertyEditorSlot sender) {
+        this.UpdateTextBoxHeight();
+    }
+
+    private void UpdateTextBoxHeight() {
+        DataParameterStringPropertyEditorSlot? slot = this.SlotModel;
+        if (slot != null) {
+            int count = slot.AnticipatedLineCount;
+            if (count == -1) {
+                this.textBox.ClearValue(TextBox.MinLinesProperty);
+            }
+            else {
+                this.textBox.MinLines = count;
+            }
+        }
     }
 }

@@ -18,6 +18,7 @@
 //
 
 using System;
+using System.Diagnostics;
 using PicNetStudio.Avalonia.DataTransfer;
 
 namespace PicNetStudio.Avalonia.PicNet.PropertyEditing.DataTransfer;
@@ -30,16 +31,17 @@ public class DataParameterFloatPropertyEditorSlot : DataParameterFormattableNumb
         set {
             float oldVal = this.value;
             this.value = value;
-            bool useAddition = this.IsMultiHandler;
+            bool useAddition = false;//this.IsMultiHandler; TODO: Fix with new NumberDragger
             float change = value - oldVal;
             DataParameterFloat parameter = this.Parameter;
             for (int i = 0, c = this.Handlers.Count; i < c; i++) {
                 ITransferableData obj = (ITransferableData) this.Handlers[i];
                 float newValue = parameter.Clamp(useAddition ? (parameter.GetValue(obj) + change) : value);
                 parameter.SetValue(obj, newValue);
+                Debug.WriteLine(newValue);
             }
 
-            this.OnValueChanged();
+            this.OnValueChanged(this.lastQueryHasMultipleValues && useAddition, true);
         }
     }
 
@@ -52,6 +54,8 @@ public class DataParameterFloatPropertyEditorSlot : DataParameterFormattableNumb
     }
 
     public override void QueryValueFromHandlers() {
-        this.value = GetEqualValue(this.Handlers, (x) => this.Parameter.GetValue((ITransferableData) x), out float d) ? d : default;
+        this.HasMultipleValues = !GetEqualValue(this.Handlers, (x) => this.Parameter.GetValue((ITransferableData) x), out this.value);
+        if (this.HasMultipleValues)
+            this.value = Math.Abs(this.Parameter.Maximum - this.Parameter.Minimum) / 2.0F;
     }
 }

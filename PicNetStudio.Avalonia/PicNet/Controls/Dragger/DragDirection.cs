@@ -29,6 +29,7 @@ public enum DragDirection {
     /// Increment the value when dragged left, decrement when dragged right
     /// </summary>
     LeftIncrRightDecr,
+    
     /// <summary>
     /// Decrement the value when dragged up, and increment when dragged down (default)
     /// </summary>

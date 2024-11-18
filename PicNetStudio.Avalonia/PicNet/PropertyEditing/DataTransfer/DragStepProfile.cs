@@ -24,7 +24,9 @@ namespace PicNetStudio.Avalonia.PicNet.PropertyEditing.DataTransfer;
 /// </summary>
 public readonly struct DragStepProfile {
     public static readonly DragStepProfile UnitOne = new DragStepProfile(0.0001, 0.001, 0.0025, 0.01);
+    public static readonly DragStepProfile Pixels = new DragStepProfile(0.001, 0.01, 0.1, 1.0);
     public static readonly DragStepProfile Percentage = new DragStepProfile(0.001, 0.01, 0.1, 1.0);
+    public static readonly DragStepProfile FontSize = new DragStepProfile(0.001, 0.01, 0.1, 1.0);
     public static readonly DragStepProfile Rotation = new DragStepProfile(0.005, 0.05, 0.5, 2);
     public static readonly DragStepProfile InfPixelRange = new DragStepProfile(0.05, 0.1, 1.0, 5);
 

@@ -56,7 +56,7 @@ public class ExportImageCommand : AsyncCommand {
 
         using SKPixmap pixmap = new SKPixmap(bitmap.Bitmap!.Info, bitmap.ColourData);
         using SKSurface skSurface = SKSurface.Create(pixmap);
-        RenderContext args = new RenderContext(document.Canvas, skSurface, true);
+        RenderContext args = new RenderContext(document.Canvas, skSurface, true, true);
         LayerRenderer.RenderCanvas(ref args);
         using SKImage image = skSurface.Snapshot();
 

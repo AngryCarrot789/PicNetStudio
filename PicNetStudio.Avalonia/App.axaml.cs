@@ -27,6 +27,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using PicNetStudio.Avalonia.PicNet;
 using PicNetStudio.Avalonia.PicNet.Layers;
+using PicNetStudio.Avalonia.PicNet.Layers.Core;
 using Canvas = PicNetStudio.Avalonia.PicNet.Canvas;
 
 namespace PicNetStudio.Avalonia;

@@ -23,9 +23,15 @@ using PicNetStudio.Avalonia.DataTransfer;
 namespace PicNetStudio.Avalonia.PicNet.PropertyEditing.DataTransfer;
 
 public delegate void DataParameterPropertyEditorSlotEventHandler(DataParameterPropertyEditorSlot slot);
+public delegate void SlotHasMultipleValuesChangedEventHandler(DataParameterPropertyEditorSlot sender);
+public delegate void SlotHasProcessedMultipleValuesChangedEventHandler(DataParameterPropertyEditorSlot sender);
 
 public abstract class DataParameterPropertyEditorSlot : PropertyEditorSlot {
     private string displayName;
+    private bool isEditable;
+    private bool hasMultipleValues;
+    private bool hasProcessedMultipleValuesSinceSetup;
+    protected bool lastQueryHasMultipleValues;
 
     protected ITransferableData SingleHandler => (ITransferableData) this.Handlers[0];
 
@@ -40,8 +46,6 @@ public abstract class DataParameterPropertyEditorSlot : PropertyEditorSlot {
             this.DisplayNameChanged?.Invoke(this);
         }
     }
-
-    private bool isEditable;
 
     public bool IsEditable {
         get => this.isEditable;
@@ -60,6 +64,35 @@ public abstract class DataParameterPropertyEditorSlot : PropertyEditorSlot {
             this.IsEditableChanged?.Invoke(this);
         }
     }
+    
+    /// <summary>
+    /// Gets whether the slot has multiple handlers and they all have different underlying values.
+    /// This is used to present some sort of signal in the UI warning the user before they try to modify it.
+    /// This state must be updated manually by derived classes
+    /// </summary>
+    public bool HasMultipleValues {
+        get => this.hasMultipleValues;
+        protected set {
+            if (this.hasMultipleValues == value)
+                return;
+
+            if (value)
+                this.HasProcessedMultipleValuesSinceSetup = false;
+            this.hasMultipleValues = value;
+            this.HasMultipleValuesChanged?.Invoke(this);
+        }
+    }
+
+    public bool HasProcessedMultipleValuesSinceSetup {
+        get => this.hasProcessedMultipleValuesSinceSetup;
+        set {
+            if (this.hasProcessedMultipleValuesSinceSetup == value)
+                return;
+
+            this.hasProcessedMultipleValuesSinceSetup = value;
+            this.HasProcessedMultipleValuesChanged?.Invoke(this);
+        }
+    }
 
     public override bool IsSelectable => true;
 
@@ -75,9 +108,15 @@ public abstract class DataParameterPropertyEditorSlot : PropertyEditorSlot {
     /// </summary>
     public bool InvertIsEditableForParameter { get; set; }
 
-    public event DataParameterPropertyEditorSlotEventHandler IsEditableChanged;
-    public event DataParameterPropertyEditorSlotEventHandler DisplayNameChanged;
-    public event DataParameterPropertyEditorSlotEventHandler ValueChanged;
+    /// <summary>
+    /// An event fired when <see cref="HasMultipleValues"/> changes
+    /// </summary>
+    public event SlotHasMultipleValuesChangedEventHandler? HasMultipleValuesChanged;
+    public event SlotHasProcessedMultipleValuesChangedEventHandler? HasProcessedMultipleValuesChanged;
+
+    public event DataParameterPropertyEditorSlotEventHandler? IsEditableChanged;
+    public event DataParameterPropertyEditorSlotEventHandler? DisplayNameChanged;
+    public event DataParameterPropertyEditorSlotEventHandler? ValueChanged;
 
     protected DataParameterPropertyEditorSlot(DataParameter parameter, Type applicableType, string? displayName = null) : base(applicableType) {
         this.Parameter = parameter ?? throw new ArgumentNullException(nameof(parameter));
@@ -89,6 +128,7 @@ public abstract class DataParameterPropertyEditorSlot : PropertyEditorSlot {
         if (this.IsSingleHandler)
             this.Parameter.AddValueChangedHandler(this.SingleHandler, this.OnValueForSingleHandlerChanged);
         this.QueryValueFromHandlers();
+        this.lastQueryHasMultipleValues = this.HasMultipleValues;
         DataParameter<bool>? p = this.IsEditableDataParameter;
         this.IsEditable = p == null || (!GetEqualValue(this.Handlers, h => p.GetValue((ITransferableData) h), out bool v) || v);
         this.OnValueChanged();
@@ -102,12 +142,22 @@ public abstract class DataParameterPropertyEditorSlot : PropertyEditorSlot {
 
     private void OnValueForSingleHandlerChanged(DataParameter parameter, ITransferableData owner) {
         this.QueryValueFromHandlers();
+        this.lastQueryHasMultipleValues = this.HasMultipleValues;
         this.OnValueChanged();
     }
 
     public abstract void QueryValueFromHandlers();
 
-    protected void OnValueChanged() {
+    /// <summary>
+    /// Raises the value changed event, and optionally updates the <see cref="HasMultipleValues"/> (e.g. for
+    /// if the value of each handler was set to a new value, it can be set to false now)
+    /// </summary>
+    /// <param name="hasMultipleValues">The optional new value of <see cref="HasMultipleValues"/></param>
+    protected void OnValueChanged(bool? hasMultipleValues = null, bool? hasProcessedMultiValueSinceSetup = null) {
         this.ValueChanged?.Invoke(this);
+        if (hasMultipleValues.HasValue)
+            this.HasMultipleValues = hasMultipleValues.Value;
+        if (hasProcessedMultiValueSinceSetup.HasValue)
+            this.HasProcessedMultipleValuesSinceSetup = hasProcessedMultiValueSinceSetup.Value;
     }
 }

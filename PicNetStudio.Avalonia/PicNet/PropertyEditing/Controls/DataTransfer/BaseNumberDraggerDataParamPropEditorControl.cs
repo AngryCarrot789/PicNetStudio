@@ -17,7 +17,10 @@
 // along with PicNetStudio. If not, see <https://www.gnu.org/licenses/>.
 // 
 
+using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Media;
+using Avalonia.Media.Immutable;
 using PicNetStudio.Avalonia.Bindings;
 using PicNetStudio.Avalonia.PicNet.Controls.Dragger;
 using PicNetStudio.Avalonia.PicNet.PropertyEditing.DataTransfer;
@@ -26,6 +29,8 @@ using PicNetStudio.Avalonia.Utils;
 namespace PicNetStudio.Avalonia.PicNet.PropertyEditing.Controls.DataTransfer;
 
 public abstract class BaseNumberDraggerDataParamPropEditorControl : BaseDataParameterPropertyEditorControl {
+    internal static readonly IImmutableBrush MultipleValuesBrush;
+    
     public new DataParameterFormattableNumberPropertyEditorSlot? SlotModel => (DataParameterFormattableNumberPropertyEditorSlot?) base.SlotControl?.Model;
     
     protected NumberDragger dragger;
@@ -35,13 +40,52 @@ public abstract class BaseNumberDraggerDataParamPropEditorControl : BaseDataPara
         this.valueFormatterBinder = new AutoUpdateAndEventPropertyBinder<DataParameterFormattableNumberPropertyEditorSlot>(NumberDragger.ValueFormatterProperty, nameof(DataParameterFormattableNumberPropertyEditorSlot.ValueFormatterChanged), (x) => ((NumberDragger) x.Control).ValueFormatter = x.Model.ValueFormatter, null);
     }
 
+    static BaseNumberDraggerDataParamPropEditorControl() {
+        MultipleValuesBrush = new ImmutableSolidColorBrush(Brushes.OrangeRed.Color, 0.7);
+    }
+
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e) {
         base.OnApplyTemplate(e);
         this.dragger = e.NameScope.GetTemplateChild<NumberDragger>("PART_Dragger");
         this.dragger.ValueChanged += (sender, args) => this.OnControlValueChanged();
         this.valueFormatterBinder.AttachControl(this.dragger);
+        this.UpdateDraggerMultiValueState();
+    }
+    
+    private void UpdateDraggerMultiValueState() {
+        if (!this.IsConnected) {
+            return;
+        }
+
+        UpdateNumberDragger(this.dragger, this.SlotModel!.HasMultipleValues, this.SlotModel!.HasProcessedMultipleValuesSinceSetup);
     }
 
+    public static void UpdateNumberDragger(NumberDragger dragger, bool hasMultipleValues, bool hasUsedAdditionSinceSetup) {
+        // TODO: really need to make a derived NumberDragger specifically for this case,
+        // because at the moment, the Value is set to 0 when multiple values are present.
+        // It works but meh...
+
+        // Not using hasUsedAdditionSinceSetup because for now, keep
+        // override on because otherwise it sticks with the mid-way
+        // between the dragger's min and max, which is confusing.
+        // Definitely need a derived NumberDragger but it's 11:25 at night :'(
+        if (hasMultipleValues /* && !hasUsedAdditionSinceSetup */) {
+            dragger.TextPreviewOverride = "<<Multiple Values>>";
+        }
+        else {
+            dragger.TextPreviewOverride = null;
+        }
+        
+        if (hasMultipleValues) {
+            dragger.SetCurrentValue(BackgroundProperty, MultipleValuesBrush);
+            dragger.SetCurrentValue(ToolTip.TipProperty, "This dragger currently has multiple values present. Modifying this value will change the underlying value for all selected objects");
+        }
+        else {
+            dragger.ClearValue(BackgroundProperty);
+            dragger.ClearValue(ToolTip.TipProperty);
+        }
+    }
+    
     protected override void OnCanEditValueChanged(bool canEdit) {
         this.dragger.IsEnabled = canEdit;
     }
@@ -49,10 +93,25 @@ public abstract class BaseNumberDraggerDataParamPropEditorControl : BaseDataPara
     protected override void OnConnected() {
         this.valueFormatterBinder.AttachModel(this.SlotModel!);
         base.OnConnected();
+        
+        this.SlotModel!.HasMultipleValuesChanged += this.OnHasMultipleValuesChanged;
+        this.SlotModel!.HasProcessedMultipleValuesChanged += this.OnHasProcessedMultipleValuesChanged;
+        this.UpdateDraggerMultiValueState();
     }
 
     protected override void OnDisconnected() {
         this.valueFormatterBinder.DetachModel();
         base.OnDisconnected();
+        
+        this.SlotModel!.HasMultipleValuesChanged -= this.OnHasMultipleValuesChanged;
+        this.SlotModel!.HasProcessedMultipleValuesChanged -= this.OnHasProcessedMultipleValuesChanged;
+    }
+    
+    private void OnHasMultipleValuesChanged(DataParameterPropertyEditorSlot sender) {
+        this.UpdateDraggerMultiValueState();
+    }
+    
+    private void OnHasProcessedMultipleValuesChanged(DataParameterPropertyEditorSlot sender) {
+        this.UpdateDraggerMultiValueState();
     }
 }

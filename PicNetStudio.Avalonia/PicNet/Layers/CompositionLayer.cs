@@ -21,6 +21,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using PicNetStudio.Avalonia.PicNet.Layers.Core;
 using PicNetStudio.Avalonia.Utils.Collections.Observable;
 
 namespace PicNetStudio.Avalonia.PicNet.Layers;
@@ -38,9 +39,13 @@ public class CompositionLayer : BaseVisualLayer {
     /// </summary>
     public bool IsRootLayer => this.ParentLayer == null;
 
+    protected bool isHierarchyVisualInvalid = true;
+    internal readonly PNBitmap cachedVisualHierarchy;
+
     public CompositionLayer() {
         this.layers = new SuspendableObservableList<BaseLayerTreeObject>();
         this.Layers = new ReadOnlyObservableList<BaseLayerTreeObject>(this.layers);
+        this.cachedVisualHierarchy = new PNBitmap();
     }
 
     protected override void LoadDataIntoClone(BaseLayerTreeObject clone) {
@@ -156,7 +161,12 @@ public class CompositionLayer : BaseVisualLayer {
 
         this.InvalidateVisual();
     }
-    
+
+    public override void InvalidateVisual() {
+        this.isHierarchyVisualInvalid = true;
+        base.InvalidateVisual();
+    }
+
     public void RemoveLayers(IEnumerable<BaseLayerTreeObject> layers) {
         foreach (BaseLayerTreeObject layer in layers) {
             this.RemoveLayer(layer);
@@ -198,9 +208,23 @@ public class CompositionLayer : BaseVisualLayer {
         return minIndex == int.MaxValue ? -1 : minIndex;
     }
 
+    public override void InvalidateTransformationMatrix() {
+        foreach (BaseLayerTreeObject layer in this.layers) {
+            InternalInvalidateTransformationMatrixFromParent(layer as BaseVisualLayer);
+        }
+        
+        base.InvalidateTransformationMatrix();
+    }
+
     public static CompositionLayer InternalCreateCanvasRoot(Canvas canvas) {
         CompositionLayer layer = new CompositionLayer();
         InternalSetCanvas(layer, canvas);
         return layer;
+    }
+
+    internal static bool InternalGetAndResetVisualInvalidState(CompositionLayer layer) {
+        bool isInvalid = layer.isHierarchyVisualInvalid;
+        layer.isHierarchyVisualInvalid = false;
+        return isInvalid;
     }
 }

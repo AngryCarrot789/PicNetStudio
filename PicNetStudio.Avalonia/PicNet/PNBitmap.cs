@@ -37,7 +37,7 @@ public class PNBitmap {
     /// <summary>
     /// Returns true when this bitmap has been initialised and can therefore be drawn into. The size will be non-zero when true
     /// </summary>
-    public bool HasPixels => this.hColourData != IntPtr.Zero;
+    public bool IsInitialised => this.hColourData != IntPtr.Zero;
 
     /// <summary>
     /// Gets the handle to the raw pixels 

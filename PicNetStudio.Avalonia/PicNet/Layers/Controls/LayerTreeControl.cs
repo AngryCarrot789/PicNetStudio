@@ -17,52 +17,114 @@
 // along with PicNetStudio. If not, see <https://www.gnu.org/licenses/>.
 // 
 
-using System.Collections.Generic;
+using System;
+using System.Collections;
 using System.Linq;
 using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using PicNetStudio.Avalonia.Bindings;
+using PicNetStudio.Avalonia.PicNet.Layers.Controls.Compact;
+using PicNetStudio.Avalonia.PicNet.Layers.Controls.Enlarged;
 using PicNetStudio.Avalonia.Utils;
 
 namespace PicNetStudio.Avalonia.PicNet.Layers.Controls;
 
+/// <summary>
+/// A control that manages the view of a canvas' layer hierarchy, and also processes the different selectable view modes
+/// </summary>
 public class LayerTreeControl : TemplatedControl {
     public static readonly StyledProperty<Canvas?> CanvasProperty = AvaloniaProperty.Register<LayerTreeControl, Canvas?>("Canvas");
-    public static readonly StyledProperty<GridLength> ColumnWidth0Property = AvaloniaProperty.Register<LayerTreeControl, GridLength>("ColumnWidth0", new GridLength(1, GridUnitType.Star));
-    public static readonly StyledProperty<GridLength> ColumnWidth2Property = AvaloniaProperty.Register<LayerTreeControl, GridLength>("ColumnWidth2", new GridLength(30));
-    public static readonly StyledProperty<GridLength> ColumnWidth4Property = AvaloniaProperty.Register<LayerTreeControl, GridLength>("ColumnWidth4", new GridLength(50));
+    public static readonly StyledProperty<LayerTreeViewMode> ViewModeProperty = AvaloniaProperty.Register<LayerTreeControl, LayerTreeViewMode>("ViewMode");
 
     public Canvas? Canvas {
         get => this.GetValue(CanvasProperty);
         set => this.SetValue(CanvasProperty, value);
     }
 
-    public GridLength ColumnWidth0 { get => this.GetValue(ColumnWidth0Property); set => this.SetValue(ColumnWidth0Property, value); }
-    public GridLength ColumnWidth2 { get => this.GetValue(ColumnWidth2Property); set => this.SetValue(ColumnWidth2Property, value); }
-    public GridLength ColumnWidth4 { get => this.GetValue(ColumnWidth4Property); set => this.SetValue(ColumnWidth4Property, value); }
+    public LayerTreeViewMode ViewMode {
+        get => this.GetValue(ViewModeProperty);
+        set => this.SetValue(ViewModeProperty, value);
+    }
 
-    private readonly PropertyBinder<Canvas?> canvasBinder;
-    public LayerObjectTreeView? PART_TreeView => this.canvasBinder.TargetControl as LayerObjectTreeView;
+    private readonly PropertyBinder<Canvas?> compactCanvasBinder;
+    private readonly PropertyBinder<Canvas?> enlargedCanvasBinder;
+    private readonly TreeViewSelectionManager selectionManager;
+    public CompactLayerTreeView? PART_CompactTreeView => this.compactCanvasBinder.TargetControl as CompactLayerTreeView;
+    public EnlargedLayerTreeView? PART_EnlargedTreeView => this.enlargedCanvasBinder.TargetControl as EnlargedLayerTreeView;
+
+    public ISelectionManager<BaseLayerTreeObject> SelectionManager => this.selectionManager;
+
+    public event EventHandler? ViewModelChanged;
 
     public LayerTreeControl() {
-        this.canvasBinder = new PropertyBinder<Canvas?>(this, CanvasProperty, LayerObjectTreeView.CanvasProperty);
+        this.compactCanvasBinder = new PropertyBinder<Canvas?>(this, CanvasProperty, BaseLayerTreeView.CanvasProperty);
+        this.enlargedCanvasBinder = new PropertyBinder<Canvas?>(this, CanvasProperty, BaseLayerTreeView.CanvasProperty);
+        this.selectionManager = new TreeViewSelectionManager();
+    }
+
+    static LayerTreeControl() {
+        ViewModeProperty.Changed.AddClassHandler<LayerTreeControl, LayerTreeViewMode>((o, e) => o.OnViewModeChanged(e.OldValue.GetValueOrDefault(), e.NewValue.GetValueOrDefault()));
     }
 
     protected override void OnPointerPressed(PointerPressedEventArgs e) {
         base.OnPointerPressed(e);
-        if (e.Handled || this.PART_TreeView == null)
+        if (e.Handled) {
             return;
-
-        List<LayerObjectTreeViewItem> list = this.PART_TreeView.SelectedItems.Cast<LayerObjectTreeViewItem>().ToList();
-        for (int i = list.Count - 1; i >= 0; i--) {
-            list[i].IsSelected = false;
         }
+
+        IList? itemList;
+        switch (this.ViewMode) {
+            case LayerTreeViewMode.Compact:
+                itemList = this.PART_CompactTreeView?.SelectedItems;
+                break;
+            case LayerTreeViewMode.Enlarged:
+                itemList = this.PART_EnlargedTreeView?.SelectedItems;
+                break;
+            default: throw new ArgumentOutOfRangeException();
+        }
+
+        if (itemList != null) {
+            itemList.Clear();
+        }
+    }
+
+    private void OnViewModeChanged(LayerTreeViewMode oldMode, LayerTreeViewMode newMode) {
+        this.UpdateTreeVisibility();
+        this.ViewModelChanged?.Invoke(this, EventArgs.Empty);
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e) {
         base.OnApplyTemplate(e);
-        this.canvasBinder.SetTargetControl(e.NameScope.GetTemplateChild<LayerObjectTreeView>("PART_TreeView"));
+        this.compactCanvasBinder.SetTargetControl(e.NameScope.GetTemplateChild<CompactLayerTreeView>("PART_CompactTreeView"));
+        this.enlargedCanvasBinder.SetTargetControl(e.NameScope.GetTemplateChild<EnlargedLayerTreeView>("PART_EnlargedTreeView"));
+        this.UpdateTreeVisibility();
+    }
+
+    private void UpdateTreeVisibility() {
+        switch (this.ViewMode) {
+            case LayerTreeViewMode.Compact:
+                if (this.PART_CompactTreeView != null)
+                    this.PART_CompactTreeView!.IsVisible = true;
+                if (this.PART_EnlargedTreeView != null)
+                    this.PART_EnlargedTreeView!.IsVisible = false;
+                this.selectionManager.Tree = this.PART_CompactTreeView;
+                break;
+            case LayerTreeViewMode.Enlarged:
+                if (this.PART_CompactTreeView != null)
+                    this.PART_CompactTreeView!.IsVisible = false;
+                if (this.PART_EnlargedTreeView != null)
+                    this.PART_EnlargedTreeView!.IsVisible = true;
+                this.selectionManager.Tree = this.PART_EnlargedTreeView;
+                break;
+        }
+        
+        ((ILightSelectionManager<BaseLayerTreeObject>) this.selectionManager).SelectionChanged += this.OnSelectionChanged;
+    }
+
+    private void OnSelectionChanged(ILightSelectionManager<BaseLayerTreeObject> sender) {
+        if (this.Canvas is Canvas canvas) {
+            canvas.ActiveLayerTreeObject = this.selectionManager.Count == 1 ? this.selectionManager.SelectedItems.First() : null;
+        }
     }
 }

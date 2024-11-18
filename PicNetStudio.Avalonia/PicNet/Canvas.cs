@@ -19,6 +19,7 @@
 
 using Avalonia;
 using PicNetStudio.Avalonia.PicNet.Layers;
+using PicNetStudio.Avalonia.PicNet.Layers.Core;
 using SkiaSharp;
 
 namespace PicNetStudio.Avalonia.PicNet;
@@ -40,6 +41,7 @@ public class Canvas {
     private PixelSize size;
     private BaseLayerTreeObject? activeLayerTreeObject;
     private BaseSelection? selectionRegion;
+    private bool fullInvalidate;
 
     /// <summary>
     /// The document that owns this canvas
@@ -116,16 +118,21 @@ public class Canvas {
     }
 
     private void OnRootRenderInvalidated(BaseVisualLayer layer) {
-        this.RaiseRenderInvalidated();
+        this.RenderInvalidated?.Invoke(this);
     }
 
     // QtBitmapEditor -> Project::paintEvent
     public void Render(SKSurface surface) {
-        RenderContext args = new RenderContext(this, surface, false);
+        RenderContext args = new RenderContext(this, surface, false, this.fullInvalidate);
         LayerRenderer.RenderCanvas(ref args);
     }
 
-    public void RaiseRenderInvalidated() {
-        this.RenderInvalidated?.Invoke(this);
+    public void RaiseRenderInvalidated(bool fullInvalidate = true) {
+        if (fullInvalidate) {
+            this.RootComposition.InvalidateVisual();
+        }
+        else {
+            this.RenderInvalidated?.Invoke(this);
+        }
     }
 }
