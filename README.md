@@ -9,10 +9,13 @@ Some ideas I have for the future:
 The canvas can be exported by pressing CTRL+E
 
 ## Preview so far
-![](PicNetStudio.Avalonia_2024-11-17_23.58.51.png~~~~~~~~)
+![](PicNetStudio.Avalonia_2024-11-17_23.58.51.png)
 
 ## Contributing
 Feel free to contribute whatever you want if you think it'll make the editor better!
+
+## Bugs
+- Drawing pixels does not account for location transformations, will fix very soon
 
 ## Licence
 All source files in PicNetStudio are under the GNU General Public License version 3.0 or later (GPL v3.0+). 
