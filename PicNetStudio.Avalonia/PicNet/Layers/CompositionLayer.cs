@@ -208,7 +208,7 @@ public class CompositionLayer : BaseVisualLayer {
         return minIndex == int.MaxValue ? -1 : minIndex;
     }
 
-    public override void InvalidateTransformationMatrix() {
+    protected override void InvalidateTransformationMatrix() {
         foreach (BaseLayerTreeObject layer in this.layers) {
             InternalInvalidateTransformationMatrixFromParent(layer as BaseVisualLayer);
         }

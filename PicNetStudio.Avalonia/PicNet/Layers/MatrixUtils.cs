@@ -29,4 +29,12 @@ public static class MatrixUtils {
         matrix = matrix.PreConcat(SKMatrix.CreateRotationDegrees((float) rotation, rotationOrigin.X, rotationOrigin.Y));
         return matrix;
     }
+
+    public static SKMatrix CreateInverseTransformationMatrix(SKPoint pos, SKPoint scale, double rotation, SKPoint scaleOrigin, SKPoint rotationOrigin) {
+        SKMatrix matrix = SKMatrix.Identity;
+        matrix = matrix.PreConcat(SKMatrix.CreateRotationDegrees((float) -rotation, rotationOrigin.X, rotationOrigin.Y));
+        matrix = matrix.PreConcat(SKMatrix.CreateScale(scale.X == 0.0F ? float.MaxValue : (1 / scale.X), scale.Y == 0.0F ? float.MaxValue : (1 / scale.Y), scaleOrigin.X, scaleOrigin.Y));
+        matrix = matrix.PreConcat(SKMatrix.CreateTranslation(-pos.X, -pos.Y));
+        return matrix;
+    }
 }

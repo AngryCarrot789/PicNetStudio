@@ -19,6 +19,7 @@
 
 using System;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.Numerics;
 using PicNetStudio.Avalonia.DataTransfer;
 using PicNetStudio.Avalonia.Utils.Accessing;
@@ -89,7 +90,7 @@ public class TextLayer : BaseVisualLayer {
 
     public TextLayer() {
         this.clipProps = new BitVector32();
-        this.foreground = SKColors.White;
+        this.foreground = SKColors.Black;
         this.border = SKColors.DarkGray;
     }
 
@@ -106,13 +107,24 @@ public class TextLayer : BaseVisualLayer {
     }
 
     public override void RenderLayer(ref RenderContext ctx) {
-        if (this.TextBlobs == null && !string.IsNullOrEmpty(this.text))
-            this.RegenerateText();
+        if (this.GeneratedPaint == null || this.GeneratedFont == null) {
+            this.GenerateCachedData();
+        }
         
+        if (this.TextBlobs == null && !string.IsNullOrEmpty(this.text)) {
+            this.TextBlobBoundingBox = new Vector2();
+            DisposeTextBlobs(ref this.TextBlobs);
+            this.GenerateTextCache();
+        }
+
         SKPaint? paint = this.GeneratedPaint;
         if (this.TextBlobs == null || paint == null) {
             return;
         }
+
+        this.GeneratedFont!.GetFontMetrics(out SKFontMetrics metrics);
+        // we can get away with this since we just use numbers and not any 'special'
+        // characters with bits below the baseline and whatnot
 
         foreach (SKTextBlob? blob in this.TextBlobs) {
             if (blob != null) {
@@ -126,19 +138,10 @@ public class TextLayer : BaseVisualLayer {
                 // // unacceptable. Even though there will most likely be a bunch of transparent padding pixels, it's still better
                 // renderArea = rc.TranslateRect(realFinalRenderArea);
 
-                ctx.Canvas.DrawText(blob, 0, blob.Bounds.Height / 2f, paint);
+                // ctx.Canvas.DrawText(blob, 0, blob.Bounds.Height / 2f, paint);
+                ctx.Canvas.DrawText(blob, 0, -blob.Bounds.Top - metrics.Descent, paint);
             }
         }
-    }
-
-    public void RegenerateText() {
-        this.InvalidateTextCache();
-        this.GenerateTextCache();
-    }
-
-    public void InvalidateTextCache() {
-        this.TextBlobBoundingBox = new Vector2();
-        DisposeTextBlobs(ref this.TextBlobs);
     }
 
     public void GenerateTextCache() {

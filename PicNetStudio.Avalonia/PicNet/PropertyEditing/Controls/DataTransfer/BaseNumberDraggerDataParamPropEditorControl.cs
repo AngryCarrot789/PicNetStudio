@@ -19,6 +19,7 @@
 
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using PicNetStudio.Avalonia.Bindings;
@@ -34,6 +35,7 @@ public abstract class BaseNumberDraggerDataParamPropEditorControl : BaseDataPara
     public new DataParameterFormattableNumberPropertyEditorSlot? SlotModel => (DataParameterFormattableNumberPropertyEditorSlot?) base.SlotControl?.Model;
     
     protected NumberDragger dragger;
+    protected Button resetButton;
     private readonly AutoUpdateAndEventPropertyBinder<DataParameterFormattableNumberPropertyEditorSlot> valueFormatterBinder;
 
     protected BaseNumberDraggerDataParamPropEditorControl() {
@@ -48,10 +50,22 @@ public abstract class BaseNumberDraggerDataParamPropEditorControl : BaseDataPara
         base.OnApplyTemplate(e);
         this.dragger = e.NameScope.GetTemplateChild<NumberDragger>("PART_Dragger");
         this.dragger.ValueChanged += (sender, args) => this.OnControlValueChanged();
+        this.resetButton = e.NameScope.GetTemplateChild<Button>("PART_ResetValue");
+        this.resetButton.Click += OnResetClick;
         this.valueFormatterBinder.AttachControl(this.dragger);
         this.UpdateDraggerMultiValueState();
     }
-    
+
+    private void OnResetClick(object? sender, RoutedEventArgs e) {
+        if (this.IsConnected) {
+            this.ResetValue();
+        }
+    }
+
+    protected virtual void ResetValue() {
+        
+    }
+
     private void UpdateDraggerMultiValueState() {
         if (!this.IsConnected) {
             return;

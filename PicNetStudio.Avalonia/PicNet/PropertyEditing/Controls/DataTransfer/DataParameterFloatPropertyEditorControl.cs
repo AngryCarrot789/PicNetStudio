@@ -49,4 +49,6 @@ public class DataParameterFloatPropertyEditorControl : BaseNumberDraggerDataPara
         this.dragger.NormalChange = profile.NormalStep;
         this.dragger.LargeChange = profile.LargeStep;
     }
+    
+    protected override void ResetValue() => this.SlotModel.Value = this.SlotModel.Parameter.DefaultValue;
 }

@@ -66,5 +66,7 @@ public class EnlargedLayerTreeViewItem : BaseLayerTreeViewItem {
     public override void OnRemoving() {
         base.OnRemoving();
         this.item?.Disconnect();
+        this.item = null;
+        this.previewPresenter!.Content = null;
     }
 }

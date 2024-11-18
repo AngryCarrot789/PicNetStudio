@@ -20,7 +20,10 @@
 using System.Collections.Generic;
 using Avalonia;
 using Avalonia.Input;
+using PicNetStudio.Avalonia.PicNet.Layers;
+using PicNetStudio.Avalonia.PicNet.Layers.Core;
 using PicNetStudio.Avalonia.PicNet.Tools;
+using SkiaSharp;
 
 namespace PicNetStudio.Avalonia.PicNet.Controls;
 
@@ -101,7 +104,7 @@ public class CanvasInputHandler {
         }
 
         if (this.control.Document is Document document && document.Editor?.ToolBar.ActiveTool is BaseCanvasTool activeTool) {
-            if (ProcessChangedButtons(pointer.Position, document, activeTool, e.ClickCount, oldButtons, newButtons, e.KeyModifiers)) {
+            if (this.ProcessChangedButtons(pointer.Position, document, activeTool, e.ClickCount, oldButtons, newButtons, e.KeyModifiers)) {
                 e.Pointer.Capture(this.control);
             }
         }
@@ -120,7 +123,7 @@ public class CanvasInputHandler {
             e.Pointer.Capture(null);
         
         if (this.control.Document is Document document && document.Editor?.ToolBar.ActiveTool is BaseCanvasTool activeTool)
-            ProcessChangedButtons(pointer.Position, document, activeTool, 1, oldButtons, newButtons, e.KeyModifiers);
+            this.ProcessChangedButtons(pointer.Position, document, activeTool, 1, oldButtons, newButtons, e.KeyModifiers);
     }
 
     private void OnPointerPointerMoved(object? sender, PointerEventArgs e) {
@@ -128,8 +131,12 @@ public class CanvasInputHandler {
         EnumCursorType oldButtons = this.UpdateButtons(pointer);
         EnumCursorType newButtons = this.myCursors;
 
-        Point point = pointer.Position;
-        if (this.control.Document is Document document && document.Editor?.ToolBar.ActiveTool is BaseCanvasTool activeTool) {
+        if (!(this.control.Document is Document document)) {
+            return;
+        }
+        
+        if (document.Editor?.ToolBar.ActiveTool is BaseCanvasTool activeTool) {
+            Point point = this.TranslatePoint(pointer.Position, document);
             // We also need to do a final check on the last mouse move position,
             // because Avalonia receives WM_MOVE even though the mouse didn't actually move.
             // To reproduce: Click LMB then RMB then release RMB, and with the lastMouseMove check
@@ -139,14 +146,28 @@ public class CanvasInputHandler {
                 e.Handled = activeTool.OnCursorMoved(document, point.X, point.Y, newButtons);
             }
             else {
-                e.Handled = ProcessChangedButtons(point, document, activeTool, 1, oldButtons, newButtons, e.KeyModifiers);
+                e.Handled = this.ProcessChangedButtons(point, document, activeTool, 1, oldButtons, newButtons, e.KeyModifiers);
             }
+
+            this.lastMouseMove = point;
         }
-        
-        this.lastMouseMove = point;
+        else {
+            this.lastMouseMove = pointer.Position;
+        }
     }
 
-    private static bool ProcessChangedButtons(Point point, Document document, BaseCanvasTool activeTool, int clickCount, EnumCursorType oldButtons, EnumCursorType newButtons, KeyModifiers modifiers) {
+    private Point TranslatePoint(Point pos, Document document) {
+        if (document.Canvas.ActiveLayerTreeObject is BaseVisualLayer visualLayer) {
+            SKPoint mapped = visualLayer.AbsoluteInverseTransformationMatrix.MapPoint(new SKPoint((float) pos.X, (float) pos.Y));
+            return new Point(mapped.X, mapped.Y);
+        }
+
+        return pos;
+    }
+
+    private bool ProcessChangedButtons(Point point, Document document, BaseCanvasTool activeTool, int clickCount, EnumCursorType oldButtons, EnumCursorType newButtons, KeyModifiers modifiers) {
+        point = this.TranslatePoint(point, document);
+        
         bool handled = false;
         EnumCursorType addedFlags = (oldButtons ^ newButtons) & newButtons;
         foreach (EnumCursorType type in GetEnumerableFlagSet(addedFlags)) {

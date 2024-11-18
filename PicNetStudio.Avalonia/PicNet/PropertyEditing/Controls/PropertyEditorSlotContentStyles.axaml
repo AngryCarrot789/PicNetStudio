@@ -79,7 +79,16 @@
                         </Grid.ColumnDefinitions>
                         <CheckBox x:Name="PART_DisplayNameCheckBox" VerticalAlignment="Center" Grid.Row="0" Grid.Column="0"
                                   Theme="{TemplateBinding IsCheckBoxToggleable, Converter={StaticResource IsCheckBoxToggleableToStyleConverter}}"/>
-                        <d:NumberDragger x:Name="PART_Dragger" Grid.Row="0" Grid.Column="2" Height="20" BorderBrush="Black" Padding="4,2"/>
+                        <DockPanel Grid.Row="0" Grid.Column="2" Height="20">
+                            <Button x:Name="PART_ResetValue" Margin="2,0,2,0"
+                                    Background="{DynamicResource ABrush.Tone4.Border.Static}" 
+                                    BorderBrush="Black" 
+                                    Width="20" Height="20" CornerRadius="2" 
+                                    ToolTip.Tip="Reset value" DockPanel.Dock="Right">
+                                <Path Width="12" Height="14" Stretch="Fill" Fill="{DynamicResource ABrush.Glyph.Static}" Data="{StaticResource ResetGeometry}"/>
+                            </Button>
+                            <d:NumberDragger x:Name="PART_Dragger" BorderBrush="Black" Padding="4,2"/>
+                        </DockPanel>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
@@ -103,9 +112,18 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="2"/>
                                 <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="2"/>
+                                <ColumnDefinition Width="20"/>
                             </Grid.ColumnDefinitions>
                             <d:NumberDragger x:Name="PART_DraggerX" Height="20" Grid.Column="0" BorderBrush="Black" Padding="4,2"/>
                             <d:NumberDragger x:Name="PART_DraggerY" Height="20" Grid.Column="2" BorderBrush="Black" Padding="4,2"/>
+                            <Button x:Name="PART_ResetValue" Margin="0,0,2,0"
+                                    Background="{DynamicResource ABrush.Tone4.Border.Static}" 
+                                    BorderBrush="Black" 
+                                    Width="20" Height="20" CornerRadius="2" 
+                                    ToolTip.Tip="Reset value" Grid.Column="4">
+                                <Path Width="12" Height="14" Stretch="Fill" Fill="{DynamicResource ABrush.Glyph.Static}" Data="{StaticResource ResetGeometry}"/>
+                            </Button>
                         </Grid>
                     </Grid>
                 </ControlTemplate>

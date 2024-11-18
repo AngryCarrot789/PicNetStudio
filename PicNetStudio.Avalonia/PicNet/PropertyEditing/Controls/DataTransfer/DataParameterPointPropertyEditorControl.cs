@@ -17,7 +17,9 @@
 // along with PicNetStudio. If not, see <https://www.gnu.org/licenses/>.
 //
 
+using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Interactivity;
 using Avalonia.Media;
 using PicNetStudio.Avalonia.Bindings;
 using PicNetStudio.Avalonia.DataTransfer;
@@ -35,6 +37,7 @@ public class DataParameterPointPropertyEditorControl : BaseDataParameterProperty
 
     protected NumberDragger draggerX;
     protected NumberDragger draggerY;
+    protected Button resetButton;
 
     private readonly AutoUpdateAndEventPropertyBinder<DataParameterFormattableNumberPropertyEditorSlot> valueFormatterBinder;
 
@@ -52,8 +55,14 @@ public class DataParameterPointPropertyEditorControl : BaseDataParameterProperty
         this.draggerX.ValueChanged += (sender, args) => this.OnControlValueChanged();
         this.draggerY = e.NameScope.GetTemplateChild<NumberDragger>("PART_DraggerY");
         this.draggerY.ValueChanged += (sender, args) => this.OnControlValueChanged();
+        this.resetButton = e.NameScope.GetTemplateChild<Button>("PART_ResetValue");
+        this.resetButton.Click += ResetButtonOnClick;
         this.valueFormatterBinder.AttachControl(this);
         this.UpdateDraggerMultiValueState();
+    }
+
+    private void ResetButtonOnClick(object? sender, RoutedEventArgs e) {
+        this.SlotModel.Value = this.SlotModel.Parameter.DefaultValue;
     }
 
     private void UpdateDraggerMultiValueState() {

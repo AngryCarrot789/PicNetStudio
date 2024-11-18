@@ -52,8 +52,8 @@ public abstract class BaseVisualLayer : BaseLayerTreeObject {
     private SKPoint scaleOrigin = ScaleOriginParameter.DefaultValue;
     private double rotation = RotationParameter.DefaultValue;
     private SKPoint rotationOrigin = RotationOriginParameter.DefaultValue;
-    private SKMatrix thisLayerTransformationMatrix;
-    private SKMatrix absoluteTransformationMatrix;
+    private SKMatrix myTransformationMatrix, myInverseTransformationMatrix;
+    private SKMatrix myAbsoluteTransformationMatrix, myAbsoluteInverseTransformationMatrix;
     protected bool isMatrixDirty = true;
 
     /// <summary>
@@ -114,25 +114,47 @@ public abstract class BaseVisualLayer : BaseLayerTreeObject {
     }
     
     /// <summary>
-    /// Gets (or calculates, if dirty) this clip's final transformation matrix, which is a concatenation of
-    /// our <see cref="TransformationMatrix"/> and our parent track's transformation matrix (or identity, if not in a track yet)
-    /// </summary>
-    public SKMatrix AbsoluteTransformationMatrix {
-        get {
-            if (this.isMatrixDirty)
-                this.GenerateMatrices();
-            return this.absoluteTransformationMatrix;
-        }
-    }
-
-    /// <summary>
-    /// Gets (or calculates, if dirty) this clip's transformation matrix entirely based on our transformation properties (therefore does not contain our track's matrix)
+    /// Gets the transformation matrix for the transformation properties in this layer only, not including parent transformations
     /// </summary>
     public SKMatrix TransformationMatrix {
         get {
             if (this.isMatrixDirty)
                 this.GenerateMatrices();
-            return this.thisLayerTransformationMatrix;
+            return this.myTransformationMatrix;
+        }
+    }
+    
+    /// <summary>
+    /// Gets the absolute transformation matrix, which is a concatenation of all of our parents' matrices and our own
+    /// </summary>
+    public SKMatrix AbsoluteTransformationMatrix {
+        get {
+            if (this.isMatrixDirty)
+                this.GenerateMatrices();
+            return this.myAbsoluteTransformationMatrix;
+        }
+    }
+
+    /// <summary>
+    /// Gets the inverse of our transformation matrix
+    /// </summary>
+    public SKMatrix InverseTransformationMatrix {
+        get {
+            if (this.isMatrixDirty)
+                this.GenerateMatrices();
+            return this.myInverseTransformationMatrix;
+        }
+    }
+    
+    /// <summary>
+    /// Gets the inverse of our absolute transformation matrix. This can be used to,
+    /// for example, map a location on the entire canvas to this layer
+    /// </summary>
+    public SKMatrix AbsoluteInverseTransformationMatrix {
+        get {
+            if (this.isMatrixDirty)
+                this.GenerateMatrices();
+            return this.myAbsoluteInverseTransformationMatrix;
         }
     }
 
@@ -159,7 +181,6 @@ public abstract class BaseVisualLayer : BaseLayerTreeObject {
         // Not sure...
         SetParameterAffectsRender(OpacityParameter, IsRenderVisibleParameter, BlendModeParameter);
         
-        
         DataParameter.AddMultipleHandlers((p, o) => ((BaseVisualLayer) o.TransferableData.Owner).InvalidateTransformationMatrix(), PositionParameter, ScaleParameter, ScaleOriginParameter, RotationParameter, RotationOriginParameter);
     }
 
@@ -179,8 +200,10 @@ public abstract class BaseVisualLayer : BaseLayerTreeObject {
     }
 
     private void GenerateMatrices() {
-        this.thisLayerTransformationMatrix = MatrixUtils.CreateTransformationMatrix(this.Position, this.Scale, this.Rotation, this.ScaleOrigin, this.RotationOrigin);
-        this.absoluteTransformationMatrix = this.ParentLayer != null ? this.ParentLayer.thisLayerTransformationMatrix.PreConcat(this.thisLayerTransformationMatrix) : this.thisLayerTransformationMatrix;
+        this.myTransformationMatrix = MatrixUtils.CreateTransformationMatrix(this.Position, this.Scale, this.Rotation, this.ScaleOrigin, this.RotationOrigin);
+        this.myInverseTransformationMatrix = MatrixUtils.CreateInverseTransformationMatrix(this.Position, this.Scale, this.Rotation, this.ScaleOrigin, this.RotationOrigin);
+        this.myAbsoluteTransformationMatrix = this.ParentLayer == null ? this.myTransformationMatrix : this.ParentLayer.AbsoluteTransformationMatrix.PreConcat(this.myTransformationMatrix);
+        this.myAbsoluteInverseTransformationMatrix = this.ParentLayer == null ? this.myInverseTransformationMatrix : this.myInverseTransformationMatrix.PreConcat(this.ParentLayer.AbsoluteInverseTransformationMatrix);
         this.isMatrixDirty = false;
     }
 
@@ -212,7 +235,7 @@ public abstract class BaseVisualLayer : BaseLayerTreeObject {
     /// <param name="ctx">Render context</param>
     public abstract void RenderLayer(ref RenderContext ctx);
 
-    public virtual void InvalidateTransformationMatrix() {
+    protected virtual void InvalidateTransformationMatrix() {
         this.isMatrixDirty = true;
         this.InvalidateVisual();
     }

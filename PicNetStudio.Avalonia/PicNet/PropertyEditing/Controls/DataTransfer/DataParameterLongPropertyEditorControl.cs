@@ -50,4 +50,6 @@ public class DataParameterLongPropertyEditorControl : BaseNumberDraggerDataParam
         this.dragger.NormalChange = Math.Max(profile.NormalStep, 1.0);
         this.dragger.LargeChange = Math.Max(profile.LargeStep, 1.0);
     }
+    
+    protected override void ResetValue() => this.SlotModel.Value = this.SlotModel.Parameter.DefaultValue;
 }

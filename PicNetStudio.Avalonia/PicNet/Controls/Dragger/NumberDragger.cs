@@ -24,6 +24,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+using PicNetStudio.Avalonia.PicNet.Controls.Dragger.Expressions;
 using PicNetStudio.Avalonia.Utils;
 
 namespace PicNetStudio.Avalonia.PicNet.Controls.Dragger;
@@ -38,6 +39,7 @@ public class NumberDragger : RangeBase {
     public static readonly StyledProperty<IValueFormatter?> ValueFormatterProperty = AvaloniaProperty.Register<NumberDragger, IValueFormatter?>("ValueFormatter");
     public static readonly StyledProperty<TextAlignment> TextAlignmentProperty = TextBlock.TextAlignmentProperty.AddOwner<NumberDragger>();
     public static readonly StyledProperty<string?> TextPreviewOverrideProperty = AvaloniaProperty.Register<NumberDragger, string?>("TextPreviewOverride");
+    public static readonly StyledProperty<bool?> CompleteEditOnTextBoxLostFocusProperty = AvaloniaProperty.Register<NumberDragger, bool?>("CompleteEditOnTextBoxLostFocus");
 
     private TextBlock? PART_TextBlock;
     private TextBox? PART_TextBox;
@@ -111,6 +113,11 @@ public class NumberDragger : RangeBase {
     public string? TextPreviewOverride {
         get => this.GetValue(TextPreviewOverrideProperty);
         set => this.SetValue(TextPreviewOverrideProperty, value);
+    }
+    
+    public bool? CompleteEditOnTextBoxLostFocus {
+        get => this.GetValue(CompleteEditOnTextBoxLostFocusProperty);
+        set => this.SetValue(CompleteEditOnTextBoxLostFocusProperty, value);
     }
 
     public bool EditState {
@@ -196,30 +203,65 @@ public class NumberDragger : RangeBase {
     }
 
     private void OnTextInputFocusLost(object? sender, RoutedEventArgs e) {
+        if (this.EditState && this.CompleteEditOnTextBoxLostFocus == true) {
+            this.CompleteEdit(Key.Enter); // Simulate pressing enter
+        }
+        
         this.EditState = false;
     }
 
     private void OnTextInputKeyPress(object? sender, KeyEventArgs e) {
         if (e.Key == Key.Enter || e.Key == Key.Escape) {
-            this.CompleteEdit(e);
+            this.CompleteEdit(e.Key);
         }
     }
 
-    private void CompleteEdit(KeyEventArgs e) {
+    private bool CompleteEdit(Key inputKey) {
         string? parseText = this.PART_TextBox!.Text;
         this.EditState = false;
-        if (parseText == null || e.Key == Key.Escape) {
-            return;
+        if (parseText == null || inputKey == Key.Escape) {
+            return false;
         }
 
+        if (this.ParseInput(parseText, out double parsedValue)) {
+            this.Value = parsedValue;
+            return true;
+        }
+
+        using ComplexNumericExpression.ExpressionState state = ComplexNumericExpression.DefaultParser.PushState();
+        state.SetVariable("oldvalue", this.Value);
+        try {
+            parsedValue = state.Expression.Parse(parseText);
+        }
+        catch {
+            return false;
+        }
+        
+        if (this.ValueFormatter is IValueFormatter formatter) {
+            if (formatter.TryConvertToDouble(parsedValue.ToString(), out double value)) {
+                this.Value = value;
+                return true;
+            }
+        }
+
+        this.Value = parsedValue;
+        return true;
+    }
+    
+    private bool ParseInput(string parseText, out double output) {
         if (this.ValueFormatter is IValueFormatter formatter) {
             if (formatter.TryConvertToDouble(parseText, out double value)) {
-                this.Value = value;
+                output = value;
+                return true;
             }
         }
         else if (double.TryParse(parseText, out double newValue)) {
-            this.Value = newValue;
+            output = newValue;
+            return true;
         }
+
+        output = default;
+        return false;
     }
 
     protected override void OnPointerPressed(PointerPressedEventArgs e) {
