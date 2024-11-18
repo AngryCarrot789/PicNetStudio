@@ -39,7 +39,7 @@ public class NumberDragger : RangeBase {
     public static readonly StyledProperty<IValueFormatter?> ValueFormatterProperty = AvaloniaProperty.Register<NumberDragger, IValueFormatter?>("ValueFormatter");
     public static readonly StyledProperty<TextAlignment> TextAlignmentProperty = TextBlock.TextAlignmentProperty.AddOwner<NumberDragger>();
     public static readonly StyledProperty<string?> TextPreviewOverrideProperty = AvaloniaProperty.Register<NumberDragger, string?>("TextPreviewOverride");
-    public static readonly StyledProperty<bool?> CompleteEditOnTextBoxLostFocusProperty = AvaloniaProperty.Register<NumberDragger, bool?>("CompleteEditOnTextBoxLostFocus");
+    public static readonly StyledProperty<bool?> CompleteEditOnTextBoxLostFocusProperty = AvaloniaProperty.Register<NumberDragger, bool?>("CompleteEditOnTextBoxLostFocus", true);
 
     private TextBlock? PART_TextBlock;
     private TextBox? PART_TextBox;
@@ -142,7 +142,17 @@ public class NumberDragger : RangeBase {
         ValueProperty.Changed.AddClassHandler<NumberDragger, double>((o, e) => o.OnValueChanged(e.OldValue.GetValueOrDefault(), e.NewValue.GetValueOrDefault()));
         TextPreviewOverrideProperty.Changed.AddClassHandler<NumberDragger, string?>((o, e) => o.UpdateTextBlockOnly());
     }
-
+    
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e) {
+        base.OnApplyTemplate(e);
+        this.PART_TextBlock = e.NameScope.GetTemplateChild<TextBlock>(nameof(this.PART_TextBlock));
+        this.PART_TextBox = e.NameScope.GetTemplateChild<TextBox>(nameof(this.PART_TextBox));
+        if (this.PART_TextBox != null) {
+            this.PART_TextBox.KeyDown += this.OnTextInputKeyPress;
+            this.PART_TextBox.LostFocus += this.OnTextInputFocusLost;
+        }
+    }
+    
     private string GetValueToString(bool isEditing) => this.GetValueToString(this.Value, isEditing);
 
     private string GetValueToString(double value, bool isEditing) {
@@ -190,16 +200,6 @@ public class NumberDragger : RangeBase {
     
     private void UpdateCursor() {
         this.Cursor = new Cursor(this.dragState != 2 ? StandardCursorType.Arrow : StandardCursorType.None);
-    }
-
-    protected override void OnApplyTemplate(TemplateAppliedEventArgs e) {
-        base.OnApplyTemplate(e);
-        this.PART_TextBlock = e.NameScope.GetTemplateChild<TextBlock>(nameof(this.PART_TextBlock));
-        this.PART_TextBox = e.NameScope.GetTemplateChild<TextBox>(nameof(this.PART_TextBox));
-        if (this.PART_TextBox != null) {
-            this.PART_TextBox.KeyDown += this.OnTextInputKeyPress;
-            this.PART_TextBox.LostFocus += this.OnTextInputFocusLost;
-        }
     }
 
     private void OnTextInputFocusLost(object? sender, RoutedEventArgs e) {
@@ -300,6 +300,11 @@ public class NumberDragger : RangeBase {
         if (e.Key == Key.Escape && this.dragState != 0) {
             e.Handled = true;
             this.dragState = 0;
+            this.UpdateCursor();
+        }
+        else if (this.dragState == 0 && this.IsKeyboardFocusWithin) {
+            // Begin editing when we have focus, e.g. via tab indexing
+            this.EditState = true;
             this.UpdateCursor();
         }
     }

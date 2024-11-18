@@ -37,13 +37,15 @@ public class TextLayer : BaseVisualLayer {
     public static readonly DataParameterDouble BorderThicknessParameter = DataParameter.Register(new DataParameterDouble(typeof(TextLayer), nameof(BorderThickness), 1.0D, ValueAccessors.Reflective<double>(typeof(TextLayer), nameof(borderThickness))));
     public static readonly DataParameterFloat SkewXParameter = DataParameter.Register(new DataParameterFloat(typeof(TextLayer), nameof(SkewX), 0.0F, ValueAccessors.Reflective<float>(typeof(TextLayer), nameof(skewX))));
     public static readonly DataParameterBool IsAntiAliasedParameter = DataParameter.Register(new DataParameterBool(typeof(TextLayer), nameof(IsAntiAliased), true, ValueAccessors.Reflective<bool>(typeof(TextLayer), nameof(isAntiAliased))));
-
+    public static readonly DataParameterDouble LineHeightMultiplierParameter = DataParameter.Register(new DataParameterDouble(typeof(TextLayer), nameof(LineHeightMultiplier), 1.0, ValueAccessors.Reflective<double>(typeof(TextLayer), nameof(lineHeightMultiplier))));
+    
+    private string? text = TextParameter.DefaultValue;
     private double fontSize = FontSizeParameter.DefaultValue;
     private string? fontFamily = FontFamilyParameter.DefaultValue;
     private double borderThickness = BorderThicknessParameter.DefaultValue;
     private float skewX = SkewXParameter.DefaultValue;
     private bool isAntiAliased = IsAntiAliasedParameter.DefaultValue;
-    private string? text = TextParameter.DefaultValue;
+    private double lineHeightMultiplier = LineHeightMultiplierParameter.DefaultValue;
     private BitVector32 clipProps;
     private SKTextBlob?[]? TextBlobs;
     private Vector2 TextBlobBoundingBox;
@@ -51,6 +53,14 @@ public class TextLayer : BaseVisualLayer {
     private SKColor foreground;
     private SKColor border;
 
+    // TODO: rich text, not a plain string.
+    // Maybe we make a custom layer that uses Avalonia UI
+    // elements, so we could use AvalonEdit? !!!
+    public string? Text {
+        get => this.text;
+        set => DataParameter.SetValueHelper(this, TextParameter, ref this.text, value);
+    }
+    
     public double FontSize {
         get => this.fontSize;
         set => DataParameter.SetValueHelper(this, FontSizeParameter, ref this.fontSize, value);
@@ -76,12 +86,9 @@ public class TextLayer : BaseVisualLayer {
         set => DataParameter.SetValueHelper(this, IsAntiAliasedParameter, ref this.isAntiAliased, value);
     }
     
-    // TODO: rich text, not a plain string.
-    // Maybe we make a custom layer that uses Avalonia UI
-    // elements, so we could use AvalonEdit? !!!
-    public string? Text {
-        get => this.text;
-        set => DataParameter.SetValueHelper(this, TextParameter, ref this.text, value);
+    public double LineHeightMultiplier {
+        get => this.lineHeightMultiplier;
+        set => DataParameter.SetValueHelper(this, LineHeightMultiplierParameter, ref this.lineHeightMultiplier, value);
     }
 
     public SKPaint? GeneratedPaint { get; private set; }
@@ -103,7 +110,13 @@ public class TextLayer : BaseVisualLayer {
 
     static TextLayer() {
         SetParameterAffectsRender(TextParameter);
-        DataParameter.AddMultipleHandlers((_, owner) => ((TextLayer) owner).InvalidateFontData(), FontSizeParameter, FontFamilyParameter, BorderThicknessParameter, SkewXParameter, IsAntiAliasedParameter);
+        DataParameter.AddMultipleHandlers((_, owner) => ((TextLayer) owner).InvalidateFontData(), FontSizeParameter, FontFamilyParameter, BorderThicknessParameter, SkewXParameter, IsAntiAliasedParameter, LineHeightMultiplierParameter);
+        DataParameter.AddMultipleHandlers((_, owner) => ((TextLayer) owner).DisposeText(), TextParameter);
+    }
+
+    public void DisposeText() {
+        this.TextBlobBoundingBox = new Vector2();
+        DisposeTextBlobs(ref this.TextBlobs);
     }
 
     public override void RenderLayer(ref RenderContext ctx) {
@@ -113,7 +126,6 @@ public class TextLayer : BaseVisualLayer {
         
         if (this.TextBlobs == null && !string.IsNullOrEmpty(this.text)) {
             this.TextBlobBoundingBox = new Vector2();
-            DisposeTextBlobs(ref this.TextBlobs);
             this.GenerateTextCache();
         }
 
@@ -126,6 +138,7 @@ public class TextLayer : BaseVisualLayer {
         // we can get away with this since we just use numbers and not any 'special'
         // characters with bits below the baseline and whatnot
 
+        double lineHeightAdd = 0.0;
         foreach (SKTextBlob? blob in this.TextBlobs) {
             if (blob != null) {
                 // fd.cachedFont.GetFontMetrics(out SKFontMetrics metrics);
@@ -138,8 +151,9 @@ public class TextLayer : BaseVisualLayer {
                 // // unacceptable. Even though there will most likely be a bunch of transparent padding pixels, it's still better
                 // renderArea = rc.TranslateRect(realFinalRenderArea);
 
-                // ctx.Canvas.DrawText(blob, 0, blob.Bounds.Height / 2f, paint);
-                ctx.Canvas.DrawText(blob, 0, -blob.Bounds.Top - metrics.Descent, paint);
+                ctx.Canvas.DrawText(blob, 0, (float) (blob.Bounds.Height / 2d + lineHeightAdd), paint);
+                lineHeightAdd += this.LineHeightMultiplier;
+                // ctx.Canvas.DrawText(blob, 0, -blob.Bounds.Top - metrics.Descent, paint);
             }
         }
     }
@@ -171,14 +185,11 @@ public class TextLayer : BaseVisualLayer {
     /// Invalidates the cached font and paint information. This is called automatically when any of our properties change
     /// </summary>
     public void InvalidateFontData() {
-        if (this.GeneratedFont == null && this.GeneratedPaint == null) {
-            return;
-        }
-
         this.GeneratedFont?.Dispose();
         this.GeneratedFont = null;
         this.GeneratedPaint?.Dispose();
         this.GeneratedPaint = null;
+        this.DisposeText();
         this.InvalidateVisual();
     }
 
@@ -193,14 +204,12 @@ public class TextLayer : BaseVisualLayer {
             }
         }
 
-        if (this.GeneratedPaint == null && this.GeneratedFont != null) {
-            this.GeneratedPaint = new SKPaint(this.GeneratedFont) {
-                StrokeWidth = (float) this.BorderThickness,
-                Color = this.foreground,
-                TextAlign = SKTextAlign.Left,
-                IsAntialias = this.IsAntiAliased
-            };
-        }
+        this.GeneratedPaint ??= new SKPaint() {
+            StrokeWidth = (float) this.BorderThickness,
+            Color = this.foreground,
+            TextAlign = SKTextAlign.Left,
+            IsAntialias = this.IsAntiAliased
+        };
     }
 
     public static SKTextBlob[]? CreateTextBlobs(string input, SKPaint paint, SKFont font) {

@@ -78,13 +78,14 @@
                             <ColumnDefinition Width="{Binding RelativeSource={RelativeSource AncestorType={x:Type l:PropertyEditorControl}}, Path=ColumnWidth2, Mode=TwoWay}"/>
                         </Grid.ColumnDefinitions>
                         <CheckBox x:Name="PART_DisplayNameCheckBox" VerticalAlignment="Center" Grid.Row="0" Grid.Column="0"
-                                  Theme="{TemplateBinding IsCheckBoxToggleable, Converter={StaticResource IsCheckBoxToggleableToStyleConverter}}"/>
+                                  Theme="{TemplateBinding IsCheckBoxToggleable, Converter={StaticResource IsCheckBoxToggleableToStyleConverter}}"
+                                  Focusable="False"/>
                         <DockPanel Grid.Row="0" Grid.Column="2" Height="20">
-                            <Button x:Name="PART_ResetValue" Margin="2,0,2,0"
+                            <Button x:Name="PART_ResetValue" Margin="2,0,0,0"
                                     Background="{DynamicResource ABrush.Tone4.Border.Static}" 
                                     BorderBrush="Black" 
                                     Width="20" Height="20" CornerRadius="2" 
-                                    ToolTip.Tip="Reset value" DockPanel.Dock="Right">
+                                    ToolTip.Tip="Reset value" DockPanel.Dock="Right" Focusable="False">
                                 <Path Width="12" Height="14" Stretch="Fill" Fill="{DynamicResource ABrush.Glyph.Static}" Data="{StaticResource ResetGeometry}"/>
                             </Button>
                             <d:NumberDragger x:Name="PART_Dragger" BorderBrush="Black" Padding="4,2"/>
@@ -106,7 +107,8 @@
                             <ColumnDefinition Width="{Binding RelativeSource={RelativeSource AncestorType={x:Type l:PropertyEditorControl}}, Path=ColumnWidth2, Mode=TwoWay}"/>
                         </Grid.ColumnDefinitions>
                         <CheckBox x:Name="PART_DisplayNameCheckBox" VerticalAlignment="Center" Grid.Row="0" Grid.Column="0"
-                                  Theme="{TemplateBinding IsCheckBoxToggleable, Converter={StaticResource IsCheckBoxToggleableToStyleConverter}}"/>
+                                  Theme="{TemplateBinding IsCheckBoxToggleable, Converter={StaticResource IsCheckBoxToggleableToStyleConverter}}"
+                                  Focusable="False"/>
                         <Grid Grid.Row="0" Grid.Column="2">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -117,11 +119,11 @@
                             </Grid.ColumnDefinitions>
                             <d:NumberDragger x:Name="PART_DraggerX" Height="20" Grid.Column="0" BorderBrush="Black" Padding="4,2"/>
                             <d:NumberDragger x:Name="PART_DraggerY" Height="20" Grid.Column="2" BorderBrush="Black" Padding="4,2"/>
-                            <Button x:Name="PART_ResetValue" Margin="0,0,2,0"
+                            <Button x:Name="PART_ResetValue" Margin="0"
                                     Background="{DynamicResource ABrush.Tone4.Border.Static}" 
                                     BorderBrush="Black" 
                                     Width="20" Height="20" CornerRadius="2" 
-                                    ToolTip.Tip="Reset value" Grid.Column="4">
+                                    ToolTip.Tip="Reset value" Grid.Column="4" Focusable="False">
                                 <Path Width="12" Height="14" Stretch="Fill" Fill="{DynamicResource ABrush.Glyph.Static}" Data="{StaticResource ResetGeometry}"/>
                             </Button>
                         </Grid>
@@ -142,7 +144,8 @@
                             <ColumnDefinition Width="{Binding RelativeSource={RelativeSource AncestorType={x:Type l:PropertyEditorControl}}, Path=ColumnWidth2, Mode=TwoWay}"/>
                         </Grid.ColumnDefinitions>
                         <CheckBox x:Name="PART_DisplayNameCheckBox" VerticalAlignment="Center" Grid.Row="0" Grid.Column="0"
-                                  Theme="{TemplateBinding IsCheckBoxToggleable, Converter={StaticResource IsCheckBoxToggleableToStyleConverter}}"/>
+                                  Theme="{TemplateBinding IsCheckBoxToggleable, Converter={StaticResource IsCheckBoxToggleableToStyleConverter}}"
+                                  Focusable="False"/>
                         <CheckBox x:Name="PART_CheckBox" Grid.Row="0" Grid.Column="2" Height="20" HorizontalContentAlignment="Left" Padding="4,2"/>
                     </Grid>
                 </ControlTemplate>
@@ -160,7 +163,7 @@
                             <ColumnDefinition Width="{Binding RelativeSource={RelativeSource AncestorType={x:Type l:PropertyEditorControl}}, Path=ColumnWidth1, Mode=TwoWay}"/>
                             <ColumnDefinition Width="{Binding RelativeSource={RelativeSource AncestorType={x:Type l:PropertyEditorControl}}, Path=ColumnWidth2, Mode=TwoWay}"/>
                         </Grid.ColumnDefinitions>
-                        <CheckBox x:Name="PART_DisplayNameCheckBox" VerticalAlignment="Center" Grid.Row="0" Grid.Column="0"
+                        <CheckBox x:Name="PART_DisplayNameCheckBox" VerticalAlignment="Top" Grid.Row="0" Grid.Column="0" Focusable="False"
                                   Theme="{TemplateBinding IsCheckBoxToggleable, Converter={StaticResource IsCheckBoxToggleableToStyleConverter}}"/>
                         <TextBox x:Name="PART_TextBox" Grid.Column="2" Padding="2" VerticalAlignment="Center"/>
                     </Grid>
@@ -179,7 +182,7 @@
                             <ColumnDefinition Width="{Binding RelativeSource={RelativeSource AncestorType={x:Type l:PropertyEditorControl}}, Path=ColumnWidth1, Mode=TwoWay}"/>
                             <ColumnDefinition Width="{Binding RelativeSource={RelativeSource AncestorType={x:Type l:PropertyEditorControl}}, Path=ColumnWidth2, Mode=TwoWay}"/>
                         </Grid.ColumnDefinitions>
-                        <CheckBox x:Name="PART_DisplayNameCheckBox" VerticalAlignment="Center" Grid.Row="0" Grid.Column="0"
+                        <CheckBox x:Name="PART_DisplayNameCheckBox" VerticalAlignment="Center" Grid.Row="0" Grid.Column="0" Focusable="False"
                                   Theme="{TemplateBinding IsCheckBoxToggleable, Converter={StaticResource IsCheckBoxToggleableToStyleConverter}}"/>
                         <ComboBox x:Name="PART_ComboBox" Grid.Row="0" Grid.Column="2">
                             <ToolTip.Tip>

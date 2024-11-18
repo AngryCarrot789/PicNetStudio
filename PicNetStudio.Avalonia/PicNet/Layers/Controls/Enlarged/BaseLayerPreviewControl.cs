@@ -43,6 +43,7 @@ public abstract class BaseLayerPreviewControl : TemplatedControl {
     static BaseLayerPreviewControl() {
         Registry = new ModelControlRegistry<BaseLayerTreeObject, BaseLayerPreviewControl>();
         Registry.RegisterType<RasterLayer>(() => new RasterLayerPreviewControl());
+        Registry.RegisterType<TextLayer>(() => new TextLayerPreviewControl());
     }
 
     public void Connect(BaseLayerTreeViewItem node, BaseLayerTreeObject layer) {
@@ -128,5 +129,10 @@ public class RasterLayerPreviewControl : BaseLayerPreviewControl {
         if (this.LayerNode != null && this.LayerNode.IsInitialized && this.LayerNode.IsEffectivelyVisible) {
             this.rda?.InvokeAsync();
         }
+    }
+}
+
+public class TextLayerPreviewControl : BaseLayerPreviewControl {
+    public TextLayerPreviewControl() {
     }
 }

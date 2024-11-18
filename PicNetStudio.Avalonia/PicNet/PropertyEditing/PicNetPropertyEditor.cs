@@ -49,7 +49,7 @@ public class PicNetPropertyEditor : BasePropertyEditor {
             layer.AddItem(new DataParameterFloatPropertyEditorSlot(BaseVisualLayer.OpacityParameter, typeof(BaseVisualLayer), "Opacity", DragStepProfile.UnitOne) {ValueFormatter = UnitToPercentFormatter.Standard });
             
             {
-                SimplePropertyEditorGroup transform = new SimplePropertyEditorGroup(typeof(BaseVisualLayer), GroupType.SecondaryExpander) { DisplayName = "Motion/Transformation" };
+                SimplePropertyEditorGroup transform = new SimplePropertyEditorGroup(typeof(BaseVisualLayer)) { DisplayName = "Transformation" };
                 transform.AddItem(new DataParameterPointPropertyEditorSlot(BaseVisualLayer.PositionParameter, typeof(BaseVisualLayer), "Position") {StepProfileX = DragStepProfile.InfPixelRange, StepProfileY = DragStepProfile.InfPixelRange});
                 transform.AddItem(new DataParameterPointPropertyEditorSlot(BaseVisualLayer.ScaleParameter, typeof(BaseVisualLayer), "Scale") {StepProfileX = DragStepProfile.UnitOne, StepProfileY = DragStepProfile.UnitOne});
                 transform.AddItem(new DataParameterDoublePropertyEditorSlot(BaseVisualLayer.RotationParameter, typeof(BaseVisualLayer), "Rotation", DragStepProfile.Rotation));
@@ -68,12 +68,13 @@ public class PicNetPropertyEditor : BasePropertyEditor {
             }
 
             {
-                SimplePropertyEditorGroup textGroup = new SimplePropertyEditorGroup(typeof(TextLayer), GroupType.SecondaryExpander) { DisplayName = "Channels" };
+                SimplePropertyEditorGroup textGroup = new SimplePropertyEditorGroup(typeof(TextLayer), GroupType.SecondaryExpander) { DisplayName = "Text" };
                 textGroup.AddItem(new DataParameterStringPropertyEditorSlot(TextLayer.FontFamilyParameter, typeof(TextLayer), "Font Family"));
                 textGroup.AddItem(new DataParameterDoublePropertyEditorSlot(TextLayer.FontSizeParameter, typeof(TextLayer), "Font Size", DragStepProfile.FontSize));
                 textGroup.AddItem(new DataParameterDoublePropertyEditorSlot(TextLayer.BorderThicknessParameter, typeof(TextLayer), "Stroke Width", DragStepProfile.Pixels));
                 textGroup.AddItem(new DataParameterFloatPropertyEditorSlot(TextLayer.SkewXParameter, typeof(TextLayer), "Skew X", DragStepProfile.Pixels));
                 textGroup.AddItem(new DataParameterBoolPropertyEditorSlot(TextLayer.IsAntiAliasedParameter, typeof(TextLayer), "Anti Alias"));
+                textGroup.AddItem(new DataParameterDoublePropertyEditorSlot(TextLayer.LineHeightMultiplierParameter, typeof(TextLayer), "Line Hight Mtplr.", DragStepProfile.Pixels));
                 textGroup.AddItem(new DataParameterStringPropertyEditorSlot(TextLayer.TextParameter, typeof(TextLayer), "Font Family") {AnticipatedLineCount = 8});
                 layer.AddItem(textGroup);
             }

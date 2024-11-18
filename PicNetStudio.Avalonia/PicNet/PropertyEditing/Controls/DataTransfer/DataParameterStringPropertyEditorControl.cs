@@ -54,6 +54,7 @@ public class DataParameterStringPropertyEditorControl : BaseDataParameterPropert
     protected override void OnConnected() {
         base.OnConnected();
         this.SlotModel!.AnticipatedLineCountChanged += this.OnAnticipatedLineCountChanged;
+        this.UpdateTextBoxHeight();
     }
 
     protected override void OnDisconnected() {
@@ -71,9 +72,11 @@ public class DataParameterStringPropertyEditorControl : BaseDataParameterPropert
             int count = slot.AnticipatedLineCount;
             if (count == -1) {
                 this.textBox.ClearValue(TextBox.MinLinesProperty);
+                this.textBox.AcceptsReturn = false;
             }
             else {
                 this.textBox.MinLines = count;
+                this.textBox.AcceptsReturn = true;
             }
         }
     }
