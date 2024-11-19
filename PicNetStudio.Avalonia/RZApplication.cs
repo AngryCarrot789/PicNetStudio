@@ -108,11 +108,16 @@ public abstract class RZApplication {
         manager.Register("command.tool.BaseDiameterTool.DecreaseBrushSize", new DecreaseBaseDiameterToolSizeCommand());
         manager.Register("command.generic.ExportImage", new ExportImageCommand());
         manager.Register("command.generic.ExportCanvasToClipboard", new ExportCanvasToClipboardCommand());
+        manager.Register("command.toolbar.SelectBrushTool", new SelectBrushToolCommand());
+        manager.Register("command.toolbar.SelectPencilTool", new SelectPencilToolCommand());
+        manager.Register("command.toolbar.SelectFillTool", new SelectFillToolCommand());
+        manager.Register("command.toolbar.SelectSelectionTool", new SelectSelectionToolCommand());
         manager.Register("command.layertree.CreateNewRasterLayer", new CreateNewRasterLayerCommand());
         manager.Register("command.layertree.CreateNewTextLayerCommand", new CreateNewTextLayerCommand());
         manager.Register("command.layertree.DeleteSelectedLayers", new DeleteSelectedLayersCommand());
         manager.Register("command.layertree.GroupSelectionIntoComposition", new GroupSelectionIntoCompositionCommand());
         manager.Register("command.layertree.item.EditLayerNameCommand", new EditLayerNameCommand());
+        manager.Register("command.layertree.item.ToggleLayerVisibility", new ToggleLayerVisibilityCommand());
     }
 
     internal static void InternalPreInititalise(RZApplication application) {

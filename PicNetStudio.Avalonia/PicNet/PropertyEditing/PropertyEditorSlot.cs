@@ -141,39 +141,6 @@ public abstract class PropertyEditorSlot : BasePropertyEditorItem {
         this.HandlersLoaded?.Invoke(this);
     }
 
-    /// <summary>
-    /// Attempts to extract a value which is equal across all objects, using the given getter function
-    /// </summary>
-    /// <param name="objects">Input objects</param>
-    /// <param name="getter">Getter function</param>
-    /// <param name="equal">
-    /// The value that is equal across all objects (will be set to <see cref="objects"/>[0]'s value)
-    /// </param>
-    /// <typeparam name="T">Type of object to get</typeparam>
-    /// <returns>True if there is 1 object, or more than 1 and they have the same value, otherwise false</returns>
-    public static bool GetEqualValue<T>(IReadOnlyList<object>? objects, Func<object, T> getter, out T? equal) {
-        int count;
-        if (objects == null || (count = objects.Count) < 1) {
-            equal = default;
-            return false;
-        }
-
-        equal = getter(objects[0]);
-        if (count == 1) {
-            return true;
-        }
-
-        EqualityComparer<T> comparator = EqualityComparer<T>.Default;
-        for (int i = 1; i < count; i++) {
-            if (!comparator.Equals(getter(objects[i]), equal)) {
-                equal = default;
-                return false;
-            }
-        }
-
-        return true;
-    }
-
     private static bool GetApplicable(PropertyEditorSlot slot, IReadOnlyList<object> input, out IReadOnlyList<object> output) {
         switch (slot.ApplicabilityMode) {
             case ApplicabilityMode.All: {

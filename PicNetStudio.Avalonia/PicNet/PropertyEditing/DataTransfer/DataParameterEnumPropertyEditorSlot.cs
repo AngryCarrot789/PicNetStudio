@@ -105,7 +105,7 @@ public class DataParameterEnumPropertyEditorSlot<TEnum> : DataParameterPropertyE
     }
 
     public override void QueryValueFromHandlers() {
-        TEnum? val = GetEqualValue(this.Handlers, (x) => this.Parameter.GetValue((ITransferableData) x), out TEnum? d) ? d : default;
+        TEnum? val = CollectionUtils.GetEqualValue(this.Handlers, (x) => this.Parameter.GetValue((ITransferableData) x), out TEnum? d) ? d : default;
         this.value = ValuesSet.Contains(val) ? val : Values[0];
     }
 }

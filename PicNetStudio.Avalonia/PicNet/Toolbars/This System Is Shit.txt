@@ -1,0 +1,1 @@
+﻿This SingleToolBarItem stuff is terrible, need to think of a better solution

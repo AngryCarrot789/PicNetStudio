@@ -75,14 +75,17 @@ public abstract class BaseNumberDraggerDataParamPropEditorControl : BaseDataPara
     }
 
     public static void UpdateNumberDragger(NumberDragger dragger, bool hasMultipleValues, bool hasUsedAdditionSinceSetup) {
-        // TODO: really need to make a derived NumberDragger specifically for this case,
-        // because at the moment, the Value is set to 0 when multiple values are present.
-        // It works but meh...
-
-        // Not using hasUsedAdditionSinceSetup because for now, keep
-        // override on because otherwise it sticks with the mid-way
-        // between the dragger's min and max, which is confusing.
-        // Definitely need a derived NumberDragger but it's 11:25 at night :'(
+        // TODO: really need to make a derived NumberDragger specifically for this case
+        // Not going to use hasUsedAdditionSinceSetup for now. Because it's
+        // quite finicky when the dragger's minimum is 0.0.
+        // And also if we instead set the value to the midway between the dragger's
+        // min and max, we need to initially preview it as 0 and prefix with + or -
+        // to represent addition/subtraction from the original values.
+        // It's just confusing, especially if the value has a narrow range (e.g. 0.0 to 1.0)
+        // because eventually, all selected objects' values will become the same if you
+        // keep dragging, unless we disallow dragging once one object reaches the min/max
+        // which is possible but is this even a good idea though???
+        // Definitely need a derived NumberDragger too but it's just past midnight :'(
         if (hasMultipleValues /* && !hasUsedAdditionSinceSetup */) {
             dragger.TextPreviewOverride = "<<Multiple Values>>";
         }

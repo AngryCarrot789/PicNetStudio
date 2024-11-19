@@ -52,7 +52,7 @@ public class PicNetPropertyEditor : BasePropertyEditor {
                 SimplePropertyEditorGroup transform = new SimplePropertyEditorGroup(typeof(BaseVisualLayer)) { DisplayName = "Transformation" };
                 transform.AddItem(new DataParameterPointPropertyEditorSlot(BaseVisualLayer.PositionParameter, typeof(BaseVisualLayer), "Position") {StepProfileX = DragStepProfile.InfPixelRange, StepProfileY = DragStepProfile.InfPixelRange});
                 transform.AddItem(new DataParameterPointPropertyEditorSlot(BaseVisualLayer.ScaleParameter, typeof(BaseVisualLayer), "Scale") {StepProfileX = DragStepProfile.UnitOne, StepProfileY = DragStepProfile.UnitOne});
-                transform.AddItem(new DataParameterDoublePropertyEditorSlot(BaseVisualLayer.RotationParameter, typeof(BaseVisualLayer), "Rotation", DragStepProfile.Rotation));
+                transform.AddItem(new DataParameterFloatPropertyEditorSlot(BaseVisualLayer.RotationParameter, typeof(BaseVisualLayer), "Rotation", DragStepProfile.Rotation));
                 transform.AddItem(new DataParameterPointPropertyEditorSlot(BaseVisualLayer.ScaleOriginParameter, typeof(BaseVisualLayer), "Scale Origin") {StepProfileX = DragStepProfile.InfPixelRange, StepProfileY = DragStepProfile.InfPixelRange});
                 transform.AddItem(new DataParameterPointPropertyEditorSlot(BaseVisualLayer.RotationOriginParameter, typeof(BaseVisualLayer), "Rotation Origin") {StepProfileX = DragStepProfile.InfPixelRange, StepProfileY = DragStepProfile.InfPixelRange});
                 layer.AddItem(transform);
@@ -60,10 +60,10 @@ public class PicNetPropertyEditor : BasePropertyEditor {
             
             {
                 SimplePropertyEditorGroup channelGroup = new SimplePropertyEditorGroup(typeof(RasterLayer), GroupType.SecondaryExpander) { DisplayName = "Channels" };
-                channelGroup.AddItem(new DataParameterFloatPropertyEditorSlot(RasterLayer.ChannelRParameter, typeof(RasterLayer), "Channel R", DragStepProfile.UnitOne) { ValueFormatter = UnitToPercentFormatter.Standard });
-                channelGroup.AddItem(new DataParameterFloatPropertyEditorSlot(RasterLayer.ChannelGParameter, typeof(RasterLayer), "Channel G", DragStepProfile.UnitOne) { ValueFormatter = UnitToPercentFormatter.Standard });
-                channelGroup.AddItem(new DataParameterFloatPropertyEditorSlot(RasterLayer.ChannelBParameter, typeof(RasterLayer), "Channel B", DragStepProfile.UnitOne) { ValueFormatter = UnitToPercentFormatter.Standard });
-                channelGroup.AddItem(new DataParameterFloatPropertyEditorSlot(RasterLayer.ChannelAParameter, typeof(RasterLayer), "Channel A", DragStepProfile.UnitOne) { ValueFormatter = UnitToPercentFormatter.Standard });
+                channelGroup.AddItem(new DataParameterFloatPropertyEditorSlot(RasterLayer.ChannelRParameter, typeof(RasterLayer), "Red", DragStepProfile.UnitOne) { ValueFormatter = UnitToPercentFormatter.Standard });
+                channelGroup.AddItem(new DataParameterFloatPropertyEditorSlot(RasterLayer.ChannelGParameter, typeof(RasterLayer), "Green", DragStepProfile.UnitOne) { ValueFormatter = UnitToPercentFormatter.Standard });
+                channelGroup.AddItem(new DataParameterFloatPropertyEditorSlot(RasterLayer.ChannelBParameter, typeof(RasterLayer), "Blue", DragStepProfile.UnitOne) { ValueFormatter = UnitToPercentFormatter.Standard });
+                channelGroup.AddItem(new DataParameterFloatPropertyEditorSlot(RasterLayer.ChannelAParameter, typeof(RasterLayer), "Alpha", DragStepProfile.UnitOne) { ValueFormatter = UnitToPercentFormatter.Standard });
                 layer.AddItem(channelGroup);
             }
 
@@ -74,8 +74,8 @@ public class PicNetPropertyEditor : BasePropertyEditor {
                 textGroup.AddItem(new DataParameterDoublePropertyEditorSlot(TextLayer.BorderThicknessParameter, typeof(TextLayer), "Stroke Width", DragStepProfile.Pixels));
                 textGroup.AddItem(new DataParameterFloatPropertyEditorSlot(TextLayer.SkewXParameter, typeof(TextLayer), "Skew X", DragStepProfile.Pixels));
                 textGroup.AddItem(new DataParameterBoolPropertyEditorSlot(TextLayer.IsAntiAliasedParameter, typeof(TextLayer), "Anti Alias"));
-                textGroup.AddItem(new DataParameterDoublePropertyEditorSlot(TextLayer.LineHeightMultiplierParameter, typeof(TextLayer), "Line Hight Mtplr.", DragStepProfile.Pixels));
-                textGroup.AddItem(new DataParameterStringPropertyEditorSlot(TextLayer.TextParameter, typeof(TextLayer), "Font Family") {AnticipatedLineCount = 8});
+                textGroup.AddItem(new DataParameterDoublePropertyEditorSlot(TextLayer.LineHeightMultiplierParameter, typeof(TextLayer), "Line Height.", DragStepProfile.Pixels));
+                textGroup.AddItem(new DataParameterStringPropertyEditorSlot(TextLayer.TextParameter, typeof(TextLayer), "Text") {AnticipatedLineCount = 8});
                 layer.AddItem(textGroup);
             }
         }

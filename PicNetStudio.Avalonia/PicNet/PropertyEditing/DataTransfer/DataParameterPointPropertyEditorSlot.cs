@@ -19,6 +19,7 @@
 
 using System;
 using PicNetStudio.Avalonia.DataTransfer;
+using PicNetStudio.Avalonia.Utils;
 using SkiaSharp;
 
 namespace PicNetStudio.Avalonia.PicNet.PropertyEditing.DataTransfer;
@@ -53,7 +54,7 @@ public class DataParameterPointPropertyEditorSlot : DataParameterFormattableNumb
     }
 
     public override void QueryValueFromHandlers() {
-        this.HasMultipleValues = !GetEqualValue(this.Handlers, (x) => this.Parameter.GetValue((ITransferableData) x), out this.value);
+        this.HasMultipleValues = !CollectionUtils.GetEqualValue(this.Handlers, (x) => this.Parameter.GetValue((ITransferableData) x), out this.value);
         if (this.HasMultipleValues) {
             SKPoint range = (this.Parameter.Maximum - this.Parameter.Minimum);
             this.value = new SKPoint(Math.Abs(range.X) / 2.0F, Math.Abs(range.Y) / 2.0F);

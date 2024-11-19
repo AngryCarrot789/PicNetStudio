@@ -19,6 +19,7 @@
 
 using System;
 using PicNetStudio.Avalonia.DataTransfer;
+using PicNetStudio.Avalonia.Utils;
 
 namespace PicNetStudio.Avalonia.PicNet.PropertyEditing.DataTransfer;
 
@@ -130,7 +131,7 @@ public abstract class DataParameterPropertyEditorSlot : PropertyEditorSlot {
         this.QueryValueFromHandlers();
         this.lastQueryHasMultipleValues = this.HasMultipleValues;
         DataParameter<bool>? p = this.IsEditableDataParameter;
-        this.IsEditable = p == null || (!GetEqualValue(this.Handlers, h => p.GetValue((ITransferableData) h), out bool v) || v);
+        this.IsEditable = p == null || (!CollectionUtils.GetEqualValue(this.Handlers, h => p.GetValue((ITransferableData) h), out bool v) || v);
         this.OnValueChanged();
     }
 

@@ -43,6 +43,10 @@ public abstract class BaseRasterisedDrawingTool : BaseDrawingTool {
     /// </summary>
     protected bool CanDrawSecondaryColour { get; set; }
     
+    /// <summary>
+    /// Gets or sets whether to bypass automatic clipping at a canvas-level when drawing with this
+    /// tool. Setting this to true means the tool will implement its own clip processing
+    /// </summary>
     protected bool BypassClipping { get; set; }
 
     protected BaseRasterisedDrawingTool() {
@@ -101,10 +105,11 @@ public abstract class BaseRasterisedDrawingTool : BaseDrawingTool {
 
         PNBitmap bitmap = bitmapLayer.Bitmap;
         Point mPos = new Point(x, y);
-        
+
         BaseSelection? selection = document.Canvas.SelectionRegion;
-        if (selection != null && !tool.BypassClipping) {
-            selection.ApplyClip(bitmap);
+        bool useClip = selection != null && !tool.BypassClipping;
+        if (useClip) {
+            selection!.ApplyClip(bitmap);
         }
         
         if (tool.keepDrawing) {
@@ -125,8 +130,8 @@ public abstract class BaseRasterisedDrawingTool : BaseDrawingTool {
 
         tool.keepDrawing = true;
         tool.DrawPixels(bitmap, document, mPos.X, mPos.Y, isPrimaryCursor);
-        if (selection != null && !tool.BypassClipping) {
-            selection.FinishClip(bitmap);
+        if (useClip) {
+            selection!.FinishClip(bitmap);
         }
         
         bitmapLayer.InvalidateVisual();

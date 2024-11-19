@@ -70,9 +70,6 @@ public class DataParameterPointPropertyEditorControl : BaseDataParameterProperty
             return;
         }
 
-        // TODO: really need to make a derived NumberDragger specifically for this case,
-        // because at the moment, the Value is set to 0 when multiple values are present.
-        // It works but meh...
         bool flag = this.SlotModel!.HasMultipleValues, flag2 = this.SlotModel!.HasProcessedMultipleValuesSinceSetup;
         BaseNumberDraggerDataParamPropEditorControl.UpdateNumberDragger(this.draggerX, flag, flag2);
         BaseNumberDraggerDataParamPropEditorControl.UpdateNumberDragger(this.draggerY, flag, flag2);

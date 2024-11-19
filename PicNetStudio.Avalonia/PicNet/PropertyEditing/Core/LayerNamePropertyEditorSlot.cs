@@ -20,6 +20,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using PicNetStudio.Avalonia.PicNet.Layers;
+using PicNetStudio.Avalonia.Utils;
 
 namespace PicNetStudio.Avalonia.PicNet.PropertyEditing.Core;
 
@@ -68,7 +69,7 @@ public class LayerNamePropertyEditorSlot : PropertyEditorSlot {
     }
 
     public void RequeryOpacityFromHandlers() {
-        this.Name = GetEqualValue(this.Handlers, x => ((BaseLayerTreeObject) x).Name, out string? d) ? d! : "<different values>";
+        this.Name = CollectionUtils.GetEqualValue(this.Handlers, x => ((BaseLayerTreeObject) x).Name, out string? d) ? d! : "<different values>";
         this.NameChanged?.Invoke(this);
     }
 

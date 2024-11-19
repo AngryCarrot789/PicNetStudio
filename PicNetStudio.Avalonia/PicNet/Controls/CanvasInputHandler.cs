@@ -20,7 +20,6 @@
 using System.Collections.Generic;
 using Avalonia;
 using Avalonia.Input;
-using PicNetStudio.Avalonia.PicNet.Layers;
 using PicNetStudio.Avalonia.PicNet.Layers.Core;
 using PicNetStudio.Avalonia.PicNet.Tools;
 using SkiaSharp;

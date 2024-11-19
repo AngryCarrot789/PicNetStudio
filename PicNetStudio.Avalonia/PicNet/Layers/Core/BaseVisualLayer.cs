@@ -39,7 +39,7 @@ public abstract class BaseVisualLayer : BaseLayerTreeObject {
     public static readonly DataParameterPoint PositionParameter = DataParameter.Register(new DataParameterPoint(typeof(BaseVisualLayer), nameof(Position), default, ValueAccessors.Reflective<SKPoint>(typeof(BaseVisualLayer), nameof(position))));
     public static readonly DataParameterPoint ScaleParameter = DataParameter.Register(new DataParameterPoint(typeof(BaseVisualLayer), nameof(Scale), new SKPoint(1.0F, 1.0F), ValueAccessors.Reflective<SKPoint>(typeof(BaseVisualLayer), nameof(scale))));
     public static readonly DataParameterPoint ScaleOriginParameter = DataParameter.Register(new DataParameterPoint(typeof(BaseVisualLayer), nameof(ScaleOrigin), default, ValueAccessors.Reflective<SKPoint>(typeof(BaseVisualLayer), nameof(scaleOrigin))));
-    public static readonly DataParameterDouble RotationParameter = DataParameter.Register(new DataParameterDouble(typeof(BaseVisualLayer), nameof(Rotation), default, ValueAccessors.Reflective<double>(typeof(BaseVisualLayer), nameof(rotation))));
+    public static readonly DataParameterFloat RotationParameter = DataParameter.Register(new DataParameterFloat(typeof(BaseVisualLayer), nameof(Rotation), default, ValueAccessors.Reflective<float>(typeof(BaseVisualLayer), nameof(rotation))));
     public static readonly DataParameterPoint RotationOriginParameter = DataParameter.Register(new DataParameterPoint(typeof(BaseVisualLayer), nameof(RotationOrigin), default, ValueAccessors.Reflective<SKPoint>(typeof(BaseVisualLayer), nameof(rotationOrigin))));
 
     private float opacity = OpacityParameter.DefaultValue;
@@ -50,7 +50,7 @@ public abstract class BaseVisualLayer : BaseLayerTreeObject {
     private SKPoint position = PositionParameter.DefaultValue;
     private SKPoint scale = ScaleParameter.DefaultValue;
     private SKPoint scaleOrigin = ScaleOriginParameter.DefaultValue;
-    private double rotation = RotationParameter.DefaultValue;
+    private float rotation = RotationParameter.DefaultValue;
     private SKPoint rotationOrigin = RotationOriginParameter.DefaultValue;
     private SKMatrix myTransformationMatrix, myInverseTransformationMatrix;
     private SKMatrix myAbsoluteTransformationMatrix, myAbsoluteInverseTransformationMatrix;
@@ -103,7 +103,7 @@ public abstract class BaseVisualLayer : BaseLayerTreeObject {
         set => DataParameter.SetValueHelper(this, ScaleOriginParameter, ref this.scaleOrigin, value);
     }
     
-    public double Rotation {
+    public float Rotation {
         get => this.rotation;
         set => DataParameter.SetValueHelper(this, RotationParameter, ref this.rotation, value);
     }
@@ -198,7 +198,7 @@ public abstract class BaseVisualLayer : BaseLayerTreeObject {
         
         DataParameter.AddMultipleHandlers(OnDataParameterChangedToInvalidateVisual, parameters);
     }
-
+    
     private void GenerateMatrices() {
         this.myTransformationMatrix = MatrixUtils.CreateTransformationMatrix(this.Position, this.Scale, this.Rotation, this.ScaleOrigin, this.RotationOrigin);
         this.myInverseTransformationMatrix = MatrixUtils.CreateInverseTransformationMatrix(this.Position, this.Scale, this.Rotation, this.ScaleOrigin, this.RotationOrigin);

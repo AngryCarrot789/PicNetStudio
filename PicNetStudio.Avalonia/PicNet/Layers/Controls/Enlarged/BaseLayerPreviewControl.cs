@@ -88,7 +88,7 @@ public class RasterLayerPreviewControl : BaseLayerPreviewControl {
             }
 
             if (this.rda == null)
-                this.rda = new RateLimitedDispatchAction(this.DoRenderPreviewAsync, TimeSpan.FromSeconds(0.25));
+                this.rda = new RateLimitedDispatchAction(this.DoRenderPreviewAsync, TimeSpan.FromSeconds(0.2));
 
             ((RasterLayer) this.Layer!).RenderInvalidated += this.OnLayerRenderInvalidated;
             this.rda?.InvokeAsync();

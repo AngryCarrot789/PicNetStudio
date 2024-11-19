@@ -62,7 +62,7 @@ public static class LayerRenderer {
         SKPaint? layerPaint = null;
         int restoreIndex;
         if (layer is CompositionLayer compLayer) {
-            // TODO: see below for need to fix
+            // TODO: see below for need to fix -- Was i high writing this todo what's broken??
             bool isCacheDirty;
             PNBitmap cache = compLayer.cachedVisualHierarchy;
             if (CompositionLayer.InternalGetAndResetVisualInvalidState(compLayer)) {

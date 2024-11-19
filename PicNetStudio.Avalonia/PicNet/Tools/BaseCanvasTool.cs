@@ -34,6 +34,8 @@ public abstract class BaseCanvasTool : ITransferableData {
     protected BaseCanvasTool() {
         this.TransferableData = new TransferableData(this);
     }
+    
+    // TODO: cursors
 
     /// <summary>
     /// Invoked when the user pressed the cursor or pressed down on their touch screen

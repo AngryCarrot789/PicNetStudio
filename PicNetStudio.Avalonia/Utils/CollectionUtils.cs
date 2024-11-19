@@ -24,7 +24,7 @@ using System.Collections.Generic;
 namespace PicNetStudio.Avalonia.Utils;
 
 public static class CollectionUtils {
-    public static bool CollectionEquals(this IEnumerable a, IEnumerable b) {
+    public static bool CollectionEquals(this IEnumerable? a, IEnumerable? b) {
         if (ReferenceEquals(a, b)) {
             return true;
         }
@@ -42,7 +42,7 @@ public static class CollectionUtils {
         }
     }
 
-    public static bool CollectionEquals(this IList a, IList b) {
+    public static bool CollectionEquals(this IList? a, IList? b) {
         if (ReferenceEquals(a, b))
             return true;
         else if (a == null || b == null)
@@ -64,7 +64,7 @@ public static class CollectionUtils {
         return true;
     }
 
-    public static bool CollectionEquals(this ICollection a, ICollection b) {
+    public static bool CollectionEquals(this ICollection? a, ICollection? b) {
         if (ReferenceEquals(a, b))
             return true;
         else if (a == null || b == null)
@@ -100,7 +100,7 @@ public static class CollectionUtils {
         }
     }
 
-    public static bool EnumeratorsEquals(this IEnumerator a, IEnumerator b, bool disposeA = true, bool disposeB = true) {
+    public static bool EnumeratorsEquals(this IEnumerator? a, IEnumerator? b, bool disposeA = true, bool disposeB = true) {
         try {
             if (ReferenceEquals(a, b))
                 return true;
@@ -202,7 +202,7 @@ public static class CollectionUtils {
     }
 
     public static void MoveItem(IList list, int oldIndex, int newIndex) {
-        object removedItem = list[oldIndex];
+        object? removedItem = list[oldIndex];
         list.RemoveAt(oldIndex);
         list.Insert(newIndex, removedItem);
     }
@@ -375,5 +375,84 @@ public static class CollectionUtils {
         }
 
         return removedItems;
+    }
+
+    /// <summary>
+    /// Attempts to extract a value which is equal across all objects, using the given getter function
+    /// </summary>
+    /// <param name="objects">Input objects</param>
+    /// <param name="getter">Getter function</param>
+    /// <param name="equal">
+    /// The value that is equal across all objects (will be set to <see cref="objects"/>[0]'s value)
+    /// </param>
+    /// <typeparam name="T">Type of object to get</typeparam>
+    /// <returns>True if there is 1 object, or more than 1 and they have the same value, otherwise false</returns>
+    public static bool GetEqualValue<T>(IReadOnlyList<object>? objects, Func<object, T> getter, out T? equal) {
+        int count;
+        if (objects == null || (count = objects.Count) < 1) {
+            equal = default;
+            return false;
+        }
+
+        equal = getter(objects[0]);
+        if (count == 1) {
+            return true;
+        }
+
+        EqualityComparer<T> comparator = EqualityComparer<T>.Default;
+        for (int i = 1; i < count; i++) {
+            if (!comparator.Equals(getter(objects[i]), equal)) {
+                equal = default;
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public static bool GetEqualValue<TSrc, TValue>(IReadOnlyList<TSrc> items, Func<TSrc, TValue> func, out TValue? equal) {
+        int count = items.Count;
+        if (count < 1) {
+            equal = default;
+            return false;
+        }
+        
+        equal = func(items[0]);
+        if (count == 1) {
+            return true;
+        }
+
+        EqualityComparer<TValue> comparator = EqualityComparer<TValue>.Default;
+        for (int i = 1; i < count; i++) {
+            if (!comparator.Equals(func(items[i]), equal)) {
+                equal = default;
+                return false;
+            }
+        }
+
+        return true;
+    }
+    
+    public static bool GetEqualValue<TSrc, TValue>(IEnumerable<TSrc> items, Func<TSrc, TValue> func, out TValue? equal) {
+        using IEnumerator<TSrc> enumerator = items.GetEnumerator();
+        if (!enumerator.MoveNext()) {
+            equal = default;
+            return false;
+        }
+        
+        equal = func(enumerator.Current);
+        if (!enumerator.MoveNext()) {
+            return true;
+        }
+
+        EqualityComparer<TValue> comparator = EqualityComparer<TValue>.Default;
+        do {
+            if (!comparator.Equals(func(enumerator.Current), equal)) {
+                equal = default;
+                return false;
+            }
+        } while (enumerator.MoveNext());
+        
+        return true;
     }
 }

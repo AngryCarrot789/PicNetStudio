@@ -19,6 +19,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using PicNetStudio.Avalonia.Utils;
 
 namespace PicNetStudio.Avalonia.PicNet.PropertyEditing.Core;
 
@@ -67,7 +68,7 @@ public class DisplayNamePropertyEditorSlot : PropertyEditorSlot {
     }
 
     public void RequeryOpacityFromHandlers() {
-        this.DisplayName = GetEqualValue(this.Handlers, x => ((IDisplayName) x).DisplayName, out string d) ? d : "<different values>";
+        this.DisplayName = CollectionUtils.GetEqualValue(this.Handlers, x => ((IDisplayName) x).DisplayName, out string d) ? d : "<different values>";
         this.DisplayNameChanged?.Invoke(this);
     }
 

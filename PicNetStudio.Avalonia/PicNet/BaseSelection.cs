@@ -40,6 +40,10 @@ public class RectangleSelection : BaseSelection {
 
     public SKRectI Rect => new SKRectI(this.Min.X, this.Min.Y, this.Max.X, this.Max.Y);
 
+    public int Width => this.Max.X - this.Min.X;
+    
+    public int Height => this.Max.Y - this.Min.Y;
+
     public RectangleSelection(SKPointI min, SKPointI max) {
         this.Min = min;
         this.Max = max;

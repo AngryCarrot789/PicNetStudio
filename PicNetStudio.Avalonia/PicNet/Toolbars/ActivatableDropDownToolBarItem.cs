@@ -62,6 +62,12 @@ public class ActivatableDropDownToolBarItem : BaseToolBarItem, IToolBarItem {
             x.DropDownToolBarItem = null;
         });
     }
+    
+    public void Activate() {
+        if (this.ToolBar == null || this.activeToolBarItem == null)
+            return;
+        this.ToolBar.ActiveToolItem = this.activeToolBarItem;
+    }
 }
 
 public class SingleDropDownToolBarItem : SingleToolBarItem {

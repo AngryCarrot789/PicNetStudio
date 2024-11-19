@@ -26,4 +26,6 @@ namespace PicNetStudio.Avalonia.PicNet.Toolbars;
 /// </summary>
 public interface IToolBarItem {
     BaseCanvasTool Tool { get; }
+
+    void Activate();
 }

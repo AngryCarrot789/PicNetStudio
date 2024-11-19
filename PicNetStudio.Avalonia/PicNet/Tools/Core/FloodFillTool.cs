@@ -43,22 +43,31 @@ public class FloodFillTool : BaseDrawingTool {
             return false;
 
         SKColor replaceColour = cursor == EnumCursorType.Primary ? document.Editor!.PrimaryColour : document.Editor!.SecondaryColour;
-        DrawPixels(bitmapLayer.Bitmap, (int) Math.Floor(x), (int) Math.Floor(y), (uint) replaceColour);
+        DrawPixels(bitmapLayer.Bitmap, (int) Math.Floor(x), (int) Math.Floor(y), (uint) replaceColour, document.Canvas.SelectionRegion);
         
         bitmapLayer.InvalidateVisual();
         return true;
     }
 
-    public static unsafe void DrawPixels(PNBitmap bitmap, int fillX, int fillY, uint bgraReplace) {
+    public static unsafe void DrawPixels(PNBitmap bitmap, int fillX, int fillY, uint bgraReplace, BaseSelection? selection) {
         if (bitmap.Canvas == null)
             return;
 
         // ExtFloodFill is better maybe???
+        RectangleSelection? rectangle = selection as RectangleSelection;
         int nBmpW = bitmap.Bitmap!.Width;
         int nBmpH = bitmap.Bitmap!.Height;
-        if (fillX < 0 || fillX >= nBmpW || fillY < 0 || fillY >= nBmpH)
+        int minX = 0, minY = 0, maxX = nBmpW, maxY = nBmpH;
+        if (rectangle != null) {
+            minX = rectangle.Min.X;
+            minY = rectangle.Min.Y;
+            maxX = rectangle.Max.X;
+            maxY = rectangle.Max.Y;
+        }
+        
+        if (fillX < minX || fillX >= maxX || fillY < minY || fillY >= maxY)
             return;
-
+        
         uint* colourData = (uint*) bitmap.Bitmap!.GetPixels();
         uint bgraTarget = *(colourData + (fillY * nBmpW + fillX));
         if (bgraTarget == bgraReplace)
@@ -73,14 +82,18 @@ public class FloodFillTool : BaseDrawingTool {
         queue.Enqueue(new SKPointI(fillX, fillY));
         while (queue.Count > 0) {
             SKPointI p = queue.Dequeue();
+            if (p.X < minX || p.X >= maxX || p.Y < minY || p.Y >= maxY)
+                continue;
+            
             uint* pColour = colourData + (p.Y * nBmpW + p.X);
             if (*pColour == bgraTarget) {
                 *pColour = bgraReplace;
-                ScanNeighbours(p.X, p.Y, nBmpW, nBmpH, queue);
+                ScanNeighbours(p.X, p.Y, maxX, maxY, queue);
             }
         }
     }
 
+    // Probably need to replace 0s and -1s with minX/minY. But it still works anyway even with selection so :-)
     private static void ScanNeighbours(int pX, int pY, int nBmpW, int nBmpH, Queue<SKPointI> queue) {
         if (pX > 0 && pX <= nBmpW && pY > 0 && pY <= nBmpH)
             queue.Enqueue(new SKPointI(pX - 1, pY - 1));

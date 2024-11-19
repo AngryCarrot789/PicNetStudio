@@ -19,7 +19,6 @@
 
 using System;
 using System.Collections.Specialized;
-using System.Diagnostics;
 using System.Numerics;
 using PicNetStudio.Avalonia.DataTransfer;
 using PicNetStudio.Avalonia.Utils.Accessing;

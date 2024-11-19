@@ -61,7 +61,6 @@ public class SelectRegionTool : BaseCanvasTool {
                 document.Canvas.SelectionRegion = new RectangleSelection(
                     new SKPointI(Math.Min(a.X, b.X), Math.Min(a.Y, b.Y)), 
                     new SKPointI(Math.Max(a.X, b.X), Math.Max(a.Y, b.Y)));
-                document.Canvas.RaiseRenderInvalidated(false);
             }
         }
         

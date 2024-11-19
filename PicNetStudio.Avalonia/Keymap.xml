@@ -20,6 +20,18 @@
                 <Shortcut Name="DecreaseBrushSize" CommandId="command.tool.BaseDiameterTool.DecreaseBrushSize">
                     <KeyStroke Key="OemOpenBrackets"/>
                 </Shortcut>
+                <Shortcut Name="SelectBrush" CommandId="command.toolbar.SelectBrushTool">
+                    <KeyStroke Key="B"/>
+                </Shortcut>
+                <Shortcut Name="SelectPencil" CommandId="command.toolbar.SelectPencilTool">
+                    <KeyStroke Key="P"/>
+                </Shortcut>
+                <Shortcut Name="SelectFill" CommandId="command.toolbar.SelectFillTool">
+                    <KeyStroke Key="F"/>
+                </Shortcut>
+                <Shortcut Name="SelectSelection" CommandId="command.toolbar.SelectSelectionTool">
+                    <KeyStroke Key="S"/>
+                </Shortcut>
             </Group>
             <Group Name="LayerTree">
                 <Shortcut Name="GroupSelection" CommandId="command.layertree.GroupSelectionIntoComposition">
@@ -34,6 +46,9 @@
                     </Shortcut>
                     <Shortcut Name="EditLayerName2" CommandId="command.layertree.item.EditLayerNameCommand">
                         <KeyStroke Key="F2"/>
+                    </Shortcut>
+                    <Shortcut Name="ToggleVisibility" CommandId="command.layertree.item.ToggleLayerVisibility">
+                        <KeyStroke Key="D0"/>
                     </Shortcut>
                 </Group>
             </Group>

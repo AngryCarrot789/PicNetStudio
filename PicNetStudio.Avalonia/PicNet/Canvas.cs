@@ -85,6 +85,7 @@ public class Canvas {
 
             this.selectionRegion = value;
             this.SelectionRegionChanged?.Invoke(this);
+            this.RaiseRenderInvalidated(false);
         }
     }
 

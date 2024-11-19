@@ -19,6 +19,7 @@
 
 using System;
 using PicNetStudio.Avalonia.DataTransfer;
+using PicNetStudio.Avalonia.Utils;
 
 namespace PicNetStudio.Avalonia.PicNet.PropertyEditing.DataTransfer;
 
@@ -58,7 +59,7 @@ public class DataParameterLongPropertyEditorSlot : DataParameterFormattableNumbe
     }
 
     public override void QueryValueFromHandlers() {
-        this.HasMultipleValues = !GetEqualValue(this.Handlers, (x) => this.Parameter.GetValue((ITransferableData) x), out this.value);
+        this.HasMultipleValues = !CollectionUtils.GetEqualValue(this.Handlers, (x) => this.Parameter.GetValue((ITransferableData) x), out this.value);
         if (this.HasMultipleValues)
             this.value = Math.Abs(this.Parameter.Maximum - this.Parameter.Minimum) / 2;
     }
