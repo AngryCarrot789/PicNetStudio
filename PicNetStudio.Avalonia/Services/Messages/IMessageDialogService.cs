@@ -44,7 +44,7 @@ public interface IMessageDialogService {
     /// <summary>
     /// Shows a message box dialog that is dynamically customisable; 3 buttons, caption, header and message
     /// </summary>
-    /// <param name="data">The data for the message box</param>
+    /// <param name="info">The data for the message box</param>
     /// <returns>The button that was clicked or none if they clicked esc or something bad happened</returns>
-    Task<MessageBoxResult> ShowMessage(MessageBoxData data);
+    Task<MessageBoxResult> ShowMessage(MessageBoxInfo info);
 }

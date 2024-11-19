@@ -43,15 +43,16 @@ public static class LayerRenderer {
         return pnb.IsInitialised && layer.Canvas != null && pnb.Size == layer.Canvas.Size;
     }
 
-    private static SKSurface? TempSubSurface;
-    private static SKImageInfo TempSubSurfaceInfo;
-
     /// <summary>
     /// Main method for drawing layers
     /// </summary>
     /// <param name="ctx"></param>
     /// <param name="layer"></param>
     public static void RenderLayer(ref RenderContext ctx, BaseVisualLayer layer) {
+        if (layer.Canvas == null) {
+            return;
+        }
+        
         if ((ctx.IsExporting && !layer.IsExportVisible) || (!ctx.IsExporting && !layer.IsVisible) || DoubleUtils.AreClose(layer.Opacity, 0.0)) {
             return;
         }
@@ -63,18 +64,18 @@ public static class LayerRenderer {
         int restoreIndex;
         if (layer is CompositionLayer compLayer) {
             // TODO: see below for need to fix -- Was i high writing this todo what's broken??
-            bool isCacheDirty;
-            PNBitmap cache = compLayer.cachedVisualHierarchy;
+            bool isRootLayer = compLayer.ParentLayer == null, isCacheClean;
+            PNBitmap compCache = compLayer.cachedVisualHierarchy;
             if (CompositionLayer.InternalGetAndResetVisualInvalidState(compLayer)) {
-                isCacheDirty = true;
+                isCacheClean = false;
             }
             else {
-                isCacheDirty = !cache.IsInitialised || compLayer.Canvas == null || cache.Size != compLayer.Canvas.Size;
+                isCacheClean = !isRootLayer && compCache.IsInitialised && compCache.Size == compLayer.Canvas!.Size;
             }
 
             bool isUsingCustomBlend = compLayer.BlendMode != BaseVisualLayer.BlendModeParameter.DefaultValue;
             bool isOpacityLayerReqd = IsOpacityLayerRequired(compLayer);
-            if (isCacheDirty || isOpacityLayerReqd || isUsingCustomBlend) {
+            if (!isCacheClean || isOpacityLayerReqd || isUsingCustomBlend) {
                 layerPaint = new SKPaint();
                 if (isOpacityLayerReqd)
                     layerPaint.Color = new SKColor(255, 255, 255, RenderUtils.DoubleToByte255(compLayer.Opacity));
@@ -86,37 +87,33 @@ public static class LayerRenderer {
                 restoreIndex = ctx.Canvas.Save();
             }
 
-            if (!isCacheDirty) {
+            if (isCacheClean) {
                 // Draw clean cached surface
-                ctx.Canvas.DrawBitmap(cache.Bitmap, 0, 0, null);
+                ctx.Canvas.DrawBitmap(compCache.Bitmap, 0, 0, null);
             }
             else {
                 // Cache is dirty, first ensure cache is initialised
-                bool canDrawIntoCache = compLayer.ParentLayer != null && compLayer.Canvas != null;
-                if (canDrawIntoCache && (!cache.IsInitialised || cache.Size != compLayer.Canvas!.Size)) {
-                    cache.InitialiseBitmap(compLayer.Canvas!.Size);
+                if (!isRootLayer && (!compCache.IsInitialised || compCache.Size != compLayer.Canvas!.Size)) {
+                    compCache.InitialiseBitmap(compLayer.Canvas!.Size);
                 }
 
                 ReadOnlyObservableList<BaseLayerTreeObject> layers = compLayer.Layers;
-                if (canDrawIntoCache && cache.IsInitialised) {
+                if (!isRootLayer && compCache.IsInitialised) {
                     // Generate temporary rendering surface to draw the layer into
                     PixelSize size = ctx.MyCanvas.Size;
                     SKImageInfo frameInfo = new SKImageInfo(size.Width, size.Height, SKImageInfo.PlatformColorType, SKAlphaType.Premul);
-                    if (TempSubSurface == null || TempSubSurfaceInfo != frameInfo) {
-                        TempSubSurface?.Dispose();
-                        TempSubSurface = SKSurface.Create(frameInfo);
-                    }
-
-                    TempSubSurface.Canvas.Clear(SKColor.Empty);
-                    RenderContext subCtx = new RenderContext(ctx.MyCanvas, TempSubSurface, ctx.IsExporting, ctx.FullInvalidateHint);
+                    
+                    using SKSurface subSurface = SKSurface.Create(frameInfo);
+                    subSurface.Canvas.Clear(SKColor.Empty);
+                    RenderContext subCtx = new RenderContext(ctx.MyCanvas, subSurface, ctx.IsExporting, ctx.FullInvalidateHint);
                     for (int i = layers.Count - 1; i >= 0; i--) {
                         if (layers[i] is BaseVisualLayer visualLayer)
                             RenderLayer(ref subCtx, visualLayer);
                     }
 
-                    cache.Canvas!.Clear(SKColor.Empty);
-                    TempSubSurface.Draw(cache.Canvas, 0, 0, null);   // Draw temp surface into cache
-                    ctx.Canvas.DrawBitmap(cache.Bitmap, 0, 0, null); // Draw cache into ctx rendering surface
+                    compCache.Canvas!.Clear(SKColor.Empty);
+                    subSurface.Draw(compCache.Canvas, 0, 0, null);   // Draw temp surface into cache
+                    ctx.Canvas.DrawBitmap(compCache.Bitmap, 0, 0, null); // Draw cache into ctx rendering surface
                 }
                 else {
                     // Render layer without cache writing. Used for the root layer container

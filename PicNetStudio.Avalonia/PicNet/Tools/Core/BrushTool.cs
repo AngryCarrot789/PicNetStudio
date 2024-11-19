@@ -36,6 +36,6 @@ public class BrushTool : BaseDiameterTool {
         using SKPaint paint = new SKPaint();
         paint.Color = isPrimaryColour ? document.Editor!.PrimaryColour : document.Editor!.SecondaryColour;
         paint.IsAntialias = true;
-        bitmap.Canvas.DrawCircle((float) x, (float) y, this.Diameter, paint);
+        bitmap.Canvas.DrawCircle((float) x, (float) y, (this.Diameter / 2.0F), paint);
     }
 }

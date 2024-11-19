@@ -23,8 +23,6 @@ using PicNetStudio.Avalonia.Utils.Accessing;
 
 namespace PicNetStudio.Avalonia.DataTransfer;
 
-public delegate void DataParameterDoubleValueChangedEventHandler(DataParameterDouble parameter, ITransferableData owner);
-
 /// <summary>
 /// A <see cref="DataParameter{T}"/> that manages a 64-bit double precision floating point
 /// number (aka, a double). This also has an optional minimum and maximum value range
@@ -80,8 +78,4 @@ public sealed class DataParameterDouble : DataParameter<double> {
 
         base.SetObjectValue(owner, value);
     }
-
-    public void AddValueChangedHandler(ITransferableData owner, DataParameterDoubleValueChangedEventHandler handler) => TransferableData.InternalAddHandlerUnsafe(this, owner.TransferableData, handler);
-
-    public void RemoveValueChangedHandler(ITransferableData owner, DataParameterDoubleValueChangedEventHandler handler) => TransferableData.InternalRemoveHandlerUnsafe(this, owner.TransferableData, handler);
 }

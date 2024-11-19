@@ -27,11 +27,11 @@ namespace PicNetStudio.Avalonia.Services.Messages;
 /// The base class for a user input dialog's model, which contains generic
 /// properties suitable across any type of two-buttoned titlebar and message dialog
 /// </summary>
-public abstract class UserInputData : ITransferableData {
-    public static readonly DataParameterString CaptionParameter = DataParameter.Register(new DataParameterString(typeof(UserInputData), nameof(Caption), null, ValueAccessors.Reflective<string?>(typeof(UserInputData), nameof(caption))));
-    public static readonly DataParameterString MessageParameter = DataParameter.Register(new DataParameterString(typeof(UserInputData), nameof(Message), null, ValueAccessors.Reflective<string?>(typeof(UserInputData), nameof(message))));
-    public static readonly DataParameterString ConfirmTextParameter = DataParameter.Register(new DataParameterString(typeof(UserInputData), nameof(ConfirmText), "OK", ValueAccessors.Reflective<string?>(typeof(UserInputData), nameof(confirmText))));
-    public static readonly DataParameterString CancelTextParameter = DataParameter.Register(new DataParameterString(typeof(UserInputData), nameof(CancelText), "Cancel", ValueAccessors.Reflective<string?>(typeof(UserInputData), nameof(cancelText))));
+public abstract class UserInputInfo : ITransferableData {
+    public static readonly DataParameterString CaptionParameter = DataParameter.Register(new DataParameterString(typeof(UserInputInfo), nameof(Caption), null, ValueAccessors.Reflective<string?>(typeof(UserInputInfo), nameof(caption))));
+    public static readonly DataParameterString MessageParameter = DataParameter.Register(new DataParameterString(typeof(UserInputInfo), nameof(Message), null, ValueAccessors.Reflective<string?>(typeof(UserInputInfo), nameof(message))));
+    public static readonly DataParameterString ConfirmTextParameter = DataParameter.Register(new DataParameterString(typeof(UserInputInfo), nameof(ConfirmText), "OK", ValueAccessors.Reflective<string?>(typeof(UserInputInfo), nameof(confirmText))));
+    public static readonly DataParameterString CancelTextParameter = DataParameter.Register(new DataParameterString(typeof(UserInputInfo), nameof(CancelText), "Cancel", ValueAccessors.Reflective<string?>(typeof(UserInputInfo), nameof(cancelText))));
     
     private string? caption = CaptionParameter.DefaultValue;
     private string? message = MessageParameter.DefaultValue;
@@ -74,18 +74,18 @@ public abstract class UserInputData : ITransferableData {
         set => DataParameter.SetValueHelper(this, CancelTextParameter, ref this.cancelText, value);
     }
     
-    public UserInputData() {
+    public UserInputInfo() {
         this.TransferableData = new TransferableData(this);
     }
 
     public abstract bool CanDialogClose();
 }
 
-public delegate void SingleUserInputDataEventHandler(SingleUserInputData sender);
+public delegate void SingleUserInputDataEventHandler(SingleUserInputInfo sender);
 
-public class SingleUserInputData : UserInputData {
-    public static readonly DataParameterString TextParameter = DataParameter.Register(new DataParameterString(typeof(SingleUserInputData), nameof(Text), null, ValueAccessors.Reflective<string?>(typeof(SingleUserInputData), nameof(text))));
-    public static readonly DataParameterString LabelParameter = DataParameter.Register(new DataParameterString(typeof(SingleUserInputData), nameof(Label), null, ValueAccessors.Reflective<string?>(typeof(SingleUserInputData), nameof(label))));
+public class SingleUserInputInfo : UserInputInfo {
+    public static readonly DataParameterString TextParameter = DataParameter.Register(new DataParameterString(typeof(SingleUserInputInfo), nameof(Text), null, ValueAccessors.Reflective<string?>(typeof(SingleUserInputInfo), nameof(text))));
+    public static readonly DataParameterString LabelParameter = DataParameter.Register(new DataParameterString(typeof(SingleUserInputInfo), nameof(Label), null, ValueAccessors.Reflective<string?>(typeof(SingleUserInputInfo), nameof(label))));
 
     private string? text = TextParameter.DefaultValue;
     private string? label = LabelParameter.DefaultValue;
@@ -124,10 +124,10 @@ public class SingleUserInputData : UserInputData {
     /// </summary>
     public Predicate<string?>? Validate { get; set; }
 
-    public SingleUserInputData() {
+    public SingleUserInputInfo() {
     }
 
-    public SingleUserInputData(string? text) {
+    public SingleUserInputInfo(string? text) {
         this.text = text;
     }
 
@@ -139,13 +139,13 @@ public class SingleUserInputData : UserInputData {
     }
 }
 
-public delegate void DoubleUserInputDataEventHandler(DoubleUserInputData sender);
+public delegate void DoubleUserInputDataEventHandler(DoubleUserInputInfo sender);
 
-public class DoubleUserInputData : UserInputData {
-    public static readonly DataParameterString TextAParameter = DataParameter.Register(new DataParameterString(typeof(DoubleUserInputData), nameof(TextA), null, ValueAccessors.Reflective<string?>(typeof(DoubleUserInputData), nameof(textA))));
-    public static readonly DataParameterString TextBParameter = DataParameter.Register(new DataParameterString(typeof(DoubleUserInputData), nameof(TextB), null, ValueAccessors.Reflective<string?>(typeof(DoubleUserInputData), nameof(textB))));
-    public static readonly DataParameterString LabelAParameter = DataParameter.Register(new DataParameterString(typeof(DoubleUserInputData), nameof(LabelA), null, ValueAccessors.Reflective<string?>(typeof(DoubleUserInputData), nameof(labelA))));
-    public static readonly DataParameterString LabelBParameter = DataParameter.Register(new DataParameterString(typeof(DoubleUserInputData), nameof(LabelB), null, ValueAccessors.Reflective<string?>(typeof(DoubleUserInputData), nameof(labelB))));
+public class DoubleUserInputInfo : UserInputInfo {
+    public static readonly DataParameterString TextAParameter = DataParameter.Register(new DataParameterString(typeof(DoubleUserInputInfo), nameof(TextA), null, ValueAccessors.Reflective<string?>(typeof(DoubleUserInputInfo), nameof(textA))));
+    public static readonly DataParameterString TextBParameter = DataParameter.Register(new DataParameterString(typeof(DoubleUserInputInfo), nameof(TextB), null, ValueAccessors.Reflective<string?>(typeof(DoubleUserInputInfo), nameof(textB))));
+    public static readonly DataParameterString LabelAParameter = DataParameter.Register(new DataParameterString(typeof(DoubleUserInputInfo), nameof(LabelA), null, ValueAccessors.Reflective<string?>(typeof(DoubleUserInputInfo), nameof(labelA))));
+    public static readonly DataParameterString LabelBParameter = DataParameter.Register(new DataParameterString(typeof(DoubleUserInputInfo), nameof(LabelB), null, ValueAccessors.Reflective<string?>(typeof(DoubleUserInputInfo), nameof(labelB))));
 
     private string? textA = TextAParameter.DefaultValue;
     private string? textB = TextBParameter.DefaultValue;
@@ -204,10 +204,10 @@ public class DoubleUserInputData : UserInputData {
     /// </summary>
     public Func<string?, string?, bool>? Validate { get; set; }
     
-    public DoubleUserInputData() {
+    public DoubleUserInputInfo() {
     }
 
-    public DoubleUserInputData(string? textA, string? textB) {
+    public DoubleUserInputInfo(string? textA, string? textB) {
         this.textA = textA;
         this.textB = textB;
     }

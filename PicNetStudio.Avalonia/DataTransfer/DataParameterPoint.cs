@@ -24,8 +24,6 @@ using SkiaSharp;
 
 namespace PicNetStudio.Avalonia.DataTransfer;
 
-public delegate void DataParameterPointValueChangedEventHandler(DataParameterPoint parameter, ITransferableData owner);
-
 /// <summary>
 /// A <see cref="DataParameter{T}"/> that manages an SKPoint, which is two 32-bit single precision floating
 /// point numbers (aka, a float). This also has an optional minimum and maximum value range
@@ -86,8 +84,4 @@ public sealed class DataParameterPoint : DataParameter<SKPoint> {
 
         base.SetObjectValue(owner, value);
     }
-
-    public void AddValueChangedHandler(ITransferableData owner, DataParameterPointValueChangedEventHandler handler) => TransferableData.InternalAddHandlerUnsafe(this, owner.TransferableData, handler);
-
-    public void RemoveValueChangedHandler(ITransferableData owner, DataParameterPointValueChangedEventHandler handler) => TransferableData.InternalRemoveHandlerUnsafe(this, owner.TransferableData, handler);
 }

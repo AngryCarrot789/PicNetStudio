@@ -28,19 +28,19 @@ using PicNetStudio.Avalonia.Themes.Controls;
 namespace PicNetStudio.Avalonia.Services.Messages.Controls;
 
 public partial class MessageBoxDialog : WindowEx {
-    public static readonly StyledProperty<MessageBoxData?> MessageBoxDataProperty = AvaloniaProperty.Register<MessageBoxDialog, MessageBoxData?>("MessageBoxData");
+    public static readonly StyledProperty<MessageBoxInfo?> MessageBoxDataProperty = AvaloniaProperty.Register<MessageBoxDialog, MessageBoxInfo?>("MessageBoxData");
 
-    public MessageBoxData? MessageBoxData {
+    public MessageBoxInfo? MessageBoxData {
         get => this.GetValue(MessageBoxDataProperty);
         set => this.SetValue(MessageBoxDataProperty, value);
     }
 
-    private readonly DataParameterPropertyBinder<MessageBoxData> captionBinder = new DataParameterPropertyBinder<MessageBoxData>(TitleProperty, MessageBoxData.CaptionParameter);
-    private readonly DataParameterPropertyBinder<MessageBoxData> headerBinder = new DataParameterPropertyBinder<MessageBoxData>(TextBlock.TextProperty, MessageBoxData.HeaderParameter);
-    private readonly DataParameterPropertyBinder<MessageBoxData> messageBinder = new DataParameterPropertyBinder<MessageBoxData>(TextBlock.TextProperty, MessageBoxData.MessageParameter);
-    private readonly DataParameterPropertyBinder<MessageBoxData> yesOkTextBinder = new DataParameterPropertyBinder<MessageBoxData>(ContentProperty, MessageBoxData.YesOkTextParameter);
-    private readonly DataParameterPropertyBinder<MessageBoxData> noTextBinder = new DataParameterPropertyBinder<MessageBoxData>(ContentProperty, MessageBoxData.NoTextParameter);
-    private readonly DataParameterPropertyBinder<MessageBoxData> cancelTextBinder = new DataParameterPropertyBinder<MessageBoxData>(ContentProperty, MessageBoxData.CancelTextParameter);
+    private readonly DataParameterPropertyBinder<MessageBoxInfo> captionBinder = new DataParameterPropertyBinder<MessageBoxInfo>(TitleProperty, MessageBoxInfo.CaptionParameter);
+    private readonly DataParameterPropertyBinder<MessageBoxInfo> headerBinder = new DataParameterPropertyBinder<MessageBoxInfo>(TextBlock.TextProperty, MessageBoxInfo.HeaderParameter);
+    private readonly DataParameterPropertyBinder<MessageBoxInfo> messageBinder = new DataParameterPropertyBinder<MessageBoxInfo>(TextBlock.TextProperty, MessageBoxInfo.MessageParameter);
+    private readonly DataParameterPropertyBinder<MessageBoxInfo> yesOkTextBinder = new DataParameterPropertyBinder<MessageBoxInfo>(ContentProperty, MessageBoxInfo.YesOkTextParameter);
+    private readonly DataParameterPropertyBinder<MessageBoxInfo> noTextBinder = new DataParameterPropertyBinder<MessageBoxInfo>(ContentProperty, MessageBoxInfo.NoTextParameter);
+    private readonly DataParameterPropertyBinder<MessageBoxInfo> cancelTextBinder = new DataParameterPropertyBinder<MessageBoxInfo>(ContentProperty, MessageBoxInfo.CancelTextParameter);
 
     public MessageBoxDialog() {
         this.InitializeComponent();
@@ -64,7 +64,7 @@ public partial class MessageBoxDialog : WindowEx {
     }
 
     static MessageBoxDialog() {
-        MessageBoxDataProperty.Changed.AddClassHandler<MessageBoxDialog, MessageBoxData?>((o, e) => o.OnMessageBoxDataChanged(e.OldValue.GetValueOrDefault(), e.NewValue.GetValueOrDefault()));
+        MessageBoxDataProperty.Changed.AddClassHandler<MessageBoxDialog, MessageBoxInfo?>((o, e) => o.OnMessageBoxDataChanged(e.OldValue.GetValueOrDefault(), e.NewValue.GetValueOrDefault()));
     }
 
     protected override void OnLoaded(RoutedEventArgs e) {
@@ -80,7 +80,7 @@ public partial class MessageBoxDialog : WindowEx {
     }
 
     private void OnConfirmButtonClicked(object? sender, RoutedEventArgs e) {
-        MessageBoxData? data = this.MessageBoxData;
+        MessageBoxInfo? data = this.MessageBoxData;
         if (data == null) {
             return;
         }
@@ -101,7 +101,7 @@ public partial class MessageBoxDialog : WindowEx {
     }
 
     private void OnNoButtonClicked(object? sender, RoutedEventArgs e) {
-        MessageBoxData? data = this.MessageBoxData;
+        MessageBoxInfo? data = this.MessageBoxData;
         if (data == null) {
             return;
         }
@@ -115,7 +115,7 @@ public partial class MessageBoxDialog : WindowEx {
     }
 
     private void OnCancelButtonClicked(object? sender, RoutedEventArgs e) {
-        MessageBoxData? data = this.MessageBoxData;
+        MessageBoxInfo? data = this.MessageBoxData;
         if (data == null) {
             return;
         }
@@ -128,7 +128,7 @@ public partial class MessageBoxDialog : WindowEx {
         }
     }
 
-    private void OnMessageBoxDataChanged(MessageBoxData? oldData, MessageBoxData? newData) {
+    private void OnMessageBoxDataChanged(MessageBoxInfo? oldData, MessageBoxInfo? newData) {
         if (oldData != null)
             oldData.ButtonsChanged -= this.OnActiveButtonsChanged;
         if (newData != null)
@@ -164,15 +164,15 @@ public partial class MessageBoxDialog : WindowEx {
         }
     }
 
-    private void OnActiveButtonsChanged(MessageBoxData sender) {
+    private void OnActiveButtonsChanged(MessageBoxInfo sender) {
         this.UpdateVisibleButtons();
     }
 
     /// <summary>
-    /// Updates which buttons are visible based on our message box data's <see cref="Messages.MessageBoxData.Buttons"/> property
+    /// Updates which buttons are visible based on our message box data's <see cref="MessageBoxInfo.Buttons"/> property
     /// </summary>
     public void UpdateVisibleButtons() {
-        MessageBoxData? data = this.MessageBoxData;
+        MessageBoxInfo? data = this.MessageBoxData;
         if (data == null) {
             return;
         }

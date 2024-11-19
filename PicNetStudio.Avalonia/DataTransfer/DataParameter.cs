@@ -168,9 +168,15 @@ public abstract class DataParameter : IEquatable<DataParameter>, IComparable<Dat
         return owner.TransferableData.IsValueChanging(this);
     }
 
-    public void AddValueChangedHandler(ITransferableData owner, DataParameterValueChangedEventHandler handler) => TransferableData.InternalAddHandlerUnsafe(this, owner.TransferableData, handler);
+    /// <summary>
+    /// Adds a value changed event handler for this parameter on the given owner
+    /// </summary>
+    public void AddValueChangedHandler(ITransferableData owner, DataParameterValueChangedEventHandler handler) => TransferableData.InternalAddHandler(this, owner.TransferableData, handler);
 
-    public void RemoveValueChangedHandler(ITransferableData owner, DataParameterValueChangedEventHandler handler) => TransferableData.InternalRemoveHandlerUnsafe(this, owner.TransferableData, handler);
+    /// <summary>
+    /// Removes a value changed handler for this parameter on the given owner
+    /// </summary>
+    public void RemoveValueChangedHandler(ITransferableData owner, DataParameterValueChangedEventHandler handler) => TransferableData.InternalRemoveHandler(this, owner.TransferableData, handler);
 
     /// <summary>
     /// Gets the object value from the given owner, boxing if necessary
@@ -295,30 +301,6 @@ public abstract class DataParameter : IEquatable<DataParameter>, IComparable<Dat
         parameter.ValueChanged?.Invoke(parameter, owner);
     }
 
-    protected virtual void OnHandleGenericValueChanged(Delegate handler, ITransferableData owner) {
-        throw new Exception("Derived data parameter must handle this method");
-    }
-
-    internal static void InternalInvokeValueChangeHandler(DataParameter parameter, ITransferableData owner, Delegate handler) {
-        Type type = handler.GetType();
-        if (type == typeof(DataParameterValueChangedEventHandler))
-            ((DataParameterValueChangedEventHandler) handler)(parameter, owner);
-        else if (type == typeof(DataParameterBoolValueChangedEventHandler))
-            ((DataParameterBoolValueChangedEventHandler) handler)((DataParameterBool) parameter, owner);
-        else if (type == typeof(DataParameterLongValueChangedEventHandler))
-            ((DataParameterLongValueChangedEventHandler) handler)((DataParameterLong) parameter, owner);
-        else if (type == typeof(DataParameterFloatValueChangedEventHandler))
-            ((DataParameterFloatValueChangedEventHandler) handler)((DataParameterFloat) parameter, owner);
-        else if (type == typeof(DataParameterDoubleValueChangedEventHandler))
-            ((DataParameterDoubleValueChangedEventHandler) handler)((DataParameterDouble) parameter, owner);
-        else if (type == typeof(DataParameterStringValueChangedEventHandler))
-            ((DataParameterStringValueChangedEventHandler) handler)((DataParameterString) parameter, owner);
-        else if (type == typeof(DataParameterPointValueChangedEventHandler))
-            ((DataParameterPointValueChangedEventHandler) handler)((DataParameterPoint) parameter, owner);
-        else
-            parameter.OnHandleGenericValueChanged(handler, owner);
-    }
-
     /// <summary>
     /// A helper method that either calls <see cref="DataParameter{T}.SetValue"/> if the value is not currently
     /// changing, or sets the given ref to the given value if the value is changing. This is to prevent the value
@@ -347,8 +329,6 @@ public abstract class DataParameter : IEquatable<DataParameter>, IComparable<Dat
 /// </summary>
 /// <typeparam name="T">The type of value this data parameter deals with</typeparam>
 public class DataParameter<T> : DataParameter {
-    public delegate void DataParameterValueChangedEventHandler(DataParameter<T> parameter, ITransferableData owner);
-
     private readonly ValueAccessor<T> accessor;
     protected readonly bool isObjectAccessPreferred;
 
@@ -410,12 +390,4 @@ public class DataParameter<T> : DataParameter {
             this.OnEndValueChangeHelper(owner, ref error);
         }
     }
-
-    protected override void OnHandleGenericValueChanged(Delegate handler, ITransferableData owner) {
-        ((DataParameterValueChangedEventHandler) handler)(this, owner);
-    }
-
-    public void AddValueChangedHandler(ITransferableData owner, DataParameterValueChangedEventHandler handler) => TransferableData.InternalAddHandlerUnsafe(this, owner.TransferableData, handler);
-
-    public void RemoveValueChangedHandler(ITransferableData owner, DataParameterValueChangedEventHandler handler) => TransferableData.InternalRemoveHandlerUnsafe(this, owner.TransferableData, handler);
 }

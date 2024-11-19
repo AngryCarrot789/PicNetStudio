@@ -23,7 +23,7 @@ namespace PicNetStudio.Avalonia.Services.Messages.Controls;
 /// An interface for user input content controls
 /// </summary>
 public interface IUserInputContent {
-    void Connect(UserInputDialog dialog, UserInputData data);
+    void Connect(UserInputDialog dialog, UserInputInfo info);
 
     void Disconnect();
 

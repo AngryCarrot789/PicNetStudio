@@ -186,6 +186,14 @@ public class CompositionLayer : BaseVisualLayer {
         return this.IndexOf(layer) != -1;
     }
 
+    /// <summary>
+    /// Returns true when the given item is equal to one of the parents in our hierarchy
+    /// </summary>
+    /// <param name="item">The item to check if it's a hierarchical parent relative to this layer</param>
+    /// <param name="startAtThis">
+    /// When true, this method returns true when the item is equal to the current instance
+    /// </param>
+    /// <returns>See summary</returns>
     public bool IsParentInHierarchy(CompositionLayer? item, bool startAtThis = true) {
         for (CompositionLayer? parent = (startAtThis ? this : this.ParentLayer); item != null; item = item.ParentLayer) {
             if (ReferenceEquals(parent, item)) {
@@ -217,7 +225,7 @@ public class CompositionLayer : BaseVisualLayer {
     }
 
     public static CompositionLayer InternalCreateCanvasRoot(Canvas canvas) {
-        CompositionLayer layer = new CompositionLayer();
+        CompositionLayer layer = new CompositionLayer() {Name = "<<ROOT>>"};
         InternalSetCanvas(layer, canvas);
         return layer;
     }

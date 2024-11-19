@@ -51,10 +51,10 @@ public class EditorToolBar {
                 SingleToolBarItem.InternalSetIsActive(oldActiveToolItem, false);
 
             this.activeToolItem = value;
-            this.ActiveToolItemChanged?.Invoke(this, oldActiveToolItem, value);
-
             if (value != null)
                 SingleToolBarItem.InternalSetIsActive(value, true);
+            
+            this.ActiveToolItemChanged?.Invoke(this, oldActiveToolItem, value);
         }
     }
 

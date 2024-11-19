@@ -40,6 +40,7 @@ public class NumberDragger : RangeBase {
     public static readonly StyledProperty<TextAlignment> TextAlignmentProperty = TextBlock.TextAlignmentProperty.AddOwner<NumberDragger>();
     public static readonly StyledProperty<string?> TextPreviewOverrideProperty = AvaloniaProperty.Register<NumberDragger, string?>("TextPreviewOverride");
     public static readonly StyledProperty<bool?> CompleteEditOnTextBoxLostFocusProperty = AvaloniaProperty.Register<NumberDragger, bool?>("CompleteEditOnTextBoxLostFocus", true);
+    public static readonly DirectProperty<NumberDragger, bool> IsEditingProperty = AvaloniaProperty.RegisterDirect<NumberDragger, bool>("IsEditing", o => o.isEditing);
 
     private TextBlock? PART_TextBlock;
     private TextBox? PART_TextBox;
@@ -120,7 +121,7 @@ public class NumberDragger : RangeBase {
         set => this.SetValue(CompleteEditOnTextBoxLostFocusProperty, value);
     }
 
-    public bool EditState {
+    public bool IsEditing {
         get => this.isEditing;
         set {
             if (this.isEditing == value)
@@ -132,9 +133,11 @@ public class NumberDragger : RangeBase {
             if (value && this.PART_TextBox != null) {
                 BugFix.TextBox_FocusSelectAll(this.PART_TextBox);
             }
+            
+            this.RaisePropertyChanged(IsEditingProperty, !value, value);
         }
     }
-    
+
     public NumberDragger() {
     }
 
@@ -203,11 +206,11 @@ public class NumberDragger : RangeBase {
     }
 
     private void OnTextInputFocusLost(object? sender, RoutedEventArgs e) {
-        if (this.EditState && this.CompleteEditOnTextBoxLostFocus == true) {
+        if (this.IsEditing && this.CompleteEditOnTextBoxLostFocus == true) {
             this.CompleteEdit(Key.Enter); // Simulate pressing enter
         }
         
-        this.EditState = false;
+        this.IsEditing = false;
     }
 
     private void OnTextInputKeyPress(object? sender, KeyEventArgs e) {
@@ -218,7 +221,7 @@ public class NumberDragger : RangeBase {
 
     private bool CompleteEdit(Key inputKey) {
         string? parseText = this.PART_TextBox!.Text;
-        this.EditState = false;
+        this.IsEditing = false;
         if (parseText == null || inputKey == Key.Escape) {
             return false;
         }
@@ -281,7 +284,7 @@ public class NumberDragger : RangeBase {
         this.dragState = 0;
         
         if (state == 1) {
-            this.EditState = true;
+            this.IsEditing = true;
         }
         else {
             if (ReferenceEquals(e.Pointer.Captured, this))
@@ -302,11 +305,16 @@ public class NumberDragger : RangeBase {
             this.dragState = 0;
             this.UpdateCursor();
         }
-        else if (this.dragState == 0 && this.IsKeyboardFocusWithin) {
-            // Begin editing when we have focus, e.g. via tab indexing
-            this.EditState = true;
+        else if (this.dragState == 0 && this.IsKeyboardFocusWithin && !IsModifierKey(e.Key)) {
+            // Begin editing when we have focus, e.g. via tab
+            // indexing, and a non-modifier key is pressed
+            this.IsEditing = true;
             this.UpdateCursor();
         }
+    }
+
+    private bool IsModifierKey(Key k) {
+        return k == Key.LWin || k == Key.RWin || (k >= Key.LeftShift && k <= Key.RightAlt);
     }
 
     protected override void OnPointerMoved(PointerEventArgs e) {

@@ -29,15 +29,15 @@ using UserInputDialog = PicNetStudio.Avalonia.Services.Messages.Controls.UserInp
 namespace PicNetStudio.Avalonia.Services;
 
 public class InputDialogServiceImpl : IUserInputDialogService {
-    public Task<bool?> ShowInputDialogAsync(SingleUserInputData info) {
+    public Task<bool?> ShowInputDialogAsync(SingleUserInputInfo info) {
         return ShowDialogAsync(info);
     }
 
-    public Task<bool?> ShowInputDialogAsync(DoubleUserInputData info) {
+    public Task<bool?> ShowInputDialogAsync(DoubleUserInputInfo info) {
         return ShowDialogAsync(info);
     }
 
-    private static async Task<bool?> ShowDialogAsync(UserInputData info) {
+    private static async Task<bool?> ShowDialogAsync(UserInputInfo info) {
         Validate.NotNull(info);
 
         if (Application.Current!.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop) {

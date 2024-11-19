@@ -24,6 +24,9 @@ using PicNetStudio.Avalonia.PicNet.Layers.Core;
 using PicNetStudio.Avalonia.PicNet.Layers.CustomParameters.BlendMode;
 using PicNetStudio.Avalonia.PicNet.PropertyEditing.Core;
 using PicNetStudio.Avalonia.PicNet.PropertyEditing.DataTransfer;
+using PicNetStudio.Avalonia.PicNet.Tools;
+using PicNetStudio.Avalonia.PicNet.Tools.Core;
+using PicNetStudio.Avalonia.Utils;
 using PicNetStudio.Avalonia.Utils.RDA;
 
 namespace PicNetStudio.Avalonia.PicNet.PropertyEditing;
@@ -35,6 +38,7 @@ public class PicNetPropertyEditor : BasePropertyEditor {
     public static PicNetPropertyEditor Instance { get; } = new PicNetPropertyEditor();
     
     public SimplePropertyEditorGroup BaseLayerObjectGroup { get; }
+    public SimplePropertyEditorGroup ToolGroup { get; }
 
     private RapidDispatchAction? delayedUpdate;
     
@@ -78,9 +82,18 @@ public class PicNetPropertyEditor : BasePropertyEditor {
                 textGroup.AddItem(new DataParameterStringPropertyEditorSlot(TextLayer.TextParameter, typeof(TextLayer), "Text") {AnticipatedLineCount = 8});
                 layer.AddItem(textGroup);
             }
+
+            SimplePropertyEditorGroup tool = this.ToolGroup = new SimplePropertyEditorGroup(typeof(BaseCanvasTool)) {
+                DisplayName = "Tool"
+            };
+
+            {
+                tool.AddItem(new DataParameterFloatPropertyEditorSlot(BaseDiameterTool.DiameterDataParameter, typeof(BaseDiameterTool), "Diameter", DragStepProfile.UnitOne));
+            }
         }
 
         this.Root.AddItem(this.BaseLayerObjectGroup);
+        this.Root.AddItem(this.ToolGroup);
     }
     
     public void UpdateSelectedLayerSelection(ISelectionManager<BaseLayerTreeObject> selection, bool clear) {
@@ -92,5 +105,9 @@ public class PicNetPropertyEditor : BasePropertyEditor {
                 this.BaseLayerObjectGroup.SetupHierarchyState(selection.SelectedItems.ToList());
             }
         })).InvokeAsync();
+    }
+
+    public void UpdateActiveTool(BaseCanvasTool tool) {
+        this.ToolGroup.SetupHierarchyState(new SingletonReadOnlyList<object>(tool));
     }
 }

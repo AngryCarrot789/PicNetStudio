@@ -20,7 +20,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using PicNetStudio.Avalonia.Utils;
 
 namespace PicNetStudio.Avalonia.DataTransfer;
 
@@ -43,22 +42,13 @@ public sealed class TransferableData {
         this.Owner = owner ?? throw new ArgumentNullException(nameof(owner));
     }
 
-    /// <summary>
-    /// Adds an event handler for when the parameter changes for the specific owner. The handler type
-    /// be either the default <see cref="DataParameterValueChangedEventHandler"/> delegate type, or it
-    /// must match the specific parameter type's value change handler otherwise an exception will be
-    /// thrown when the value changes hence why this method is unsafe
-    /// </summary>
-    /// <param name="parameter">The parameter that must change for the handler to be invoked</param>
-    /// <param name="owner">The owner whose value for the given parameter must change for the handler to be invoked</param>
-    /// <param name="handler">The handler to be invoked when the value of the parameter on the specific owner changes</param>
-    internal static void InternalAddHandlerUnsafe(DataParameter parameter, TransferableData owner, Delegate handler) {
-        owner.GetParamData(parameter).AddValueChangedHandler(handler);
+    internal static void InternalAddHandler(DataParameter parameter, TransferableData owner, DataParameterValueChangedEventHandler handler) {
+        owner.GetParamData(parameter).ValueChanged += handler;
     }
 
-    internal static void InternalRemoveHandlerUnsafe(DataParameter parameter, TransferableData owner, Delegate handler) {
+    internal static void InternalRemoveHandler(DataParameter parameter, TransferableData owner, DataParameterValueChangedEventHandler handler) {
         if (owner.TryGetParameterData(parameter, out ParameterData? data)) {
-            data.RemoveValueChangedHandler(handler);
+            data.ValueChanged -= handler;
         }
     }
 
@@ -101,26 +91,10 @@ public sealed class TransferableData {
 
     private class ParameterData {
         public bool isValueChanging;
-        private readonly List<Delegate> handlerList = new List<Delegate>();
+        public event DataParameterValueChangedEventHandler? ValueChanged;
 
-        public void OnValueChanged(DataParameter parameter, ITransferableData owner) {
-            lock (this.handlerList) {
-                foreach (Delegate handler in this.handlerList) {
-                    DataParameter.InternalInvokeValueChangeHandler(parameter, owner, handler);
-                }
-            }
-        }
-
-        public void AddValueChangedHandler(Delegate handler) {
-            lock (this.handlerList) {
-                this.handlerList.TryAdd(handler);
-            }
-        }
-
-        public void RemoveValueChangedHandler(Delegate handler) {
-            lock (this) {
-                this.handlerList.Remove(handler);
-            }
+        public void RaiseValueChanged(DataParameter parameter, ITransferableData owner) {
+            this.ValueChanged?.Invoke(parameter, owner);
         }
     }
 
@@ -137,7 +111,7 @@ public sealed class TransferableData {
         TransferableData data = owner.TransferableData;
         ParameterData internalData = data.GetParamData(parameter);
         try {
-            internalData.OnValueChanged(parameter, owner);
+            internalData.RaiseValueChanged(parameter, owner);
             data.ValueChanged?.Invoke(parameter, owner);
             DataParameter.InternalOnParameterValueChanged(parameter, owner);
         }
@@ -145,4 +119,7 @@ public sealed class TransferableData {
             internalData.isValueChanging = false;
         }
     }
+
+    public void AddValueChangedHandler(DataParameter parameter, DataParameterValueChangedEventHandler handler) => parameter.AddValueChangedHandler(this.Owner, handler);
+    public void RemoveValueChangedHandler(DataParameter parameter, DataParameterValueChangedEventHandler handler) => parameter.RemoveValueChangedHandler(this.Owner, handler);
 }

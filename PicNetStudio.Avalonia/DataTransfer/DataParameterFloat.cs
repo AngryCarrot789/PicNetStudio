@@ -23,8 +23,6 @@ using PicNetStudio.Avalonia.Utils.Accessing;
 
 namespace PicNetStudio.Avalonia.DataTransfer;
 
-public delegate void DataParameterFloatValueChangedEventHandler(DataParameterFloat parameter, ITransferableData owner);
-
 /// <summary>
 /// A <see cref="DataParameter{T}"/> that manages a 32-bit single precision floating point
 /// number (aka, a float). This also has an optional minimum and maximum value range
@@ -80,8 +78,4 @@ public sealed class DataParameterFloat : DataParameter<float> {
 
         base.SetObjectValue(owner, value);
     }
-
-    public void AddValueChangedHandler(ITransferableData owner, DataParameterFloatValueChangedEventHandler handler) => TransferableData.InternalAddHandlerUnsafe(this, owner.TransferableData, handler);
-
-    public void RemoveValueChangedHandler(ITransferableData owner, DataParameterFloatValueChangedEventHandler handler) => TransferableData.InternalRemoveHandlerUnsafe(this, owner.TransferableData, handler);
 }

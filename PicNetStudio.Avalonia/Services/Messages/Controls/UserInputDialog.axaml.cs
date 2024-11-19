@@ -28,14 +28,14 @@ using PicNetStudio.Avalonia.Themes.Controls;
 namespace PicNetStudio.Avalonia.Services.Messages.Controls;
 
 public partial class UserInputDialog : WindowEx {
-    public static readonly SingleUserInputData DummySingleInput = new SingleUserInputData("Text Input Here") {Message = "A primary message here", ConfirmText = "Confirm", CancelText = "Cancel", Caption = "The caption here", Label = "The label here"};
-    public static readonly DoubleUserInputData DummyDoubleInput = new DoubleUserInputData("Text A Here", "Text B Here") {Message = "A primary message here", ConfirmText = "Confirm", CancelText = "Cancel", Caption = "The caption here", LabelA = "Label A Here:", LabelB = "Label B Here:"};
+    public static readonly SingleUserInputInfo DummySingleInput = new SingleUserInputInfo("Text Input Here") {Message = "A primary message here", ConfirmText = "Confirm", CancelText = "Cancel", Caption = "The caption here", Label = "The label here"};
+    public static readonly DoubleUserInputInfo DummyDoubleInput = new DoubleUserInputInfo("Text A Here", "Text B Here") {Message = "A primary message here", ConfirmText = "Confirm", CancelText = "Cancel", Caption = "The caption here", LabelA = "Label A Here:", LabelB = "Label B Here:"};
     
-    public static readonly ModelControlRegistry<UserInputData, Control> Registry;
+    public static readonly ModelControlRegistry<UserInputInfo, Control> Registry;
     
-    public static readonly StyledProperty<UserInputData?> UserInputDataProperty = AvaloniaProperty.Register<UserInputDialog, UserInputData?>("UserInputData");
+    public static readonly StyledProperty<UserInputInfo?> UserInputDataProperty = AvaloniaProperty.Register<UserInputDialog, UserInputInfo?>("UserInputData");
 
-    public UserInputData? UserInputData {
+    public UserInputInfo? UserInputData {
         get => this.GetValue(UserInputDataProperty);
         set => this.SetValue(UserInputDataProperty, value);
     }
@@ -45,10 +45,10 @@ public partial class UserInputDialog : WindowEx {
     /// </summary>
     public bool? DialogResult { get; private set; }
 
-    private readonly DataParameterPropertyBinder<UserInputData> captionBinder = new DataParameterPropertyBinder<UserInputData>(TitleProperty, UserInputData.CaptionParameter);
-    private readonly DataParameterPropertyBinder<UserInputData> messageBinder = new DataParameterPropertyBinder<UserInputData>(TextBlock.TextProperty, UserInputData.MessageParameter);
-    private readonly DataParameterPropertyBinder<UserInputData> confirmTextBinder = new DataParameterPropertyBinder<UserInputData>(ContentProperty, UserInputData.ConfirmTextParameter);
-    private readonly DataParameterPropertyBinder<UserInputData> cancelTextBinder = new DataParameterPropertyBinder<UserInputData>(ContentProperty, UserInputData.CancelTextParameter);
+    private readonly DataParameterPropertyBinder<UserInputInfo> captionBinder = new DataParameterPropertyBinder<UserInputInfo>(TitleProperty, UserInputInfo.CaptionParameter);
+    private readonly DataParameterPropertyBinder<UserInputInfo> messageBinder = new DataParameterPropertyBinder<UserInputInfo>(TextBlock.TextProperty, UserInputInfo.MessageParameter);
+    private readonly DataParameterPropertyBinder<UserInputInfo> confirmTextBinder = new DataParameterPropertyBinder<UserInputInfo>(ContentProperty, UserInputInfo.ConfirmTextParameter);
+    private readonly DataParameterPropertyBinder<UserInputInfo> cancelTextBinder = new DataParameterPropertyBinder<UserInputInfo>(ContentProperty, UserInputInfo.CancelTextParameter);
 
     public UserInputDialog() {
         this.InitializeComponent();
@@ -63,11 +63,11 @@ public partial class UserInputDialog : WindowEx {
     }
 
     static UserInputDialog() {
-        Registry = new ModelControlRegistry<UserInputData, Control>();
-        Registry.RegisterType<SingleUserInputData>((x) => new SingleUserInputControl());
-        Registry.RegisterType<DoubleUserInputData>((x) => new DoubleUserInputControl());
+        Registry = new ModelControlRegistry<UserInputInfo, Control>();
+        Registry.RegisterType<SingleUserInputInfo>((x) => new SingleUserInputControl());
+        Registry.RegisterType<DoubleUserInputInfo>((x) => new DoubleUserInputControl());
         
-        UserInputDataProperty.Changed.AddClassHandler<UserInputDialog, UserInputData?>((o, e) => o.OnUserInputDataChanged(e.OldValue.GetValueOrDefault(), e.NewValue.GetValueOrDefault()));
+        UserInputDataProperty.Changed.AddClassHandler<UserInputDialog, UserInputInfo?>((o, e) => o.OnUserInputDataChanged(e.OldValue.GetValueOrDefault(), e.NewValue.GetValueOrDefault()));
     }
     
     private void OnMessageTextBlockPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e) {
@@ -97,7 +97,7 @@ public partial class UserInputDialog : WindowEx {
         this.TryCloseDialog(false);
     }
 
-    private void OnUserInputDataChanged(UserInputData? oldData, UserInputData? newData) {
+    private void OnUserInputDataChanged(UserInputInfo? oldData, UserInputInfo? newData) {
         if (oldData != null) {
             (this.PART_InputFieldContent.Content as IUserInputContent)?.Disconnect();
         }
@@ -133,7 +133,7 @@ public partial class UserInputDialog : WindowEx {
     /// <returns>True if the dialog was closed, false if it could not be closed due to a validation error or other error</returns>
     public bool TryCloseDialog(bool result) {
         if (result) {
-            UserInputData? data = this.UserInputData;
+            UserInputInfo? data = this.UserInputData;
             if (data == null || !data.CanDialogClose()) {
                 return false;
             }

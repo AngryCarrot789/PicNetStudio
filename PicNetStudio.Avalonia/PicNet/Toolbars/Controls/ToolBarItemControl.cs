@@ -56,8 +56,9 @@ public class ToolBarItemControl : ContentControl {
     }
 
     private void MakeActiveTool() {
-        if (this.ToolBarItem is SingleToolBarItem singleToolBarItem)
+        if (this.ToolBarItem is SingleToolBarItem singleToolBarItem) {
             singleToolBarItem.Activate();
+        }
     }
 
     public void OnAddingToList(ToolBarItemListBox toolBar, BaseToolBarItem item) {

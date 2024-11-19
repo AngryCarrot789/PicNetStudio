@@ -147,4 +147,12 @@ public class PNBitmap {
         if (bitmap.skBitmap != null)
             this.Canvas?.DrawBitmap(bitmap.skBitmap, new SKPoint(0, 0));
     }
+
+    public void InitialiseBitmap(PNBitmap bitmap) {
+        if (!bitmap.IsInitialised)
+            return;
+        
+        this.InitialiseBitmap(bitmap.size);
+        this.Paste(bitmap);
+    }
 }

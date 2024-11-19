@@ -84,3 +84,5 @@ public class PropertyEditorControl : TemplatedControl {
         }
     }
 }
+
+public class PropertyEditorWrapControl : PropertyEditorControl;

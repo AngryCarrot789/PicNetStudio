@@ -32,7 +32,7 @@ public abstract class BaseDiameterTool : BaseRasterisedDrawingTool {
         DataParameter.Register(
             new DataParameterFloat(
                 typeof(BaseDiameterTool),
-                nameof(Diameter), 5.0f, 0.5f, 1000f,
+                nameof(Diameter), 10.0f, 0.5f, 1000f,
                 ValueAccessors.Reflective<float>(typeof(BaseDiameterTool), nameof(diameter))));
 
     private float diameter = DiameterDataParameter.DefaultValue;
@@ -42,7 +42,7 @@ public abstract class BaseDiameterTool : BaseRasterisedDrawingTool {
         set => DataParameter.SetValueHelper(this, DiameterDataParameter, ref this.diameter, value);
     }
 
-    public override double SpacingFeedback => this.Diameter / 2.0;
+    public override double SpacingFeedback => this.Diameter / 4.0;
 
     protected BaseDiameterTool() {
     }

@@ -23,7 +23,6 @@
                                        VerticalAlignment="Center" 
                                        TextAlignment="{TemplateBinding TextAlignment}"/>
                             <TextBox x:Name="PART_TextBox" Text="Editing"
-                                     HorizontalAlignment="Stretch"
                                      VerticalContentAlignment="Center"
                                      BorderThickness="0"
                                      Background="Transparent"
@@ -36,6 +35,9 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+        <Style Selector="^[IsEditing=true] /template/ TextBox#PART_TextBox">
+            <Setter Property="Background" Value="{DynamicResource ABrush.Tone6.Background.Static}"/>
+        </Style>
     </ControlTheme>
 
     <ControlTheme x:Key="NumberDraggerAbletonTheme" TargetType="{x:Type l:NumberDragger}" BasedOn="{StaticResource {x:Type l:NumberDragger}}">
@@ -67,5 +69,8 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+        <Style Selector="^[IsEditing=true] /template/ TextBox#PART_TextBox">
+            <Setter Property="Background" Value="{DynamicResource ABrush.Tone6.Background.Static}"/>
+        </Style>
     </ControlTheme>
 </ResourceDictionary>

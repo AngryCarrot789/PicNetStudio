@@ -26,13 +26,13 @@ namespace PicNetStudio.Avalonia.Services.Messages;
 /// <summary>
 /// A class for a basic message box class with a maximum of 3 buttons; Yes/OK, No and Cancel
 /// </summary>
-public class MessageBoxData : ITransferableData {
-    public static readonly DataParameterString CaptionParameter = DataParameter.Register(new DataParameterString(typeof(MessageBoxData), nameof(Caption), "A message here", ValueAccessors.Reflective<string?>(typeof(MessageBoxData), nameof(caption))));
-    public static readonly DataParameterString HeaderParameter = DataParameter.Register(new DataParameterString(typeof(MessageBoxData), nameof(Header), null, ValueAccessors.Reflective<string?>(typeof(MessageBoxData), nameof(header))));
-    public static readonly DataParameterString MessageParameter = DataParameter.Register(new DataParameterString(typeof(MessageBoxData), nameof(Message), "Message", ValueAccessors.Reflective<string?>(typeof(MessageBoxData), nameof(message))));
-    public static readonly DataParameterString YesOkTextParameter = DataParameter.Register(new DataParameterString(typeof(MessageBoxData), nameof(YesOkText), "OK", ValueAccessors.Reflective<string?>(typeof(MessageBoxData), nameof(yesOkText))));
-    public static readonly DataParameterString NoTextParameter = DataParameter.Register(new DataParameterString(typeof(MessageBoxData), nameof(NoText), "No", ValueAccessors.Reflective<string?>(typeof(MessageBoxData), nameof(noText))));
-    public static readonly DataParameterString CancelTextParameter = DataParameter.Register(new DataParameterString(typeof(MessageBoxData), nameof(CancelText), "Cancel", ValueAccessors.Reflective<string?>(typeof(MessageBoxData), nameof(cancelText))));
+public class MessageBoxInfo : ITransferableData {
+    public static readonly DataParameterString CaptionParameter = DataParameter.Register(new DataParameterString(typeof(MessageBoxInfo), nameof(Caption), "A message here", ValueAccessors.Reflective<string?>(typeof(MessageBoxInfo), nameof(caption))));
+    public static readonly DataParameterString HeaderParameter = DataParameter.Register(new DataParameterString(typeof(MessageBoxInfo), nameof(Header), null, ValueAccessors.Reflective<string?>(typeof(MessageBoxInfo), nameof(header))));
+    public static readonly DataParameterString MessageParameter = DataParameter.Register(new DataParameterString(typeof(MessageBoxInfo), nameof(Message), "Message", ValueAccessors.Reflective<string?>(typeof(MessageBoxInfo), nameof(message))));
+    public static readonly DataParameterString YesOkTextParameter = DataParameter.Register(new DataParameterString(typeof(MessageBoxInfo), nameof(YesOkText), "OK", ValueAccessors.Reflective<string?>(typeof(MessageBoxInfo), nameof(yesOkText))));
+    public static readonly DataParameterString NoTextParameter = DataParameter.Register(new DataParameterString(typeof(MessageBoxInfo), nameof(NoText), "No", ValueAccessors.Reflective<string?>(typeof(MessageBoxInfo), nameof(noText))));
+    public static readonly DataParameterString CancelTextParameter = DataParameter.Register(new DataParameterString(typeof(MessageBoxInfo), nameof(CancelText), "Cancel", ValueAccessors.Reflective<string?>(typeof(MessageBoxInfo), nameof(cancelText))));
 
     private string? caption = CaptionParameter.DefaultValue;
     private string? header = HeaderParameter.DefaultValue;
@@ -89,26 +89,26 @@ public class MessageBoxData : ITransferableData {
     public MessageBoxResult DefaultButton { get; init; }
 
     // MessageBoxData.buttons -- remove this line
-    public delegate void MessageBoxDataButtonsChangedEventHandler(MessageBoxData sender);
+    public delegate void MessageBoxDataButtonsChangedEventHandler(MessageBoxInfo sender);
 
     public event MessageBoxDataButtonsChangedEventHandler? ButtonsChanged;
 
     public TransferableData TransferableData { get; }
 
-    public MessageBoxData() {
+    public MessageBoxInfo() {
         this.TransferableData = new TransferableData(this);
     }
 
-    public MessageBoxData(string? message) : this() {
+    public MessageBoxInfo(string? message) : this() {
         this.message = message;
     }
 
-    public MessageBoxData(string? caption, string? message) : this() {
+    public MessageBoxInfo(string? caption, string? message) : this() {
         this.caption = caption;
         this.message = message;
     }
 
-    public MessageBoxData(string? caption, string? header, string? message) : this() {
+    public MessageBoxInfo(string? caption, string? header, string? message) : this() {
         this.caption = caption;
         this.header = header;
         this.message = message;

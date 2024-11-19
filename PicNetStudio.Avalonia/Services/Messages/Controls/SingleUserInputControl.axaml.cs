@@ -25,10 +25,10 @@ using PicNetStudio.Avalonia.DataTransfer;
 namespace PicNetStudio.Avalonia.Services.Messages.Controls;
 
 public partial class SingleUserInputControl : UserControl, IUserInputContent {
-    private readonly DataParameterPropertyBinder<SingleUserInputData> labelBinder = new DataParameterPropertyBinder<SingleUserInputData>(TextBlock.TextProperty, SingleUserInputData.LabelParameter);
-    private readonly DataParameterPropertyBinder<SingleUserInputData> textBinder = new DataParameterPropertyBinder<SingleUserInputData>(TextBox.TextProperty, SingleUserInputData.TextParameter);
+    private readonly DataParameterPropertyBinder<SingleUserInputInfo> labelBinder = new DataParameterPropertyBinder<SingleUserInputInfo>(TextBlock.TextProperty, SingleUserInputInfo.LabelParameter);
+    private readonly DataParameterPropertyBinder<SingleUserInputInfo> textBinder = new DataParameterPropertyBinder<SingleUserInputInfo>(TextBox.TextProperty, SingleUserInputInfo.TextParameter);
     private UserInputDialog? myDialog;
-    private SingleUserInputData? myData;
+    private SingleUserInputInfo? myData;
 
     public SingleUserInputControl() {
         this.InitializeComponent();
@@ -44,13 +44,13 @@ public partial class SingleUserInputControl : UserControl, IUserInputContent {
         }
     }
 
-    public void Connect(UserInputDialog dialog, UserInputData data) {
+    public void Connect(UserInputDialog dialog, UserInputInfo info) {
         this.myDialog = dialog;
-        this.myData = (SingleUserInputData) data;
+        this.myData = (SingleUserInputInfo) info;
         this.labelBinder.AttachModel(this.myData);
         this.textBinder.AttachModel(this.myData);
-        SingleUserInputData.TextParameter.AddValueChangedHandler(data, this.OnTextChanged);
-        SingleUserInputData.LabelParameter.AddValueChangedHandler(data, this.OnLabelChanged);
+        SingleUserInputInfo.TextParameter.AddValueChangedHandler(info, this.OnTextChanged);
+        SingleUserInputInfo.LabelParameter.AddValueChangedHandler(info, this.OnLabelChanged);
         
         this.myData.AllowEmptyTextChanged += this.OnAllowEmptyTextChanged;
         this.UpdateLabelVisibility();
@@ -59,8 +59,8 @@ public partial class SingleUserInputControl : UserControl, IUserInputContent {
     public void Disconnect() {
         this.labelBinder.DetachModel();
         this.textBinder.DetachModel();
-        SingleUserInputData.TextParameter.RemoveValueChangedHandler(this.myData!, this.OnTextChanged);
-        SingleUserInputData.LabelParameter.RemoveValueChangedHandler(this.myData!, this.OnLabelChanged);
+        SingleUserInputInfo.TextParameter.RemoveValueChangedHandler(this.myData!, this.OnTextChanged);
+        SingleUserInputInfo.LabelParameter.RemoveValueChangedHandler(this.myData!, this.OnLabelChanged);
 
         this.myData!.AllowEmptyTextChanged -= this.OnAllowEmptyTextChanged;
         this.myDialog = null;
@@ -74,9 +74,9 @@ public partial class SingleUserInputControl : UserControl, IUserInputContent {
 
     private void UpdateLabelVisibility() => this.PART_Label.IsVisible = !string.IsNullOrWhiteSpace(this.myData!.Label);
 
-    private void OnLabelChanged(DataParameterString parameter, ITransferableData owner) => this.UpdateLabelVisibility();
+    private void OnLabelChanged(DataParameter parameter, ITransferableData owner) => this.UpdateLabelVisibility();
 
-    private void OnAllowEmptyTextChanged(SingleUserInputData sender) => this.myDialog!.InvalidateConfirmButton();
+    private void OnAllowEmptyTextChanged(SingleUserInputInfo sender) => this.myDialog!.InvalidateConfirmButton();
 
-    private void OnTextChanged(DataParameterString parameter, ITransferableData owner) => this.myDialog!.InvalidateConfirmButton();
+    private void OnTextChanged(DataParameter parameter, ITransferableData owner) => this.myDialog!.InvalidateConfirmButton();
 }

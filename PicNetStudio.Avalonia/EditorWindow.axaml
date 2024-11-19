@@ -13,6 +13,7 @@
              xmlns:cmdu="clr-namespace:PicNetStudio.Avalonia.CommandSystem.Usages"
              xmlns:cmd="clr-namespace:PicNetStudio.Avalonia.PicNet.Commands"
              xmlns:ams="clr-namespace:PicNetStudio.Avalonia.AdvancedMenuService"
+             xmlns:settings="clr-namespace:PicNetStudio.Avalonia.PicNet.Tools.Settings"
              mc:Ignorable="d" Width="1280" Height="720"
              Title="PicNet Studio"
              sc:UIInputManager.FocusPath="Application/EditorWindow"
@@ -133,18 +134,7 @@
             </Border>
             <GridSplitter Grid.Column="2" Grid.Row="1" Background="Transparent" Margin="-2,0,-6,0" Cursor="SizeWestEast"/>
             <Border Grid.Column="0" Grid.ColumnSpan="4" Grid.Row="0" Background="{DynamicResource PanelBackground3}">
-                <StackPanel Orientation="Horizontal">
-                    <StackPanel>
-                        <drag:NumberDragger x:Name="PART_SpacingSlider" 
-                                          Minimum="1" Maximum="100"
-                                          TinyChange="0.001"
-                                          SmallChange="0.01"
-                                          NormalChange="0.1"
-                                          LargeChange="1"
-                                          Width="150" Margin="4,4,0,0" 
-                                          VerticalAlignment="Center"/>
-                    </StackPanel>
-                </StackPanel>
+                <settings:ToolSettingContainerControl x:Name="PART_ToolSettingsContainer"/>
             </Border>
         </Grid>
         <Border Background="{DynamicResource ABrush.Tone1.Border.Static}" Grid.Row="1"/>

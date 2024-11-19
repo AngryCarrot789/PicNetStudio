@@ -118,6 +118,7 @@ public abstract class RZApplication {
         manager.Register("command.layertree.GroupSelectionIntoComposition", new GroupSelectionIntoCompositionCommand());
         manager.Register("command.layertree.item.EditLayerNameCommand", new EditLayerNameCommand());
         manager.Register("command.layertree.item.ToggleLayerVisibility", new ToggleLayerVisibilityCommand());
+        manager.Register("command.layertree.item.RasteriseLayer", new RasteriseLayerCommand());
     }
 
     internal static void InternalPreInititalise(RZApplication application) {

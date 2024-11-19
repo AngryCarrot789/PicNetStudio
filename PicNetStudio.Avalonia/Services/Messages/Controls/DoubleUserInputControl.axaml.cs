@@ -25,12 +25,12 @@ using PicNetStudio.Avalonia.DataTransfer;
 namespace PicNetStudio.Avalonia.Services.Messages.Controls;
 
 public partial class DoubleUserInputControl : UserControl, IUserInputContent {
-    private readonly DataParameterPropertyBinder<DoubleUserInputData> labelABinder = new DataParameterPropertyBinder<DoubleUserInputData>(TextBlock.TextProperty, DoubleUserInputData.LabelAParameter);
-    private readonly DataParameterPropertyBinder<DoubleUserInputData> labelBBinder = new DataParameterPropertyBinder<DoubleUserInputData>(TextBlock.TextProperty, DoubleUserInputData.LabelBParameter);
-    private readonly DataParameterPropertyBinder<DoubleUserInputData> textABinder = new DataParameterPropertyBinder<DoubleUserInputData>(TextBox.TextProperty, DoubleUserInputData.TextAParameter);
-    private readonly DataParameterPropertyBinder<DoubleUserInputData> textBBinder = new DataParameterPropertyBinder<DoubleUserInputData>(TextBox.TextProperty, DoubleUserInputData.TextBParameter);
+    private readonly DataParameterPropertyBinder<DoubleUserInputInfo> labelABinder = new DataParameterPropertyBinder<DoubleUserInputInfo>(TextBlock.TextProperty, DoubleUserInputInfo.LabelAParameter);
+    private readonly DataParameterPropertyBinder<DoubleUserInputInfo> labelBBinder = new DataParameterPropertyBinder<DoubleUserInputInfo>(TextBlock.TextProperty, DoubleUserInputInfo.LabelBParameter);
+    private readonly DataParameterPropertyBinder<DoubleUserInputInfo> textABinder = new DataParameterPropertyBinder<DoubleUserInputInfo>(TextBox.TextProperty, DoubleUserInputInfo.TextAParameter);
+    private readonly DataParameterPropertyBinder<DoubleUserInputInfo> textBBinder = new DataParameterPropertyBinder<DoubleUserInputInfo>(TextBox.TextProperty, DoubleUserInputInfo.TextBParameter);
     private UserInputDialog? myDialog;
-    private DoubleUserInputData? myData;
+    private DoubleUserInputInfo? myData;
 
     public DoubleUserInputControl() {
         this.InitializeComponent();
@@ -49,16 +49,16 @@ public partial class DoubleUserInputControl : UserControl, IUserInputContent {
         }
     }
 
-    public void Connect(UserInputDialog dialog, UserInputData data) {
+    public void Connect(UserInputDialog dialog, UserInputInfo info) {
         this.myDialog = dialog;
-        this.myData = (DoubleUserInputData) data;
+        this.myData = (DoubleUserInputInfo) info;
         this.labelABinder.AttachModel(this.myData);
         this.labelBBinder.AttachModel(this.myData);
         this.textABinder.AttachModel(this.myData);
         this.textBBinder.AttachModel(this.myData);
-        DataParameter.AddMultipleHandlers(this.OnAnyTextChanged, DoubleUserInputData.TextAParameter, DoubleUserInputData.TextBParameter);
-        DoubleUserInputData.LabelAParameter.AddValueChangedHandler(this.myData!, this.OnLabelAChanged);
-        DoubleUserInputData.LabelBParameter.AddValueChangedHandler(this.myData!, this.OnLabelBChanged);
+        DataParameter.AddMultipleHandlers(this.OnAnyTextChanged, DoubleUserInputInfo.TextAParameter, DoubleUserInputInfo.TextBParameter);
+        DoubleUserInputInfo.LabelAParameter.AddValueChangedHandler(this.myData!, this.OnLabelAChanged);
+        DoubleUserInputInfo.LabelBParameter.AddValueChangedHandler(this.myData!, this.OnLabelBChanged);
         this.myData.AllowEmptyTextAChanged += this.OnAllowEmptyTextChanged;
         this.myData.AllowEmptyTextBChanged += this.OnAllowEmptyTextChanged;
         this.UpdateLabelAVisibility();
@@ -70,9 +70,9 @@ public partial class DoubleUserInputControl : UserControl, IUserInputContent {
         this.labelBBinder.DetachModel();
         this.textABinder.DetachModel();
         this.textBBinder.DetachModel();
-        DataParameter.AddMultipleHandlers(this.OnAnyTextChanged, DoubleUserInputData.TextAParameter, DoubleUserInputData.TextBParameter);
-        DoubleUserInputData.LabelAParameter.RemoveValueChangedHandler(this.myData!, this.OnLabelAChanged);
-        DoubleUserInputData.LabelBParameter.RemoveValueChangedHandler(this.myData!, this.OnLabelBChanged);
+        DataParameter.AddMultipleHandlers(this.OnAnyTextChanged, DoubleUserInputInfo.TextAParameter, DoubleUserInputInfo.TextBParameter);
+        DoubleUserInputInfo.LabelAParameter.RemoveValueChangedHandler(this.myData!, this.OnLabelAChanged);
+        DoubleUserInputInfo.LabelBParameter.RemoveValueChangedHandler(this.myData!, this.OnLabelBChanged);
         this.myData!.AllowEmptyTextAChanged -= this.OnAllowEmptyTextChanged;
         this.myData!.AllowEmptyTextBChanged -= this.OnAllowEmptyTextChanged;
         
@@ -92,6 +92,6 @@ public partial class DoubleUserInputControl : UserControl, IUserInputContent {
     private void OnLabelAChanged(DataParameter dataParameter, ITransferableData owner) => this.UpdateLabelAVisibility();
     private void OnLabelBChanged(DataParameter dataParameter, ITransferableData owner) => this.UpdateLabelBVisibility();
 
-    private void OnAllowEmptyTextChanged(DoubleUserInputData sender) => this.myDialog!.InvalidateConfirmButton();
+    private void OnAllowEmptyTextChanged(DoubleUserInputInfo sender) => this.myDialog!.InvalidateConfirmButton();
     private void OnAnyTextChanged(DataParameter dataParameter, ITransferableData owner) => this.myDialog!.InvalidateConfirmButton();
 }

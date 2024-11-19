@@ -30,19 +30,19 @@ namespace PicNetStudio.Avalonia.Services;
 
 public class MessageDialogServiceImpl : IMessageDialogService {
     public Task<MessageBoxResult> ShowMessage(string caption, string message, MessageBoxButton buttons = MessageBoxButton.OK) {
-        MessageBoxData data = new MessageBoxData(caption, message) { Buttons = buttons };
-        data.SetDefaultButtonText();
-        return this.ShowMessage(data);
+        MessageBoxInfo info = new MessageBoxInfo(caption, message) { Buttons = buttons };
+        info.SetDefaultButtonText();
+        return this.ShowMessage(info);
     }
 
     public Task<MessageBoxResult> ShowMessage(string caption, string header, string message, MessageBoxButton buttons = MessageBoxButton.OK) {
-        MessageBoxData data = new MessageBoxData(caption, header, message) { Buttons = buttons };
-        data.SetDefaultButtonText();
-        return this.ShowMessage(data);
+        MessageBoxInfo info = new MessageBoxInfo(caption, header, message) { Buttons = buttons };
+        info.SetDefaultButtonText();
+        return this.ShowMessage(info);
     }
 
-    public async Task<MessageBoxResult> ShowMessage(MessageBoxData data) {
-        Validate.NotNull(data);
+    public async Task<MessageBoxResult> ShowMessage(MessageBoxInfo info) {
+        Validate.NotNull(info);
 
         if (Application.Current!.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop) {
             Window? parent = desktop.Windows.FirstOrDefault(x => x.IsActive) ?? desktop.MainWindow;
@@ -51,7 +51,7 @@ public class MessageDialogServiceImpl : IMessageDialogService {
             }
 
             MessageBoxDialog dialog = new MessageBoxDialog {
-                MessageBoxData = data
+                MessageBoxData = info
             };
 
             MessageBoxResult? result = await dialog.ShowDialog<MessageBoxResult?>(parent);

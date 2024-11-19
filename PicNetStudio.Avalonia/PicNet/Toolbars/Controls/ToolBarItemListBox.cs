@@ -17,8 +17,10 @@
 // along with PicNetStudio. If not, see <https://www.gnu.org/licenses/>.
 // 
 
+using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
+using PicNetStudio.Avalonia.PicNet.PropertyEditing;
 using PicNetStudio.Avalonia.Utils;
 using PicNetStudio.Avalonia.Utils.Collections.Observable;
 
@@ -44,18 +46,34 @@ public class ToolBarItemListBox : ItemsControl {
     }
 
     private void OnEditorToolBarChanged(AvaloniaPropertyChangedEventArgs<EditorToolBar> e) {
+        if (e.TryGetOldValue(out EditorToolBar? oldToolBar))
+            oldToolBar.ActiveToolItemChanged -= this.OnToolBarActiveToolChanged;
+        
         this.itemProcessor?.Dispose();
         for (int i = this.Items.Count - 1; i >= 0; i--) {
             this.RemoveResourceInternal(i);
         }
 
         if (e.TryGetNewValue(out EditorToolBar? newToolBar)) {
+            newToolBar.ActiveToolItemChanged += this.OnToolBarActiveToolChanged;
             this.itemProcessor = ObservableItemProcessor.MakeIndexable(newToolBar.Items, this.OnToolBarItemAddedEvent, this.OnToolBarItemRemovedEvent, this.OnToolBarItemMovedEvent);
             int i = 0;
             foreach (BaseToolBarItem resource in newToolBar.Items) {
                 this.InsertResourceInternal(resource, i++);
             }
+            
+            if (i != 0 && newToolBar.Items.FirstOrDefault(x => x is SingleToolBarItem && ((SingleToolBarItem) x).IsActive) is SingleToolBarItem toolBarItem)
+                this.UpdatePropEditor(toolBarItem);
         }
+    }
+
+    private void OnToolBarActiveToolChanged(EditorToolBar sender, SingleToolBarItem? oldactivetoolitem, SingleToolBarItem? newActiveTool) {
+        this.UpdatePropEditor(newActiveTool);
+    }
+
+    private void UpdatePropEditor(SingleToolBarItem? item) {
+        if (item != null && item.Tool != null)
+            PicNetPropertyEditor.Instance.UpdateActiveTool(item.Tool);
     }
 
     private void OnToolBarItemAddedEvent(object sender, int index, BaseToolBarItem item) {

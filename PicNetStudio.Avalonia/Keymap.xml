@@ -50,6 +50,10 @@
                     <Shortcut Name="ToggleVisibility" CommandId="command.layertree.item.ToggleLayerVisibility">
                         <KeyStroke Key="D0"/>
                     </Shortcut>
+                    <Shortcut Name="RasteriseLayer" CommandId="command.layertree.item.RasteriseLayer">
+                        <KeyStroke Key="R"/>
+                        <KeyStroke Key="R"/>
+                    </Shortcut>
                 </Group>
             </Group>
         </Group>

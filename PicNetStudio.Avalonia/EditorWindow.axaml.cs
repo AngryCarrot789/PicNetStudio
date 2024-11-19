@@ -31,6 +31,8 @@ using PicNetStudio.Avalonia.PicNet.Layers;
 using PicNetStudio.Avalonia.PicNet.Layers.Controls;
 using PicNetStudio.Avalonia.PicNet.Layers.Core;
 using PicNetStudio.Avalonia.PicNet.PropertyEditing;
+using PicNetStudio.Avalonia.PicNet.Toolbars;
+using PicNetStudio.Avalonia.PicNet.Tools;
 using PicNetStudio.Avalonia.Themes.Controls;
 using SkiaSharp;
 
@@ -59,6 +61,14 @@ public partial class EditorWindow : WindowEx {
         DataManager.InvalidateInheritedContext(this);
 
         this.PART_ToolBar.EditorToolBar = this.Editor.ToolBar;
+        this.Editor.ToolBar.ActiveToolItemChanged += ToolBarOnActiveToolItemChanged;
+
+        void ToolBarOnActiveToolItemChanged(EditorToolBar sender, SingleToolBarItem? oldactivetoolitem, SingleToolBarItem? newactivetoolitem) {
+            this.PART_ToolSettingsContainer.SetActiveTool(newactivetoolitem?.Tool);    
+        }
+
+        if (this.Editor.ToolBar.ActiveTool is BaseCanvasTool tool)
+            this.PART_ToolSettingsContainer.SetActiveTool(tool);
 
         Document document = new Document();
         document.Canvas.Size = new PixelSize(800, 400);

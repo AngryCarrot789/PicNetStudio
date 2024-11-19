@@ -30,7 +30,7 @@ public interface IUserInputDialogService {
     /// An async boolean. True when closed successfully (you can accept the result, and trust the
     /// validation function was run), False when validation fails or the text field is empty and
     /// empty is disabled, or Null when the dialog closed unexpectedly</returns>
-    Task<bool?> ShowInputDialogAsync(SingleUserInputData info);
+    Task<bool?> ShowInputDialogAsync(SingleUserInputInfo info);
     
     /// <summary>
     /// Shows an input dialog with two input fields
@@ -40,5 +40,5 @@ public interface IUserInputDialogService {
     /// An async boolean. True when closed successfully (you can accept the results, and trust the
     /// validation function was run), False when validation fails or the text field is empty and
     /// empty is disabled, or Null when the dialog closed unexpectedly</returns>
-    Task<bool?> ShowInputDialogAsync(DoubleUserInputData info);
+    Task<bool?> ShowInputDialogAsync(DoubleUserInputInfo info);
 }
