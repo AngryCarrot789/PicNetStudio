@@ -59,19 +59,34 @@ public abstract class LayerStateModifierControl : TemplatedControl {
             this.GetListFor(typeof(TSpecificModel)).Add(constructor);
         }
         
-        public List<TControl> ProvideControls(TModel model) {
+        public List<TControl> ProvideControls(TModel model, ProvideOption options = ProvideOption.Normal) {
             List<TControl> stateModifiers = new List<TControl>();
+            List<TControl>? perTypeList = options == ProvideOption.ReversePerType ? new List<TControl>() : null;
             
             for (Type? type = model.GetType(); type != null; type = type.BaseType) {
                 if (this.constructors.TryGetValue(type, out List<Delegate>? list)) {
                     foreach (Delegate constructor in list) {
                         TControl control = constructor is Func<TModel, TControl> biFunc ? biFunc(model) : ((Func<TControl>) constructor)();
-                        stateModifiers.Add(control);
+                        (perTypeList ?? stateModifiers).Add(control);
+                    }
+
+                    if (perTypeList != null) {
+                        stateModifiers.AddRange(perTypeList);
+                        perTypeList.Clear();
                     }
                 }
             }
 
+            if (options == ProvideOption.ReverseAll)
+                stateModifiers.Reverse();
+
             return stateModifiers;
+        }
+
+        public enum ProvideOption {
+            Normal = 0, // No extra operations
+            ReverseAll = 1, // Reverse final collection
+            ReversePerType = 2 // Reverse items per type
         }
     }
 
@@ -87,6 +102,7 @@ public abstract class LayerStateModifierControl : TemplatedControl {
         Registry = new ModelMultiControlRegistry<BaseLayerTreeObject, LayerStateModifierControl>();
         // BaseVisualLayer supports LayerVisibilityStateModifier
         Registry.RegisterType<BaseVisualLayer>(() => new LayerVisibilityStateControl());
+        Registry.RegisterType<BaseVisualLayer>(() => new LayerSoloStateControl());
     }
 
     protected virtual void OnConnected() {
@@ -96,9 +112,7 @@ public abstract class LayerStateModifierControl : TemplatedControl {
     }
 
     public static List<LayerStateModifierControl> ProvideStateModifiers(BaseLayerTreeObject layer) {
-        List<LayerStateModifierControl> stateModifiers = Registry.ProvideControls(layer);
-        stateModifiers.Reverse();
-        return stateModifiers;
+        return Registry.ProvideControls(layer);
     }
 
     public void OnAddingToList(LayerStateModifierListBox listBox, BaseLayerTreeObject layer) {

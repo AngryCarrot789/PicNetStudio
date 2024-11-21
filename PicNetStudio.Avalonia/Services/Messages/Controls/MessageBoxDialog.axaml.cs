@@ -69,8 +69,9 @@ public partial class MessageBoxDialog : WindowEx {
 
     protected override void OnLoaded(RoutedEventArgs e) {
         base.OnLoaded(e);
-        this.PART_DockPanelRoot.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+        this.PART_DockPanelRoot.Measure(new Size(800, 800));
         Size size = this.PART_DockPanelRoot.DesiredSize;
+        size = new Size(size.Width + 2, size.Height);
         if (size.Width > 300.0) {
             this.Width = size.Width;
         }

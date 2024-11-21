@@ -20,7 +20,6 @@
 using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
-using PicNetStudio.Avalonia.PicNet.PropertyEditing;
 using PicNetStudio.Avalonia.Utils;
 using PicNetStudio.Avalonia.Utils.Collections.Observable;
 
@@ -72,8 +71,6 @@ public class ToolBarItemListBox : ItemsControl {
     }
 
     private void UpdatePropEditor(SingleToolBarItem? item) {
-        if (item != null && item.Tool != null)
-            PicNetPropertyEditor.Instance.UpdateActiveTool(item.Tool);
     }
 
     private void OnToolBarItemAddedEvent(object sender, int index, BaseToolBarItem item) {

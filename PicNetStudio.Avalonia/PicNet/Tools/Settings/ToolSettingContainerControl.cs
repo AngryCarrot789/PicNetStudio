@@ -6,6 +6,7 @@ using Avalonia.Controls.Primitives;
 using PicNetStudio.Avalonia.PicNet.PropertyEditing.DataTransfer;
 using PicNetStudio.Avalonia.PicNet.Tools.Core;
 using PicNetStudio.Avalonia.PicNet.Tools.Settings.Controls;
+using PicNetStudio.Avalonia.PicNet.Tools.Settings.DataTransfer;
 using PicNetStudio.Avalonia.Utils;
 
 namespace PicNetStudio.Avalonia.PicNet.Tools.Settings;

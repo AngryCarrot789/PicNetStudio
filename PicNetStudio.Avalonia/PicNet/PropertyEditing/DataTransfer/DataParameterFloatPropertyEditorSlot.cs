@@ -18,7 +18,6 @@
 //
 
 using System;
-using System.Diagnostics;
 using PicNetStudio.Avalonia.DataTransfer;
 using PicNetStudio.Avalonia.Utils;
 
@@ -39,7 +38,6 @@ public class DataParameterFloatPropertyEditorSlot : DataParameterFormattableNumb
                 ITransferableData obj = (ITransferableData) this.Handlers[i];
                 float newValue = parameter.Clamp(useAddition ? (parameter.GetValue(obj) + change) : value);
                 parameter.SetValue(obj, newValue);
-                Debug.WriteLine(newValue);
             }
 
             this.OnValueChanged(this.lastQueryHasMultipleValues && useAddition, true);

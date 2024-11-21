@@ -19,21 +19,21 @@
 
 using System;
 
-namespace PicNetStudio.Avalonia.PicNet {
-    /// <summary>
-    /// An object factory that allows reflective creation of objects that use a default constructor
-    /// </summary>
-    public class ReflectiveObjectFactory<T> : ObjectFactory where T : class {
-        public ReflectiveObjectFactory() {
-        }
+namespace PicNetStudio.Avalonia.PicNet;
 
-        protected override bool IsTypeValid(Type type) {
-            return typeof(T).IsAssignableFrom(type);
-        }
+/// <summary>
+/// An object factory that allows reflective creation of objects that use a default constructor
+/// </summary>
+public class ReflectiveObjectFactory<T> : ObjectFactory where T : class {
+    public ReflectiveObjectFactory() {
+    }
 
-        protected T NewInstance(string id) {
-            Type type = this.GetType(id);
-            return (T) Activator.CreateInstance(type);
-        }
+    protected override bool IsTypeValid(Type type) {
+        return typeof(T).IsAssignableFrom(type);
+    }
+
+    protected T NewInstance(string id) {
+        Type type = this.GetType(id);
+        return (T) Activator.CreateInstance(type);
     }
 }

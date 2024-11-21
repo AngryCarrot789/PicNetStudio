@@ -34,8 +34,9 @@ public abstract class BaseVisualLayer : BaseLayerTreeObject {
     public static readonly DataParameterFloat OpacityParameter = DataParameter.Register(new DataParameterFloat(typeof(BaseVisualLayer), nameof(Opacity), 1.0f, 0.0f, 1.0f, ValueAccessors.Reflective<float>(typeof(BaseVisualLayer), nameof(opacity))));
     public static readonly DataParameterBool IsRenderVisibleParameter = DataParameter.Register(new DataParameterBool(typeof(BaseVisualLayer), nameof(IsVisible), true, ValueAccessors.Reflective<bool>(typeof(BaseVisualLayer), nameof(isVisible))));
     public static readonly DataParameterBool IsExportVisibleParameter = DataParameter.Register(new DataParameterBool(typeof(BaseVisualLayer), nameof(IsExportVisible), true, ValueAccessors.Reflective<bool>(typeof(BaseVisualLayer), nameof(isExportVisible))));
+    public static readonly DataParameterBool IsSoloParameter = DataParameter.Register(new DataParameterBool(typeof(BaseVisualLayer), nameof(IsSolo), false, ValueAccessors.Reflective<bool>(typeof(BaseVisualLayer), nameof(isSolo))));
     public static readonly DataParameter<SKBlendMode> BlendModeParameter = DataParameter.Register(new DataParameter<SKBlendMode>(typeof(BaseVisualLayer), nameof(BlendMode), SKBlendMode.SrcOver, ValueAccessors.Reflective<SKBlendMode>(typeof(BaseVisualLayer), nameof(blendMode))));
-    
+
     public static readonly DataParameterPoint PositionParameter = DataParameter.Register(new DataParameterPoint(typeof(BaseVisualLayer), nameof(Position), default, ValueAccessors.Reflective<SKPoint>(typeof(BaseVisualLayer), nameof(position))));
     public static readonly DataParameterPoint ScaleParameter = DataParameter.Register(new DataParameterPoint(typeof(BaseVisualLayer), nameof(Scale), new SKPoint(1.0F, 1.0F), ValueAccessors.Reflective<SKPoint>(typeof(BaseVisualLayer), nameof(scale))));
     public static readonly DataParameterPoint ScaleOriginParameter = DataParameter.Register(new DataParameterPoint(typeof(BaseVisualLayer), nameof(ScaleOrigin), default, ValueAccessors.Reflective<SKPoint>(typeof(BaseVisualLayer), nameof(scaleOrigin))));
@@ -45,8 +46,9 @@ public abstract class BaseVisualLayer : BaseLayerTreeObject {
     private float opacity = OpacityParameter.DefaultValue;
     private bool isVisible = IsRenderVisibleParameter.DefaultValue;
     private bool isExportVisible = IsExportVisibleParameter.DefaultValue;
+    private bool isSolo = IsSoloParameter.DefaultValue;
     private SKBlendMode blendMode = BlendModeParameter.DefaultValue;
-    
+
     private SKPoint position = PositionParameter.DefaultValue;
     private SKPoint scale = ScaleParameter.DefaultValue;
     private SKPoint scaleOrigin = ScaleOriginParameter.DefaultValue;
@@ -81,38 +83,46 @@ public abstract class BaseVisualLayer : BaseLayerTreeObject {
     }
 
     /// <summary>
+    /// Gets or sets if this layer is the only layer being rendered in the PREVIEW
+    /// </summary>
+    public bool IsSolo {
+        get => this.isSolo;
+        set => DataParameter.SetValueHelper(this, IsSoloParameter, ref this.isSolo, value);
+    }
+
+    /// <summary>
     /// Gets or sets the blending mode used for rendering. This is a blend between the currently rendered composition
     /// </summary>
     public SKBlendMode BlendMode {
         get => this.blendMode;
         set => DataParameter.SetValueHelper(this, BlendModeParameter, ref this.blendMode, value);
     }
-    
+
     public SKPoint Position {
         get => this.position;
         set => DataParameter.SetValueHelper(this, PositionParameter, ref this.position, value);
     }
-    
+
     public SKPoint Scale {
         get => this.scale;
         set => DataParameter.SetValueHelper(this, ScaleParameter, ref this.scale, value);
     }
-    
+
     public SKPoint ScaleOrigin {
         get => this.scaleOrigin;
         set => DataParameter.SetValueHelper(this, ScaleOriginParameter, ref this.scaleOrigin, value);
     }
-    
+
     public float Rotation {
         get => this.rotation;
         set => DataParameter.SetValueHelper(this, RotationParameter, ref this.rotation, value);
     }
-    
+
     public SKPoint RotationOrigin {
         get => this.rotationOrigin;
         set => DataParameter.SetValueHelper(this, RotationOriginParameter, ref this.rotationOrigin, value);
     }
-    
+
     /// <summary>
     /// Gets the transformation matrix for the transformation properties in this layer only, not including parent transformations
     /// </summary>
@@ -123,7 +133,7 @@ public abstract class BaseVisualLayer : BaseLayerTreeObject {
             return this.myTransformationMatrix;
         }
     }
-    
+
     /// <summary>
     /// Gets the absolute transformation matrix, which is a concatenation of all of our parents' matrices and our own
     /// </summary>
@@ -145,7 +155,7 @@ public abstract class BaseVisualLayer : BaseLayerTreeObject {
             return this.myInverseTransformationMatrix;
         }
     }
-    
+
     /// <summary>
     /// Gets the inverse of our absolute transformation matrix. This can be used to,
     /// for example, map a location on the entire canvas to this layer
@@ -168,7 +178,7 @@ public abstract class BaseVisualLayer : BaseLayerTreeObject {
     /// An event fired when this layer is marked as "dirty" and requires re-drawing
     /// </summary>
     public event BaseVisualLayerRenderInvalidatedEventHandler? RenderInvalidated;
-    
+
     protected BaseVisualLayer() {
     }
 
@@ -181,7 +191,38 @@ public abstract class BaseVisualLayer : BaseLayerTreeObject {
         // Not sure...
         SetParameterAffectsRender(OpacityParameter, IsRenderVisibleParameter, BlendModeParameter);
         
-        DataParameter.AddMultipleHandlers((p, o) => ((BaseVisualLayer) o.TransferableData.Owner).InvalidateTransformationMatrix(), PositionParameter, ScaleParameter, ScaleOriginParameter, RotationParameter, RotationOriginParameter);
+        // Add internal handler for solo system
+        IsSoloParameter.ValueChanged += OnIsSoloValueChanged;
+        
+        // Add handlers to properties that affect the transformation matrix
+        DataParameter.AddMultipleHandlers(OnMatrixInvalidatingPropertyChanged, PositionParameter, ScaleParameter, ScaleOriginParameter, RotationParameter, RotationOriginParameter);
+    }
+
+    private static void OnMatrixInvalidatingPropertyChanged(DataParameter parameter, ITransferableData owner) {
+        ((BaseVisualLayer) owner).InvalidateTransformationMatrix();
+    }
+
+    // Update for the entire 
+    private static void OnIsSoloValueChanged(DataParameter parameter, ITransferableData owner) {
+        BaseVisualLayer layer = (BaseVisualLayer) owner;
+        
+        // Something set the property while not in a canvas tree. This is basically pointless
+        // since IsSolo is set to false when adding/removing a layer, so we can ignore it
+        if (layer.Canvas == null) {
+            return;
+        }
+
+        // The property was set to false so try and clear the canvas' current solo layer
+        if (!layer.IsSolo) {
+            // Check that the layer whose IsSolo is now false is the actual solo layer.
+            // If it isn't then I don't know what happened but it should be fine... hopefully
+            if (ReferenceEquals(layer, layer.Canvas.SoloLayer))
+                Canvas.InternalSetSoloLayer(layer.Canvas, null); // Clear solo layer
+        }
+        else {
+            // IsSolo set to true so let the canvas deal with the old/new solo layer states
+            Canvas.InternalSetSoloLayer(layer.Canvas, layer);
+        }
     }
 
     /// <summary>
@@ -195,10 +236,10 @@ public abstract class BaseVisualLayer : BaseLayerTreeObject {
             if (!parameter.OwnerType.IsAssignableTo(typeof(BaseVisualLayer)))
                 throw new ArgumentException(parameter + "'s owner is not an instance of visual layer");
         }
-        
+
         DataParameter.AddMultipleHandlers(OnDataParameterChangedToInvalidateVisual, parameters);
     }
-    
+
     private void GenerateMatrices() {
         this.myTransformationMatrix = MatrixUtils.CreateTransformationMatrix(this.Position, this.Scale, this.Rotation, this.ScaleOrigin, this.RotationOrigin);
         this.myInverseTransformationMatrix = MatrixUtils.CreateInverseTransformationMatrix(this.Position, this.Scale, this.Rotation, this.ScaleOrigin, this.RotationOrigin);
@@ -216,7 +257,7 @@ public abstract class BaseVisualLayer : BaseLayerTreeObject {
         base.OnEffectRemoved(index, effect);
         this.InvalidateVisual();
     }
-    
+
     /// <summary>
     /// Marks this layer as having an invalid rendered state, meaning that any pre-rendered frame using this layer must be re-rendered
     /// </summary>
@@ -244,5 +285,11 @@ public abstract class BaseVisualLayer : BaseLayerTreeObject {
         if (layer != null) {
             layer.isMatrixDirty = true;
         }
+    }
+
+    public static void InternalClearIsSolo(BaseVisualLayer? layer) {
+        if (layer == null)
+            return;
+        layer.IsSolo = false;
     }
 }

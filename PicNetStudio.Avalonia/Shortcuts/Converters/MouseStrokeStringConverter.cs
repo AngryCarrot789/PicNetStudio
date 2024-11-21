@@ -27,86 +27,86 @@ using Avalonia.Data.Converters;
 using Avalonia.Input;
 using PicNetStudio.Avalonia.Shortcuts.Avalonia;
 
-namespace PicNetStudio.Avalonia.Shortcuts.Converters {
-    public class MouseStrokeStringConverter : IMultiValueConverter {
-        public static MouseStrokeStringConverter Instance { get; } = new MouseStrokeStringConverter();
+namespace PicNetStudio.Avalonia.Shortcuts.Converters;
 
-        public static string ToStringFunction(int mouseButton, int modifiers, int clickCount) {
-            StringBuilder sb = new StringBuilder();
-            string mods = KeyStrokeStringConverter.ModsToString((KeyModifiers) modifiers);
-            if (mods.Length > 0) {
-                sb.Append(mods).Append('+');
-            }
+public class MouseStrokeStringConverter : IMultiValueConverter {
+    public static MouseStrokeStringConverter Instance { get; } = new MouseStrokeStringConverter();
 
-            string name;
-            switch (mouseButton) {
-                case 0:
-                    name = "Left Click";
-                    break;
-                case 1:
-                    name = "Middle Click";
-                    break;
-                case 2:
-                    name = "Right Click";
-                    break;
-                case 3:
-                    name = "X1 (←)";
-                    break;
-                case 4:
-                    name = "X2 (→)";
-                    break;
-                case AvaloniaShortcutManager.BUTTON_WHEEL_UP:
-                    name = "Wheel Up";
-                    break;
-                case AvaloniaShortcutManager.BUTTON_WHEEL_DOWN:
-                    name = "Wheel Down";
-                    break;
-                default: throw new Exception("Invalid mouse button: " + mouseButton);
-            }
+    public static string ToStringFunction(int mouseButton, int modifiers, int clickCount) {
+        StringBuilder sb = new StringBuilder();
+        string mods = KeyStrokeStringConverter.ModsToString((KeyModifiers) modifiers);
+        if (mods.Length > 0) {
+            sb.Append(mods).Append('+');
+        }
 
-            switch (clickCount) {
-                case 2:
-                    sb.Append("Double ").Append(name);
-                    break;
-                case 3:
-                    sb.Append("Triple ").Append(name);
-                    break;
-                case 4:
-                    sb.Append("Quad ").Append(name);
-                    break;
-                default: {
-                    if (clickCount > 0) {
-                        sb.Append(name).Append(" (x").Append(clickCount).Append(")");
-                    }
-                    else {
-                        sb.Append(name);
-                    }
+        string name;
+        switch (mouseButton) {
+            case 0:
+                name = "Left Click";
+                break;
+            case 1:
+                name = "Middle Click";
+                break;
+            case 2:
+                name = "Right Click";
+                break;
+            case 3:
+                name = "X1 (←)";
+                break;
+            case 4:
+                name = "X2 (→)";
+                break;
+            case AvaloniaShortcutManager.BUTTON_WHEEL_UP:
+                name = "Wheel Up";
+                break;
+            case AvaloniaShortcutManager.BUTTON_WHEEL_DOWN:
+                name = "Wheel Down";
+                break;
+            default: throw new Exception("Invalid mouse button: " + mouseButton);
+        }
 
-                    break;
+        switch (clickCount) {
+            case 2:
+                sb.Append("Double ").Append(name);
+                break;
+            case 3:
+                sb.Append("Triple ").Append(name);
+                break;
+            case 4:
+                sb.Append("Quad ").Append(name);
+                break;
+            default: {
+                if (clickCount > 0) {
+                    sb.Append(name).Append(" (x").Append(clickCount).Append(")");
                 }
+                else {
+                    sb.Append(name);
+                }
+
+                break;
             }
-
-            return sb.ToString();
         }
 
-        public object Convert(IList<object?> values, Type targetType, object? parameter, CultureInfo culture) {
-            if (values == null || values.Count != 3 || values.Count != 4) {
-                Debug.WriteLine($"This converter requires 4 elements; mouseButton, modifiers, clickCount, wheelDelta. Got: {values}");
-                return AvaloniaProperty.UnsetValue;
-            }
+        return sb.ToString();
+    }
 
-            if (!(values[0] is int mouseButton))
-                throw new Exception("values[0] must be an int: mouseButton");
-            if (!(values[1] is int modifiers))
-                throw new Exception("values[1] must be an int: modifiers");
-            if (!(values[2] is int clickCount))
-                throw new Exception("values[2] must be an int: clickCount");
-
-            return ToStringFunction(mouseButton, modifiers, clickCount);
+    public object Convert(IList<object?> values, Type targetType, object? parameter, CultureInfo culture) {
+        if (values == null || values.Count != 3 || values.Count != 4) {
+            Debug.WriteLine($"This converter requires 4 elements; mouseButton, modifiers, clickCount, wheelDelta. Got: {values}");
+            return AvaloniaProperty.UnsetValue;
         }
 
-        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture) {
-            throw new NotImplementedException();
-        }
+        if (!(values[0] is int mouseButton))
+            throw new Exception("values[0] must be an int: mouseButton");
+        if (!(values[1] is int modifiers))
+            throw new Exception("values[1] must be an int: modifiers");
+        if (!(values[2] is int clickCount))
+            throw new Exception("values[2] must be an int: clickCount");
+
+        return ToStringFunction(mouseButton, modifiers, clickCount);
+    }
+
+    public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture) {
+        throw new NotImplementedException();
     }
 }

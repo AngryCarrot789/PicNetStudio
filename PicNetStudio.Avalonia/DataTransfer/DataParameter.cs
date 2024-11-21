@@ -21,6 +21,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
+using PicNetStudio.Avalonia.Utils;
 using PicNetStudio.Avalonia.Utils.Accessing;
 
 namespace PicNetStudio.Avalonia.DataTransfer;
@@ -30,10 +31,6 @@ public delegate void DataParameterValueChangedEventHandler(DataParameter paramet
 /// <summary>
 /// The core base class for all data parameters. A data parameter is used to simplify the data transfer between
 /// objects and the UI, such as property editor slots.
-/// <para>
-/// This class should typically not be overridden directly, instead, use <see cref="DataParameter{T}"/>,
-/// which provides mechanisms to Get/Set the value
-/// </para>
 /// <para>
 /// Parameters have 3 value-change events that are fired in a specific order:
 /// </para>
@@ -87,10 +84,8 @@ public abstract class DataParameter : IEquatable<DataParameter>, IComparable<Dat
     public event DataParameterValueChangedEventHandler? ValueChanged;
 
     protected DataParameter(Type ownerType, string name, DataParameterFlags flags) {
-        if (ownerType == null)
-            throw new ArgumentNullException(nameof(ownerType));
-        if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Key cannot be null, empty or consist of only whitespaces");
+        Validate.NotNull(ownerType);
+        Validate.NotNullOrWhiteSpaces(name);
         this.OwnerType = ownerType;
         this.Name = name;
         this.Flags = flags;
@@ -122,8 +117,6 @@ public abstract class DataParameter : IEquatable<DataParameter>, IComparable<Dat
             parameter.ValueChanged -= handler;
         }
     }
-
-    #region Registering parameters
 
     /// <summary>
     /// Registers the given parameter
@@ -162,8 +155,6 @@ public abstract class DataParameter : IEquatable<DataParameter>, IComparable<Dat
         }
     }
 
-    #endregion
-
     public bool IsValueChanging(ITransferableData owner) {
         return owner.TransferableData.IsValueChanging(this);
     }
@@ -171,12 +162,16 @@ public abstract class DataParameter : IEquatable<DataParameter>, IComparable<Dat
     /// <summary>
     /// Adds a value changed event handler for this parameter on the given owner
     /// </summary>
-    public void AddValueChangedHandler(ITransferableData owner, DataParameterValueChangedEventHandler handler) => TransferableData.InternalAddHandler(this, owner.TransferableData, handler);
+    public void AddValueChangedHandler(ITransferableData owner, DataParameterValueChangedEventHandler handler) {
+        TransferableData.InternalAddHandler(this, owner.TransferableData, handler);
+    }
 
     /// <summary>
     /// Removes a value changed handler for this parameter on the given owner
     /// </summary>
-    public void RemoveValueChangedHandler(ITransferableData owner, DataParameterValueChangedEventHandler handler) => TransferableData.InternalRemoveHandler(this, owner.TransferableData, handler);
+    public void RemoveValueChangedHandler(ITransferableData owner, DataParameterValueChangedEventHandler handler) {
+        TransferableData.InternalRemoveHandler(this, owner.TransferableData, handler);
+    }
 
     /// <summary>
     /// Gets the object value from the given owner, boxing if necessary
@@ -313,6 +308,9 @@ public abstract class DataParameter : IEquatable<DataParameter>, IComparable<Dat
     /// <typeparam name="T">The type of value</typeparam>
     public static void SetValueHelper<T>(ITransferableData owner, DataParameter<T> parameter, ref T field, T newValue) {
         if (parameter.IsValueChanging(owner)) {
+            if (!EqualityComparer<T>.Default.Equals(field, newValue))
+                throw new InvalidOperationException("Attempted to set value to a different value during the Value Change process");
+            
             field = newValue;
         }
         else {
@@ -354,6 +352,10 @@ public class DataParameter<T> : DataParameter {
         return this.accessor.GetValue(owner);
     }
 
+    public override object? GetObjectValue(ITransferableData owner) {
+        return this.accessor.GetObjectValue(owner);
+    }
+    
     /// <summary>
     /// Sets the generic value for this parameter
     /// </summary>
@@ -371,10 +373,9 @@ public class DataParameter<T> : DataParameter {
         finally {
             this.OnEndValueChangeHelper(owner, ref error);
         }
-    }
-
-    public override object? GetObjectValue(ITransferableData owner) {
-        return this.accessor.GetObjectValue(owner);
+        
+        if (error != null)
+            throw error;
     }
 
     public override void SetObjectValue(ITransferableData owner, object? value) {
@@ -389,5 +390,8 @@ public class DataParameter<T> : DataParameter {
         finally {
             this.OnEndValueChangeHelper(owner, ref error);
         }
+
+        if (error != null)
+            throw error;
     }
 }

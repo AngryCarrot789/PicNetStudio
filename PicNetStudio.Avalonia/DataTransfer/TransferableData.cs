@@ -29,6 +29,15 @@ namespace PicNetStudio.Avalonia.DataTransfer;
 /// which is why it is important that the setter methods of the data properties are not called directly
 /// </summary>
 public sealed class TransferableData {
+    private class ParameterData {
+        public bool isValueChanging;
+        public event DataParameterValueChangedEventHandler? ValueChanged;
+
+        public void RaiseValueChanged(DataParameter parameter, ITransferableData owner) {
+            this.ValueChanged?.Invoke(parameter, owner);
+        }
+    }
+
     private Dictionary<int, ParameterData>? paramData;
 
     public ITransferableData Owner { get; }
@@ -43,7 +52,7 @@ public sealed class TransferableData {
     }
 
     internal static void InternalAddHandler(DataParameter parameter, TransferableData owner, DataParameterValueChangedEventHandler handler) {
-        owner.GetParamData(parameter).ValueChanged += handler;
+        owner.GetOrCreateParamData(parameter).ValueChanged += handler;
     }
 
     internal static void InternalRemoveHandler(DataParameter parameter, TransferableData owner, DataParameterValueChangedEventHandler handler) {
@@ -75,7 +84,7 @@ public sealed class TransferableData {
         return false;
     }
 
-    private ParameterData GetParamData(DataParameter parameter) {
+    private ParameterData GetOrCreateParamData(DataParameter parameter) {
         if (parameter == null)
             throw new ArgumentNullException(nameof(parameter), "Parameter cannot be null");
 
@@ -89,17 +98,8 @@ public sealed class TransferableData {
         return data;
     }
 
-    private class ParameterData {
-        public bool isValueChanging;
-        public event DataParameterValueChangedEventHandler? ValueChanged;
-
-        public void RaiseValueChanged(DataParameter parameter, ITransferableData owner) {
-            this.ValueChanged?.Invoke(parameter, owner);
-        }
-    }
-
     internal static void InternalBeginValueChange(DataParameter parameter, ITransferableData owner) {
-        ParameterData internalData = owner.TransferableData.GetParamData(parameter);
+        ParameterData internalData = owner.TransferableData.GetOrCreateParamData(parameter);
         if (internalData.isValueChanging) {
             throw new InvalidOperationException("Value is already changing. This exception is thrown, as the alternative is most likely a stack overflow exception");
         }
@@ -109,7 +109,7 @@ public sealed class TransferableData {
 
     internal static void InternalEndValueChange(DataParameter parameter, ITransferableData owner) {
         TransferableData data = owner.TransferableData;
-        ParameterData internalData = data.GetParamData(parameter);
+        ParameterData internalData = data.GetOrCreateParamData(parameter);
         try {
             internalData.RaiseValueChanged(parameter, owner);
             data.ValueChanged?.Invoke(parameter, owner);

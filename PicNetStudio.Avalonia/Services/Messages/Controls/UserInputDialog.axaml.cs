@@ -80,6 +80,7 @@ public partial class UserInputDialog : WindowEx {
         base.OnLoaded(e);
         this.PART_DockPanelRoot.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
         Size size = this.PART_DockPanelRoot.DesiredSize;
+        size = new Size(size.Width + 2, size.Height);
         if (size.Width > 300.0) {
             this.Width = size.Width;
         }

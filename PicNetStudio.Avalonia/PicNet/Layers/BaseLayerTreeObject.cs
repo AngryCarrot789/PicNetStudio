@@ -23,6 +23,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using PicNetStudio.Avalonia.DataTransfer;
 using PicNetStudio.Avalonia.PicNet.Effects;
+using PicNetStudio.Avalonia.PicNet.Layers.Core;
 using PicNetStudio.Avalonia.Utils.Collections.Observable;
 
 namespace PicNetStudio.Avalonia.PicNet.Layers;
@@ -272,6 +273,7 @@ public abstract class BaseLayerTreeObject : ITransferableData {
         Debug.Assert(layer.ParentLayer == null, "Did not expect layer to be in a composition layer when adding it to another");
         Debug.Assert(layer.Canvas == null, "Did not expect layer to be in a canvas when adding to a composition layer");
 
+        BaseVisualLayer.InternalClearIsSolo(layer as BaseVisualLayer);
         layer.parentLayer = newParent;
         layer.indexInParent = index;
         layer.OnParentChanged(null, newParent);
@@ -310,6 +312,8 @@ public abstract class BaseLayerTreeObject : ITransferableData {
     // User deleted some layer from composition layer
     internal static void InternalOnRemovedFromLayer(BaseLayerTreeObject layer, CompositionLayer oldParent) {
         Debug.Assert(layer.ParentLayer != null, "Did not expect layer to not be in a composition layer when removing it from another");
+        
+        BaseVisualLayer.InternalClearIsSolo(layer as BaseVisualLayer);
 
         // While child layers are notified of canvas detachment first, should we do the same here???
         Canvas? oldCanvas = layer.Canvas;

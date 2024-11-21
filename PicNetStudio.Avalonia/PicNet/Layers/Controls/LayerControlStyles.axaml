@@ -27,86 +27,18 @@
         <Setter Property="BorderThickness" Value="0,0,0,1"/>
         <Setter Property="Margin" Value="0"/>
         <Setter Property="Padding" Value="0"/>
-        <Setter Property="Template">
-            <ControlTemplate>
-                <Panel>
-                    <StackPanel>
-                        <Border x:Name="SelectionBorder"
-                                Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="{TemplateBinding CornerRadius}"
-                                Focusable="True"
-                                TemplatedControl.IsTemplateFocusTarget="True">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="{Binding RelativeSource={RelativeSource AncestorType={x:Type lcc:CompactLayerTreeView}}, Path=ColumnWidth0, Mode=TwoWay}" MinWidth="100"/>
-                                    <ColumnDefinition Width="0"/>
-                                    <ColumnDefinition Width="{Binding RelativeSource={RelativeSource AncestorType={x:Type lcc:CompactLayerTreeView}}, Path=ColumnWidth2, Mode=TwoWay}"/>
-                                    <ColumnDefinition Width="0"/>
-                                    <ColumnDefinition Width="{Binding RelativeSource={RelativeSource AncestorType={x:Type lcc:CompactLayerTreeView}}, Path=ColumnWidth4, Mode=TwoWay}"/>
-                                </Grid.ColumnDefinitions>
-                                <Grid x:Name="PART_Header" ColumnDefinitions="19,0, *"
-                                      Margin="{TemplateBinding Level, Mode=OneWay, Converter={StaticResource LeftMarginConverter}}"
-                                      HorizontalAlignment="Stretch"
-                                      MinHeight="20" Grid.Column="0"
-                                      Background="Transparent"
-                                      ClipToBounds="True">
-                                    <ToggleButton x:Name="PART_ExpandCollapseChevron"
-                                                  Focusable="False"
-                                                  Background="Transparent"
-                                                  IsChecked="{TemplateBinding IsExpanded, Mode=TwoWay}"
-                                                  Theme="{StaticResource OutlinedButtonTreeViewItemToggleButtonTheme}"
-                                                  VerticalAlignment="Center" HorizontalAlignment="Center"
-                                                  Margin="0,0,0,0"/>
-                                    <Panel Grid.Column="2" VerticalAlignment="Center"
-                                           HorizontalAlignment="Left"
-                                           Background="Transparent"
-                                           Margin="{TemplateBinding Padding}"
-                                           Focusable="False">
-                                        <TextBlock x:Name="PART_HeaderTextBlock" Text="{TemplateBinding Header}" Margin="0,-1,0,0"/>
-                                        <TextBox x:Name="PART_HeaderTextBox" Text="{TemplateBinding Header, Mode=TwoWay}"
-                                                 BorderThickness="0" Padding="0" Margin="0,-1,0,0"/>
-                                    </Panel>
-                                </Grid>
-                                <c2:LayerStateModifierListBox x:Name="PART_StateModifierListBox"
-                                                              Grid.Column="2" VerticalAlignment="Stretch"
-                                                              ClipToBounds="True" Padding="1,0,0,0"
-                                                              Background="Transparent"/>
-                                <ec:EffectListBox x:Name="PART_EffectListBox" Grid.Column="4"
-                                                  ClipToBounds="True" Padding="1,0,0,0"
-                                                  Background="Transparent"/>
-                            </Grid>
-                        </Border>
-                        <ItemsPresenter x:Name="PART_ItemsPresenter"
-                                        IsVisible="{TemplateBinding IsExpanded}"
-                                        ItemsPanel="{TemplateBinding ItemsPanel}"/>
-                    </StackPanel>
-                    <Border x:Name="PART_DropTargetOverBorder" Margin="0" BorderThickness="0"
-                            BorderBrush="{DynamicResource ABrush.ColourfulGlyph.Static}"/>
-                    <Border x:Name="PART_DragDropMoveBorder"
-                            Margin="{TemplateBinding Level, Mode=OneWay, Converter={StaticResource LeftMarginConverter}}"
-                            BorderBrush="{DynamicResource ABrush.ColourfulGlyph.Static}" BorderThickness="0"/>
-                </Panel>
-            </ControlTemplate>
-        </Setter>
-
         <Style Selector="^ /template/ ContentPresenter#PART_HeaderPresenter">
             <Setter Property="Padding" Value="2"/>
         </Style>
-
         <Style Selector="^:selected /template/ Border#SelectionBorder">
             <Setter Property="Background" Value="{DynamicResource TreeViewItem.Selected.Background}"/>
         </Style>
-
         <Style Selector="^:selected /template/ Border#SelectionBorder[IsFocused=False]">
             <Setter Property="Background" Value="{DynamicResource TreeViewItem.Selected.Inactive.Background}"/>
         </Style>
-
         <Style Selector="^:empty /template/ ToggleButton#PART_ExpandCollapseChevron">
             <Setter Property="IsVisible" Value="False"/>
         </Style>
-
         <Style Selector="^[IsDroppableTargetOver=true] /template/ Border#PART_DropTargetOverBorder">
             <Setter Property="BorderThickness" Value="1"/>
         </Style>
@@ -182,7 +114,7 @@
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 CornerRadius="{TemplateBinding CornerRadius}"
-                                Focusable="True"
+                                Focusable="True" Height="23"
                                 TemplatedControl.IsTemplateFocusTarget="True">
                             <Grid>
                                 <Grid.ColumnDefinitions>
@@ -195,7 +127,7 @@
                                 <Grid x:Name="PART_Header" ColumnDefinitions="19,0, *"
                                       Margin="{TemplateBinding Level, Mode=OneWay, Converter={StaticResource LeftMarginConverter}}"
                                       HorizontalAlignment="Stretch"
-                                      MinHeight="20" Grid.Column="0"
+                                      Grid.Column="0"
                                       Background="Transparent"
                                       ClipToBounds="True">
                                     <ToggleButton x:Name="PART_ExpandCollapseChevron"
@@ -216,9 +148,11 @@
                                     </Panel>
                                 </Grid>
                                 <c2:LayerStateModifierListBox x:Name="PART_StateModifierListBox"
+                                                              Margin="2"
                                                               Grid.Column="2" VerticalAlignment="Stretch"
                                                               ClipToBounds="True" Padding="1,0,0,0"
-                                                              Background="Transparent"/>
+                                                              Background="Transparent"
+                                                              />
                                 <ec:EffectListBox x:Name="PART_EffectListBox" Grid.Column="4"
                                                   ClipToBounds="True" Padding="1,0,0,0"
                                                   Background="Transparent"/>
@@ -353,6 +287,7 @@
                                             </Panel>
                                             <c2:LayerStateModifierListBox x:Name="PART_StateModifierListBox"
                                                                           Grid.Column="0" Grid.Row="1"
+                                                                          Margin="2,0,2,0"
                                                                           VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
                                                                           ClipToBounds="True"
                                                                           Background="Transparent"

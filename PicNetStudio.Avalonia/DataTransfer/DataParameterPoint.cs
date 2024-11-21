@@ -28,21 +28,13 @@ namespace PicNetStudio.Avalonia.DataTransfer;
 /// A <see cref="DataParameter{T}"/> that manages an SKPoint, which is two 32-bit single precision floating
 /// point numbers (aka, a float). This also has an optional minimum and maximum value range
 /// </summary>
-public sealed class DataParameterPoint : DataParameter<SKPoint> {
+public sealed class DataParameterPoint : DataParameter<SKPoint>, IRangedParameter<SKPoint> {
     public static SKPoint SKPointMinValue => new SKPoint(float.MinValue, float.MinValue);
     public static SKPoint SKPointMaxValue => new SKPoint(float.MaxValue, float.MaxValue);
     
-    /// <summary>
-    /// The minimum value of the parameter. The final effective value may not drop below this
-    /// </summary>
     public SKPoint Minimum { get; }
-
-    /// <summary>
-    /// The maximum value of the parameter. The final effective value may not exceed this
-    /// </summary>
     public SKPoint Maximum { get; }
-
-    private readonly bool hasRangeLimit;
+    public bool HasRangeLimit { get; }
 
     public DataParameterPoint(Type ownerType, string name, ValueAccessor<SKPoint> accessor, DataParameterFlags flags = DataParameterFlags.None) : this(ownerType, name, default, accessor, flags) {
     }
@@ -57,27 +49,25 @@ public sealed class DataParameterPoint : DataParameter<SKPoint> {
             throw new ArgumentOutOfRangeException(nameof(defValue), $"Default value ({defValue}) falls out of range of the min/max values ({minValue}/{maxValue})");
         this.Minimum = minValue;
         this.Maximum = maxValue;
-        this.hasRangeLimit = minValue.X > float.MinValue || minValue.Y > float.MinValue || maxValue.X < float.MaxValue || maxValue.Y < float.MaxValue;
+        this.HasRangeLimit = minValue.X > float.MinValue || minValue.Y > float.MinValue || maxValue.X < float.MaxValue || maxValue.Y < float.MaxValue;
     }
 
-    public static SKPoint Clamp(SKPoint point, SKPoint min, SKPoint max) => new SKPoint(Maths.Clamp(point.X, min.X, max.X), Maths.Clamp(point.Y, min.Y, max.Y));
-    
-    public SKPoint Clamp(SKPoint value) => Clamp(value, this.Minimum, this.Maximum);
+    public SKPoint Clamp(SKPoint value) => new SKPoint(Maths.Clamp(value.X, this.Minimum.X, this.Maximum.X), Maths.Clamp(value.Y, this.Minimum.Y, this.Maximum.Y));
 
     public bool IsValueOutOfRange(SKPoint value) => value.X < this.Minimum.X || value.Y < this.Minimum.Y || value.X > this.Maximum.X || value.Y > this.Maximum.Y;
 
     public override void SetValue(ITransferableData owner, SKPoint value) {
-        if (this.hasRangeLimit) {
-            value = Clamp(value, this.Minimum, this.Maximum);
+        if (this.HasRangeLimit) {
+            value = this.Clamp(value);
         }
 
         base.SetValue(owner, value);
     }
 
     public override void SetObjectValue(ITransferableData owner, object? value) {
-        if (this.hasRangeLimit) {
+        if (this.HasRangeLimit) {
             SKPoint unboxed = (SKPoint) value!;
-            SKPoint clamped = Clamp(unboxed, this.Minimum, this.Maximum);
+            SKPoint clamped = this.Clamp(unboxed);
             if (!Maths.Equals(unboxed, clamped))
                 value = clamped;
         }

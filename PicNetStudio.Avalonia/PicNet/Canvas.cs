@@ -17,6 +17,7 @@
 // along with PicNetStudio. If not, see <https://www.gnu.org/licenses/>.
 // 
 
+using System;
 using Avalonia;
 using PicNetStudio.Avalonia.PicNet.Layers;
 using PicNetStudio.Avalonia.PicNet.Layers.Core;
@@ -42,6 +43,7 @@ public class Canvas {
     private BaseLayerTreeObject? activeLayerTreeObject;
     private BaseSelection? selectionRegion;
     private bool fullInvalidate;
+    private BaseVisualLayer? mySoloLayer;
 
     /// <summary>
     /// The document that owns this canvas
@@ -88,7 +90,7 @@ public class Canvas {
             this.RaiseRenderInvalidated(false);
         }
     }
-
+    
     /// <summary>
     /// An event fired when the canvas has changed and any UI needs redrawing due to the pixels changing
     /// </summary>
@@ -108,6 +110,12 @@ public class Canvas {
     /// An event fired when our selection region changes
     /// </summary>
     public event CanvasSelectionRegionChangedEventHandler? SelectionRegionChanged;
+
+    /// <summary>
+    /// Gets the layer that is the current "solo" layer, that is, the only layer that can be
+    /// drawn and every other layer is hidden. This is for the preview only, not export
+    /// </summary>
+    public BaseVisualLayer? SoloLayer => this.mySoloLayer;
     
     // TODO: two bitmaps containing pre-rendered layers before and after active layer, as to make rendering faster 
 
@@ -125,7 +133,7 @@ public class Canvas {
     // QtBitmapEditor -> Project::paintEvent
     public void Render(SKSurface surface) {
         RenderContext args = new RenderContext(this, surface, false, this.fullInvalidate);
-        LayerRenderer.RenderCanvas(ref args);
+        LayerRenderer.RenderCanvas(ref args, false);
     }
 
     public void RaiseRenderInvalidated(bool fullInvalidate = true) {
@@ -135,5 +143,35 @@ public class Canvas {
         else {
             this.RenderInvalidated?.Invoke(this);
         }
+    }
+    
+    internal static void InternalSetSoloLayer(Canvas canvas, BaseVisualLayer? layer) {
+        BaseVisualLayer? newSoloLayer = layer;
+        if (newSoloLayer != null) { // we can set the solo layer to false if we want to clear it
+            // Should be an impossible to reach exception unless
+            // someone is poking around with the internal methods
+            if (!ReferenceEquals(newSoloLayer.Canvas, canvas))
+                throw new InvalidOperationException("Layer is not in this canvas");
+            
+            // Layer set IsSolo to false, so double check everything's in
+            // order then make it look like we're clearing the solo layer
+            if (!newSoloLayer.IsSolo) {
+                if (BaseVisualLayer.IsSoloParameter.IsValueChanging(newSoloLayer))
+                    throw new InvalidOperationException("Layer's " + BaseVisualLayer.IsSoloParameter.Name + " property is false but currently changing.");
+             
+                newSoloLayer = null;
+            }
+        }
+        
+        // Set IsSolo to previous solo layer. If the current solo layer is being set
+        // to not solo, then don't worry since it's already false at this point
+        if (canvas.mySoloLayer != null && !ReferenceEquals(canvas.mySoloLayer, layer)) {
+            // assert oldSoloLayer.IsSolo == true maybe?
+            canvas.mySoloLayer.IsSolo = false;
+        }
+        
+        // Update solo layer and raise render invalidated
+        canvas.mySoloLayer = newSoloLayer;
+        canvas.RaiseRenderInvalidated(false); // not full invalidation, since nothing really changed, pixel wise
     }
 }

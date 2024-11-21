@@ -5,12 +5,21 @@ namespace PicNetStudio.Avalonia.PicNet.Tools.Settings;
 public delegate void BaseToolSettingEventHandler(BaseToolSetting sender);
 
 /// <summary>
-/// The base class for a setting model that is used to modify a property of a tool
+/// The base class for a setting model that is used to modify a property of a tool.
+/// The tool setting classes are basically a replica of the <see cref="PropertyEditing.PropertyEditorSlot"/>
+/// classes, except they only accept a single handler being the <see cref="Tool"/>
 /// </summary>
 public class BaseToolSetting {
-    public BaseCanvasTool? ActiveTool { get; private set; }
+    public BaseCanvasTool? Tool { get; private set; }
 
+    /// <summary>
+    /// Fired when this setting is connected to a tool
+    /// </summary>
     public event BaseToolSettingEventHandler? Connected;
+    
+    /// <summary>
+    /// Fired when this setting is disconnected from a tool
+    /// </summary>
     public event BaseToolSettingEventHandler? Disconnected;
 
     public BaseToolSetting() {
@@ -21,21 +30,21 @@ public class BaseToolSetting {
     /// </summary>
     /// <param name="tool">The new tool</param>
     public void Connect(BaseCanvasTool tool) {
-        if (this.ActiveTool != null)
+        if (this.Tool != null)
             throw new InvalidOperationException("Already connected to a tool");
         
-        this.ActiveTool = tool;
+        this.Tool = tool;
         this.OnConnected();
         this.Connected?.Invoke(this);
     }
 
     /// <summary>
-    /// Disconnects our active tool from this setting
+    /// Disconnects our tool from this setting
     /// </summary>
     public void Disconnect() {
         this.OnDisconnected();
         this.Disconnected?.Invoke(this);
-        this.ActiveTool = null;
+        this.Tool = null;
     }
 
     protected virtual void OnConnected() {

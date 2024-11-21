@@ -35,7 +35,7 @@ public static class Validate {
     /// <exception cref="ArgumentNullException">The value is null</exception>
     public static void NotNull([NotNull] object? value, [CallerArgumentExpression(nameof(value))] string? paramName = null) {
         if (value == null)
-            throw new ArgumentNullException($"'{paramName}' cannot be null", nameof(paramName));
+            throw new ArgumentNullException($"'{paramName}' cannot be null", paramName);
     }
 
     /// <summary>
@@ -46,7 +46,7 @@ public static class Validate {
     /// <exception cref="ArgumentException">The string is null or empty</exception>
     public static void NotNullOrEmpty([NotNull] string? value, [CallerArgumentExpression(nameof(value))] string? argName = null) {
         if (string.IsNullOrEmpty(value))
-            throw new ArgumentException($"'{argName}' cannot be null or empty", nameof(argName));
+            throw new ArgumentException($"'{argName}' cannot be null or empty", argName);
     }
 
     /// <summary>
@@ -57,6 +57,6 @@ public static class Validate {
     /// <exception cref="ArgumentException">The string is null, empty or consists of only whitespaces</exception>
     public static void NotNullOrWhiteSpaces([NotNull] string? value, [CallerArgumentExpression(nameof(value))] string? argName = null) {
         if (string.IsNullOrWhiteSpace(value))
-            throw new ArgumentException($"'{argName}' cannot be null, empty or consist of only whitespaces", nameof(argName));
+            throw new ArgumentException($"'{argName}' cannot be null, empty or consist of only whitespaces", argName);
     }
 }

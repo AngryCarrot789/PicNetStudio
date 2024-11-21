@@ -12,10 +12,10 @@
             </Setter.Value>
         </Setter>
     </ControlTheme>    
-    <ControlTheme x:Key="{x:Type c:DataParameterFloatToolSettingControl}" TargetType="{x:Type c:DataParameterFloatToolSettingControl}">
+    <ControlTheme x:Key="{x:Type c:DataParameterNumberDraggerToolSettingControl}" TargetType="{x:Type c:DataParameterNumberDraggerToolSettingControl}">
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="{x:Type c:DataParameterFloatToolSettingControl}">
+                <ControlTemplate TargetType="{x:Type c:DataParameterNumberDraggerToolSettingControl}">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="NAME" x:Name="PART_Label" VerticalAlignment="Center" Margin="0,0,4,0"/>
                         <d:NumberDragger x:Name="PART_Dragger" Height="22"/>
@@ -23,5 +23,9 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+    </ControlTheme>
+    <ControlTheme x:Key="{x:Type c:DataParameterFloatToolSettingControl}" TargetType="{x:Type c:DataParameterFloatToolSettingControl}" BasedOn="{StaticResource {x:Type c:DataParameterNumberDraggerToolSettingControl}}">
+    </ControlTheme>
+    <ControlTheme x:Key="{x:Type c:DataParameterDoubleToolSettingControl}" TargetType="{x:Type c:DataParameterDoubleToolSettingControl}" BasedOn="{StaticResource {x:Type c:DataParameterNumberDraggerToolSettingControl}}">
     </ControlTheme>
 </ResourceDictionary>

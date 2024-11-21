@@ -22,33 +22,33 @@ using System.Globalization;
 using Avalonia.Data.Converters;
 using PicNetStudio.Avalonia.Shortcuts.Managing;
 
-namespace PicNetStudio.Avalonia.Shortcuts.Converters {
-    public class ShortcutPathToInputGestureTextConverter : IValueConverter {
-        public string NoSuchShortcutFormat { get; set; } = "<{0}>";
+namespace PicNetStudio.Avalonia.Shortcuts.Converters;
 
-        public string ShortcutFormat { get; set; } = null;
+public class ShortcutPathToInputGestureTextConverter : IValueConverter {
+    public string NoSuchShortcutFormat { get; set; } = "<{0}>";
 
-        public static string ShortcutToInputGestureText(string path, string shortcutFormat = null, string noSuchShortcutFormat = null) {
-            GroupedShortcut shortcut = ShortcutManager.Instance.FindShortcutByPath(path);
-            if (shortcut == null) {
-                return noSuchShortcutFormat == null ? path : string.Format(noSuchShortcutFormat, path);
-            }
+    public string ShortcutFormat { get; set; } = null;
 
-            string representation = shortcut.Shortcut.ToString();
-            return shortcutFormat == null ? representation : string.Format(shortcutFormat, representation);
+    public static string ShortcutToInputGestureText(string path, string shortcutFormat = null, string noSuchShortcutFormat = null) {
+        GroupedShortcut shortcut = ShortcutManager.Instance.FindShortcutByPath(path);
+        if (shortcut == null) {
+            return noSuchShortcutFormat == null ? path : string.Format(noSuchShortcutFormat, path);
         }
 
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
-            if (parameter is string path && !string.IsNullOrWhiteSpace(path)) {
-                return ShortcutToInputGestureText(path, this.ShortcutFormat, this.NoSuchShortcutFormat);
-            }
-            else {
-                throw new Exception("Invalid shortcut path (converter parameter): " + parameter);
-            }
-        }
+        string representation = shortcut.Shortcut.ToString();
+        return shortcutFormat == null ? representation : string.Format(shortcutFormat, representation);
+    }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
-            throw new NotImplementedException();
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
+        if (parameter is string path && !string.IsNullOrWhiteSpace(path)) {
+            return ShortcutToInputGestureText(path, this.ShortcutFormat, this.NoSuchShortcutFormat);
         }
+        else {
+            throw new Exception("Invalid shortcut path (converter parameter): " + parameter);
+        }
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
+        throw new NotImplementedException();
     }
 }

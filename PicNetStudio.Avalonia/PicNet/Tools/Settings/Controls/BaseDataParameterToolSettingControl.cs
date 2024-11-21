@@ -2,6 +2,8 @@
 using Avalonia.Controls.Primitives;
 using PicNetStudio.Avalonia.DataTransfer;
 using PicNetStudio.Avalonia.PicNet.Controls.Dragger;
+using PicNetStudio.Avalonia.PicNet.PropertyEditing.DataTransfer;
+using PicNetStudio.Avalonia.PicNet.Tools.Settings.DataTransfer;
 using PicNetStudio.Avalonia.Utils;
 
 namespace PicNetStudio.Avalonia.PicNet.Tools.Settings.Controls;
@@ -21,36 +23,25 @@ public abstract class BaseDataParameterToolSettingControl : BaseToolSettingContr
 
     protected override void OnConnect() {
         base.OnConnect();
-        BaseDataParameterToolSetting tool = this.ToolSetting!;
-        tool.Connected += this.OnToolConnected;
-        tool.Disconnected += this.OnToolDisconnected;
-        tool.DisplayNameChanged += this.OnSlotDisplayNameChanged;
-        tool.ValueChanged += this.OnSlotValueChanged;
-        tool.ValueChanged += this.OnSlotValueChanged;
-        this.displayNameTextBlock!.Text = tool.DisplayName;
+        BaseDataParameterToolSetting setting = this.ToolSetting!;
+        setting.Connected += this.OnToolConnected;
+        setting.Disconnected += this.OnToolDisconnected;
+        setting.DisplayNameChanged += this.OnSettingDisplayNameChanged;
+        setting.ValueChanged += this.OnSettingValueChanged;
+        this.UpdateDisplayName();
         this.OnModelValueChanged();
     }
 
     protected override void OnDisconnect() {
         base.OnDisconnect();
-        BaseDataParameterToolSetting tool = this.ToolSetting!;
-        tool.Connected -= this.OnToolConnected;
-        tool.Disconnected -= this.OnToolDisconnected;
-        tool.DisplayNameChanged -= this.OnSlotDisplayNameChanged;
-        tool.ValueChanged -= this.OnSlotValueChanged;
-        tool.ValueChanged -= this.OnSlotValueChanged;
+        BaseDataParameterToolSetting setting = this.ToolSetting!;
+        setting.Connected -= this.OnToolConnected;
+        setting.Disconnected -= this.OnToolDisconnected;
+        setting.DisplayNameChanged -= this.OnSettingDisplayNameChanged;
+        setting.ValueChanged -= this.OnSettingValueChanged;
         this.OnModelValueChanged();
     }
-
-    private void OnSlotValueChanged(BaseDataParameterToolSetting sender) {
-        this.OnModelValueChanged();
-    }
-
-    private void OnSlotDisplayNameChanged(BaseDataParameterToolSetting sender) {
-        if (this.displayNameTextBlock != null)
-            this.displayNameTextBlock.Text = sender.DisplayName;
-    }
-
+    
     protected abstract void UpdateControlValue();
 
     protected abstract void UpdateModelValue();
@@ -73,16 +64,35 @@ public abstract class BaseDataParameterToolSettingControl : BaseToolSettingContr
         }
     }
     
+    private void OnSettingValueChanged(BaseDataParameterToolSetting sender) => this.OnModelValueChanged();
+    
+    private void OnSettingDisplayNameChanged(BaseDataParameterToolSetting sender) => this.UpdateDisplayName();
+
     private void OnToolConnected(BaseToolSetting sender) => this.OnModelValueChanged();
+    
     private void OnToolDisconnected(BaseToolSetting sender) => this.OnModelValueChanged();
+    
+    private void UpdateDisplayName() {
+        if (!this.IsConnected || this.displayNameTextBlock == null)
+            return;
+
+        string text = this.ToolSetting!.DisplayName;
+        if (string.IsNullOrWhiteSpace(text)) {
+            this.displayNameTextBlock.IsVisible = false;
+        }
+        
+        this.displayNameTextBlock.Text = text;
+    }
 }
 
-public class DataParameterFloatToolSettingControl : BaseDataParameterToolSettingControl {
-    private NumberDragger PART_Dragger;
+public abstract class DataParameterNumberDraggerToolSettingControl : BaseDataParameterToolSettingControl {
+    protected NumberDragger PART_Dragger;
 
-    public new DataParameterFloatToolSetting? ToolSetting => (DataParameterFloatToolSetting?) base.ToolSetting;
+    public new BaseDataParameterNumberDraggerToolSetting? ToolSetting => (BaseDataParameterNumberDraggerToolSetting?) base.ToolSetting;
+    
+    protected abstract double SettingValue { get; set; }
 
-    public DataParameterFloatToolSettingControl() {
+    public DataParameterNumberDraggerToolSettingControl() {
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e) {
@@ -92,20 +102,63 @@ public class DataParameterFloatToolSettingControl : BaseDataParameterToolSetting
     }
 
     protected override void UpdateControlValue() {
-        this.PART_Dragger.Value = this.ToolSetting!.Value;
+        this.PART_Dragger.Value = this.SettingValue;
     }
 
     protected override void UpdateModelValue() {
-        this.ToolSetting!.Value = (float) this.PART_Dragger.Value;
+        this.SettingValue = (float) this.PART_Dragger.Value;
     }
 
     protected override void OnConnect() {
         base.OnConnect();
-        DataParameterFloatToolSetting slot = this.ToolSetting!;
-        DataParameterFloat param = (DataParameterFloat) slot.Parameter;
+        DragStepProfile profile = this.ToolSetting!.StepProfile;
+        this.PART_Dragger.TinyChange = profile.TinyStep;
+        this.PART_Dragger.SmallChange = profile.SmallStep;
+        this.PART_Dragger.NormalChange = profile.NormalStep;
+        this.PART_Dragger.LargeChange = profile.LargeStep;
+    }
+
+    protected abstract void ResetValue();
+}
+
+public class DataParameterFloatToolSettingControl : DataParameterNumberDraggerToolSettingControl {
+    public new DataParameterFloatToolSetting? ToolSetting => (DataParameterFloatToolSetting?) base.ToolSetting;
+
+    protected override double SettingValue {
+        get => this.ToolSetting!.Value;
+        set => this.ToolSetting!.Value = (float) value;
+    }
+
+    protected override void OnConnect() {
+        base.OnConnect();
+        DataParameterFloatToolSetting setting = this.ToolSetting!;
+        DataParameterFloat param = setting.Parameter;
         this.PART_Dragger.Minimum = param.Minimum;
         this.PART_Dragger.Maximum = param.Maximum;
     }
 
-    protected void ResetValue() => this.ToolSetting!.Value = ((DataParameterFloat) this.ToolSetting.Parameter).DefaultValue;
+    protected override void ResetValue() {
+        this.ToolSetting!.Value = this.ToolSetting.Parameter.DefaultValue;
+    }
+}
+
+public class DataParameterDoubleToolSettingControl : DataParameterNumberDraggerToolSettingControl {
+    public new DataParameterDoubleToolSetting? ToolSetting => (DataParameterDoubleToolSetting?) base.ToolSetting;
+
+    protected override double SettingValue {
+        get => this.ToolSetting!.Value;
+        set => this.ToolSetting!.Value = value;
+    }
+
+    protected override void OnConnect() {
+        base.OnConnect();
+        DataParameterDoubleToolSetting setting = this.ToolSetting!;
+        DataParameterDouble param = setting.Parameter;
+        this.PART_Dragger.Minimum = param.Minimum;
+        this.PART_Dragger.Maximum = param.Maximum;
+    }
+
+    protected override void ResetValue() {
+        this.ToolSetting!.Value = this.ToolSetting.Parameter.DefaultValue;
+    }
 }

@@ -27,18 +27,10 @@ namespace PicNetStudio.Avalonia.DataTransfer;
 /// A <see cref="DataParameter{T}"/> that manages a 32-bit single precision floating point
 /// number (aka, a float). This also has an optional minimum and maximum value range
 /// </summary>
-public sealed class DataParameterFloat : DataParameter<float> {
-    /// <summary>
-    /// The minimum value of the parameter. The final effective value may not drop below this
-    /// </summary>
+public sealed class DataParameterFloat : DataParameter<float>, IRangedParameter<float> {
     public float Minimum { get; }
-
-    /// <summary>
-    /// The maximum value of the parameter. The final effective value may not exceed this
-    /// </summary>
     public float Maximum { get; }
-
-    private readonly bool hasRangeLimit;
+    public bool HasRangeLimit { get; }
 
     public DataParameterFloat(Type ownerType, string name, ValueAccessor<float> accessor, DataParameterFlags flags = DataParameterFlags.None) : this(ownerType, name, 0.0F, accessor, flags) {
     }
@@ -53,7 +45,7 @@ public sealed class DataParameterFloat : DataParameter<float> {
             throw new ArgumentOutOfRangeException(nameof(defValue), $"Default value ({defValue}) falls out of range of the min/max values ({minValue}/{maxValue})");
         this.Minimum = minValue;
         this.Maximum = maxValue;
-        this.hasRangeLimit = minValue > float.MinValue || maxValue < float.MaxValue;
+        this.HasRangeLimit = minValue > float.MinValue || maxValue < float.MaxValue;
     }
 
     public float Clamp(float value) => Maths.Clamp(value, this.Minimum, this.Maximum);
@@ -61,7 +53,7 @@ public sealed class DataParameterFloat : DataParameter<float> {
     public bool IsValueOutOfRange(float value) => value < this.Minimum || value > this.Maximum;
 
     public override void SetValue(ITransferableData owner, float value) {
-        if (this.hasRangeLimit) {
+        if (this.HasRangeLimit) {
             value = Maths.Clamp(value, this.Minimum, this.Maximum);
         }
 
@@ -69,7 +61,7 @@ public sealed class DataParameterFloat : DataParameter<float> {
     }
 
     public override void SetObjectValue(ITransferableData owner, object? value) {
-        if (this.hasRangeLimit) {
+        if (this.HasRangeLimit) {
             float unboxed = (float) value;
             float clamped = Maths.Clamp(unboxed, this.Minimum, this.Maximum);
             if (!Maths.Equals(unboxed, clamped))

@@ -56,6 +56,8 @@ public class LayerVisibilityStateControl : LayerStateModifierControl {
 
     protected override void OnDisconnected() {
         base.OnDisconnected();
+        this.renderVisibilityBinder.DetachModel();
+        this.exportVisibilityBinder.DetachModel();
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e) {

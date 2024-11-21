@@ -27,18 +27,10 @@ namespace PicNetStudio.Avalonia.DataTransfer;
 /// A <see cref="DataParameter{T}"/> that manages a 64-bit double precision floating point
 /// number (aka, a double). This also has an optional minimum and maximum value range
 /// </summary>
-public sealed class DataParameterDouble : DataParameter<double> {
-    /// <summary>
-    /// The minimum value of the parameter. The final effective value may not drop below this
-    /// </summary>
+public sealed class DataParameterDouble : DataParameter<double>, IRangedParameter<double> {
     public double Minimum { get; }
-
-    /// <summary>
-    /// The maximum value of the parameter. The final effective value may not exceed this
-    /// </summary>
     public double Maximum { get; }
-
-    private readonly bool hasRangeLimit;
+    public bool HasRangeLimit { get; }
 
     public DataParameterDouble(Type ownerType, string name, ValueAccessor<double> accessor, DataParameterFlags flags = DataParameterFlags.None) : this(ownerType, name, 0.0, accessor, flags) {
     }
@@ -53,7 +45,7 @@ public sealed class DataParameterDouble : DataParameter<double> {
             throw new ArgumentOutOfRangeException(nameof(defValue), $"Default value ({defValue}) falls out of range of the min/max values ({minValue}/{maxValue})");
         this.Minimum = minValue;
         this.Maximum = maxValue;
-        this.hasRangeLimit = minValue > double.MinValue || maxValue < double.MaxValue;
+        this.HasRangeLimit = minValue > double.MinValue || maxValue < double.MaxValue;
     }
 
     public double Clamp(double value) => Maths.Clamp(value, this.Minimum, this.Maximum);
@@ -61,7 +53,7 @@ public sealed class DataParameterDouble : DataParameter<double> {
     public bool IsValueOutOfRange(double value) => value < this.Minimum || value > this.Maximum;
 
     public override void SetValue(ITransferableData owner, double value) {
-        if (this.hasRangeLimit) {
+        if (this.HasRangeLimit) {
             value = Maths.Clamp(value, this.Minimum, this.Maximum);
         }
 
@@ -69,7 +61,7 @@ public sealed class DataParameterDouble : DataParameter<double> {
     }
 
     public override void SetObjectValue(ITransferableData owner, object? value) {
-        if (this.hasRangeLimit) {
+        if (this.HasRangeLimit) {
             double unboxed = (double) value;
             double clamped = Maths.Clamp(unboxed, this.Minimum, this.Maximum);
             if (!DoubleUtils.AreClose(unboxed, clamped))

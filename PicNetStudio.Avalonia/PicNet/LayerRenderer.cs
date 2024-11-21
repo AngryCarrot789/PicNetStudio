@@ -30,8 +30,10 @@ namespace PicNetStudio.Avalonia.PicNet;
 /// The layer rendering engine
 /// </summary>
 public static class LayerRenderer {
-    public static void RenderCanvas(ref RenderContext context) {
-        RenderLayer(ref context, context.MyCanvas.RootComposition);
+    public static void RenderCanvas(ref RenderContext context, bool ignoreSolo = true) {
+        BaseVisualLayer? theSoloLayer = context.MyCanvas.SoloLayer;
+        BaseVisualLayer targetLayer = ignoreSolo || theSoloLayer == null ? context.MyCanvas.RootComposition : theSoloLayer;
+        RenderLayer(ref context, targetLayer);
     }
 
     private static bool CanDrawCompositionCachedVisual(CompositionLayer layer) {

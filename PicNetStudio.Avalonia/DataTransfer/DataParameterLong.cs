@@ -23,18 +23,10 @@ using PicNetStudio.Avalonia.Utils.Accessing;
 
 namespace PicNetStudio.Avalonia.DataTransfer;
 
-public sealed class DataParameterLong : DataParameter<long> {
-    /// <summary>
-    /// The minimum value of the parameter. The final effective value may not drop below this
-    /// </summary>
+public sealed class DataParameterLong : DataParameter<long>, IRangedParameter<long> {
     public long Minimum { get; }
-
-    /// <summary>
-    /// The maximum value of the parameter. The final effective value may not exceed this
-    /// </summary>
     public long Maximum { get; }
-
-    private readonly bool hasRangeLimit;
+    public bool HasRangeLimit { get; }
 
     public DataParameterLong(Type ownerType, string name, ValueAccessor<long> accessor, DataParameterFlags flags = DataParameterFlags.None) : this(ownerType, name, 0L, accessor, flags) {
     }
@@ -49,15 +41,15 @@ public sealed class DataParameterLong : DataParameter<long> {
             throw new ArgumentOutOfRangeException(nameof(defValue), $"Default value ({defValue}) falls out of range of the min/max values ({minValue}/{maxValue})");
         this.Minimum = minValue;
         this.Maximum = maxValue;
-        this.hasRangeLimit = minValue != long.MinValue || maxValue != long.MaxValue;
+        this.HasRangeLimit = minValue != long.MinValue || maxValue != long.MaxValue;
     }
 
-    public long Clamp(long value) => Maths.Clamp(value, this.Minimum, this.Maximum);
+    public long Clamp(long value) => this.HasRangeLimit ? Maths.Clamp(value, this.Minimum, this.Maximum) : value;
 
-    public bool IsValueOutOfRange(long value) => value < this.Minimum || value > this.Maximum;
+    public bool IsValueOutOfRange(long value) => this.HasRangeLimit && (value < this.Minimum || value > this.Maximum);
 
     public override void SetValue(ITransferableData owner, long value) {
-        if (this.hasRangeLimit) {
+        if (this.HasRangeLimit) {
             value = Maths.Clamp(value, this.Minimum, this.Maximum);
         }
 
@@ -65,7 +57,7 @@ public sealed class DataParameterLong : DataParameter<long> {
     }
 
     public override void SetObjectValue(ITransferableData owner, object? value) {
-        if (this.hasRangeLimit) {
+        if (this.HasRangeLimit) {
             long unboxed = (long) value;
             long clamped = Maths.Clamp(unboxed, this.Minimum, this.Maximum);
             if (unboxed != clamped) {

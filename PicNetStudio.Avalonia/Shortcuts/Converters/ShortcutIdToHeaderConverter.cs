@@ -23,31 +23,31 @@ using Avalonia;
 using Avalonia.Data.Converters;
 using PicNetStudio.Avalonia.Shortcuts.Managing;
 
-namespace PicNetStudio.Avalonia.Shortcuts.Converters {
-    public class ShortcutIdToHeaderConverter : IValueConverter {
-        public static ShortcutIdToHeaderConverter Instance { get; } = new ShortcutIdToHeaderConverter();
+namespace PicNetStudio.Avalonia.Shortcuts.Converters;
 
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
-            if (value is string path) {
-                return ShortcutIdToHeader(path, null, out string gesture) ? gesture : AvaloniaProperty.UnsetValue;
-            }
+public class ShortcutIdToHeaderConverter : IValueConverter {
+    public static ShortcutIdToHeaderConverter Instance { get; } = new ShortcutIdToHeaderConverter();
 
-            throw new Exception("Value is not a shortcut string");
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
+        if (value is string path) {
+            return ShortcutIdToHeader(path, null, out string gesture) ? gesture : AvaloniaProperty.UnsetValue;
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
-            throw new NotImplementedException();
+        throw new Exception("Value is not a shortcut string");
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
+        throw new NotImplementedException();
+    }
+
+    public static bool ShortcutIdToHeader(string path, string fallback, out string header) {
+        GroupedShortcut shortcut = ShortcutManager.Instance.FindShortcutByPath(path);
+        if (shortcut == null) {
+            return (header = fallback) != null;
         }
 
-        public static bool ShortcutIdToHeader(string path, string fallback, out string header) {
-            GroupedShortcut shortcut = ShortcutManager.Instance.FindShortcutByPath(path);
-            if (shortcut == null) {
-                return (header = fallback) != null;
-            }
-
-            // This could probably go in the guinness world records
-            header = shortcut.DisplayName ?? shortcut.Name ?? shortcut.FullPath ?? shortcut.CommandId ?? fallback ?? shortcut.Shortcut.ToString();
-            return true;
-        }
+        // This could probably go in the guinness world records
+        header = shortcut.DisplayName ?? shortcut.Name ?? shortcut.FullPath ?? shortcut.CommandId ?? fallback ?? shortcut.Shortcut.ToString();
+        return true;
     }
 }

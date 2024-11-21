@@ -25,35 +25,35 @@ using Avalonia.Data.Converters;
 using PicNetStudio.Avalonia.CommandSystem;
 using PicNetStudio.Avalonia.Shortcuts.Managing;
 
-namespace PicNetStudio.Avalonia.Shortcuts.Converters {
-    public class CommandIdToGestureConverter : IValueConverter {
-        public static CommandIdToGestureConverter Instance { get; } = new CommandIdToGestureConverter();
+namespace PicNetStudio.Avalonia.Shortcuts.Converters;
 
-        public string NoSuchActionText { get; set; } = null;
+public class CommandIdToGestureConverter : IValueConverter {
+    public static CommandIdToGestureConverter Instance { get; } = new CommandIdToGestureConverter();
 
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
-            if (value is string id) {
-                return CommandIdToGesture(id, this.NoSuchActionText, out string gesture) ? gesture : AvaloniaProperty.UnsetValue;
-            }
+    public string NoSuchActionText { get; set; } = null;
 
-            throw new Exception("Value is not a string");
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
+        if (value is string id) {
+            return CommandIdToGesture(id, this.NoSuchActionText, out string gesture) ? gesture : AvaloniaProperty.UnsetValue;
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
-            throw new NotImplementedException();
+        throw new Exception("Value is not a string");
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
+        throw new NotImplementedException();
+    }
+
+    public static bool CommandIdToGesture(string id, string fallback, out string gesture) {
+        if (CommandManager.Instance.GetCommandById(id) == null) {
+            return (gesture = fallback) != null;
         }
 
-        public static bool CommandIdToGesture(string id, string fallback, out string gesture) {
-            if (CommandManager.Instance.GetCommandById(id) == null) {
-                return (gesture = fallback) != null;
-            }
-
-            IEnumerable<GroupedShortcut> shortcuts = ShortcutManager.Instance.GetShortcutsByCommandId(id);
-            if (shortcuts == null) {
-                return (gesture = fallback) != null;
-            }
-
-            return (gesture = ShortcutIdToGestureConverter.ShortcutsToGesture(shortcuts, fallback)) != null;
+        IEnumerable<GroupedShortcut> shortcuts = ShortcutManager.Instance.GetShortcutsByCommandId(id);
+        if (shortcuts == null) {
+            return (gesture = fallback) != null;
         }
+
+        return (gesture = ShortcutIdToGestureConverter.ShortcutsToGesture(shortcuts, fallback)) != null;
     }
 }

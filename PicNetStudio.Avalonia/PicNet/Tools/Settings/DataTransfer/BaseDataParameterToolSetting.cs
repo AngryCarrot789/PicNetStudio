@@ -1,17 +1,14 @@
 ﻿using System;
-using System.Diagnostics;
 using PicNetStudio.Avalonia.DataTransfer;
 using PicNetStudio.Avalonia.PicNet.Controls.Dragger;
 using PicNetStudio.Avalonia.PicNet.PropertyEditing.DataTransfer;
 
-namespace PicNetStudio.Avalonia.PicNet.Tools.Settings;
+namespace PicNetStudio.Avalonia.PicNet.Tools.Settings.DataTransfer;
 
 public delegate void DataParameterToolSettingEventHandler(BaseDataParameterToolSetting sender);
 
 public abstract class BaseDataParameterToolSetting : BaseToolSetting {
     private string displayName;
-
-    protected ITransferableData? SingleHandler => this.ActiveTool;
 
     /// <summary>
     /// Gets the parameter
@@ -29,12 +26,6 @@ public abstract class BaseDataParameterToolSetting : BaseToolSetting {
         }
     }
 
-    /// <summary>
-    /// Gets or sets if the parameter's value is inverted between the parameter and checkbox in the UI.
-    /// This should only be set during the construction phase of the object and not during its lifetime
-    /// </summary>
-    public bool InvertIsEditableForParameter { get; set; }
-
     public event DataParameterToolSettingEventHandler? DisplayNameChanged;
     public event DataParameterToolSettingEventHandler? ValueChanged;
 
@@ -45,14 +36,14 @@ public abstract class BaseDataParameterToolSetting : BaseToolSetting {
 
     protected override void OnConnected() {
         base.OnConnected();
-        this.Parameter.AddValueChangedHandler(this.SingleHandler!, this.OnValueChangedForTool);
+        this.Parameter.AddValueChangedHandler(this.Tool!, this.OnValueChangedForTool);
         this.QueryValueFromHandlers();
         this.OnValueChanged();
     }
 
     protected override void OnDisconnected() {
         base.OnDisconnected();
-        this.Parameter.RemoveValueChangedHandler(this.SingleHandler, this.OnValueChangedForTool);
+        this.Parameter.RemoveValueChangedHandler(this.Tool!, this.OnValueChangedForTool);
     }
 
     private void OnValueChangedForTool(DataParameter parameter, ITransferableData owner) {
@@ -88,36 +79,48 @@ public abstract class BaseDataParameterNumberDraggerToolSetting : BaseDataParame
         }
     }
 
+    public DragStepProfile StepProfile { get; }
+    
     public event BaseDataParameterNumberDraggerToolSettingValueFormatterChangedEventHandler? ValueFormatterChanged;
 
-    protected BaseDataParameterNumberDraggerToolSetting(DataParameter parameter, string? displayName = null) : base(parameter, displayName) {
+    protected BaseDataParameterNumberDraggerToolSetting(DataParameter parameter, string? displayName, DragStepProfile stepProfile) : base(parameter, displayName) {
+        this.StepProfile = stepProfile;
     }
 }
 
-public class DataParameterFloatToolSetting : BaseDataParameterNumberDraggerToolSetting {
-    private float value;
+public abstract class BaseDataParameterNumericToolSetting<T> : BaseDataParameterNumberDraggerToolSetting {
+    private T value;
 
-    public float Value {
+    public T Value {
         get => this.value;
         set {
+            value = base.Parameter is IRangedParameter<T> ranged ? ranged.Clamp(value) : value;
             this.value = value;
-            DataParameterFloat parameter = this.Parameter;
-            float newValue = parameter.Clamp(value);
-            parameter.SetValue(this.ActiveTool!, newValue);
-            Debug.WriteLine(newValue);
+            this.Parameter.SetValue(this.Tool!, value);
             this.OnValueChanged();
         }
     }
 
-    public new DataParameterFloat Parameter => (DataParameterFloat) base.Parameter;
-
-    public DragStepProfile StepProfile { get; }
-
-    public DataParameterFloatToolSetting(DataParameterFloat parameter, string displayName, DragStepProfile stepProfile) : base(parameter, displayName) {
-        this.StepProfile = stepProfile;
+    public new DataParameter<T> Parameter => (DataParameter<T>) base.Parameter;
+    
+    public BaseDataParameterNumericToolSetting(DataParameter<T> parameter, string displayName, DragStepProfile stepProfile) : base(parameter, displayName, stepProfile) {
     }
 
     public override void QueryValueFromHandlers() {
-        this.value = this.Parameter.GetValue(this.ActiveTool!);
+        this.value = this.Parameter.GetValue(this.Tool!)!;
+    }
+}
+
+public class DataParameterFloatToolSetting : BaseDataParameterNumericToolSetting<float> {
+    public new DataParameterFloat Parameter => (DataParameterFloat) ((BaseDataParameterToolSetting) this).Parameter;
+
+    public DataParameterFloatToolSetting(DataParameterFloat parameter, string displayName, DragStepProfile stepProfile) : base(parameter, displayName, stepProfile) {
+    }
+}
+
+public class DataParameterDoubleToolSetting : BaseDataParameterNumericToolSetting<double> {
+    public new DataParameterDouble Parameter => (DataParameterDouble) ((BaseDataParameterToolSetting) this).Parameter;
+
+    public DataParameterDoubleToolSetting(DataParameterDouble parameter, string displayName, DragStepProfile stepProfile) : base(parameter, displayName, stepProfile) {
     }
 }
