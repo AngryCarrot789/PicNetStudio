@@ -37,7 +37,7 @@ public class InputDialogServiceImpl : IUserInputDialogService {
         return ShowDialogAsync(info);
     }
 
-    private static async Task<bool?> ShowDialogAsync(UserInputInfo info) {
+    public static async Task<bool?> ShowDialogAsync(UserInputInfo info) {
         Validate.NotNull(info);
 
         if (Application.Current!.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop) {

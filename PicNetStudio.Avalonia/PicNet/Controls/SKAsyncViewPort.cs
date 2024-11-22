@@ -25,12 +25,25 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.VisualTree;
+using PicNetStudio.Avalonia.Utils;
 using SkiaSharp;
 
 namespace PicNetStudio.Avalonia.PicNet.Controls;
 
-public delegate void AsyncViewPortPreRenderExtensionEventHandler(SKAsyncViewPort sender, SKSurface surface);
-public delegate void AsyncViewPortRenderExtensionEventHandler(SKAsyncViewPort sender, DrawingContext ctx, Rect bounds);
+public delegate void AsyncViewPortEndRenderEventHandler(SKAsyncViewPort sender, SKSurface surface);
+
+/// <summary>
+/// An event handler for a pre or post Avalonia render event
+/// </summary>
+/// <param name="sender">Sender skia async view port</param>
+/// <param name="ctx">The drawing context</param>
+/// <param name="size">The size of the drawing area (aka size of the view port)</param>
+/// <param name="minatureOffset">
+/// A special Point containing the decimal parts of the pixel-imperfect position of the drawing area.
+/// Since the view port's X and Y positions aren't perfect integers, this value contains the
+/// decimal parts, therefore, this point contains values no bigger than 1.0
+/// </param>
+public delegate void AsyncViewPortRenderEventHandler(SKAsyncViewPort sender, DrawingContext ctx, Size size, Point minatureOffset);
 
 public class SKAsyncViewPort : Control {
     private WriteableBitmap? bitmap;
@@ -58,14 +71,15 @@ public class SKAsyncViewPort : Control {
         }
     }
 
-    public event AsyncViewPortPreRenderExtensionEventHandler? PreRenderExtension;
-    public event AsyncViewPortRenderExtensionEventHandler? PostRenderExtension;
+    public event AsyncViewPortEndRenderEventHandler? EndRenderExtension;
+    public event AsyncViewPortRenderEventHandler? PreRenderExtension;
+    public event AsyncViewPortRenderEventHandler? PostRenderExtension;
 
     public SKImageInfo FrameInfo => this.skImageInfo;
 
     public SKAsyncViewPort() {
     }
-
+    
     public bool BeginRender(out SKSurface surface) {
         IRenderRoot? source;
         if (this.targetSurface != null || (source = this.GetVisualRoot()) == null) {
@@ -102,7 +116,7 @@ public class SKAsyncViewPort : Control {
     public void EndRender(bool invalidateVisual = true) {
         // SKImageInfo info = this.skImageInfo;
         // this.lockKey.AddDirtyRect(new Int32Rect(0, 0, info.Width, info.Height));
-        this.PreRenderExtension?.Invoke(this, this.targetSurface!);
+        this.EndRenderExtension?.Invoke(this, this.targetSurface!);
         this.lockKey!.Dispose();
         this.lockKey = null;
         if (invalidateVisual)
@@ -115,9 +129,16 @@ public class SKAsyncViewPort : Control {
         base.Render(context);
         WriteableBitmap? bmp = this.bitmap;
         if (bmp != null) {
-            Rect bounds = this.Bounds;
-            context.DrawImage(bmp, new Rect(0d, 0d, bounds.Width, bounds.Height));
-            this.PostRenderExtension?.Invoke(this, context, bounds);
+            Rect myBounds = this.Bounds, finalBounds = new Rect(0d, 0d, myBounds.Width, myBounds.Height);
+            
+            // While this might be somewhat useful in some cases, it didn't seem to work well
+            // for the selection outline when I tried to use it. It's almost like avalonia is doing some
+            // internal rounding and there's also rounding error too, making it not that useful... or maybe
+            // I didn't try hard enough :---)
+            Point offset = new Point(myBounds.X - Maths.Floor(myBounds.X), myBounds.Y - Maths.Floor(myBounds.Y));
+            this.PreRenderExtension?.Invoke(this, context, finalBounds.Size, offset);
+            context.DrawImage(bmp, finalBounds);
+            this.PostRenderExtension?.Invoke(this, context, finalBounds.Size, offset);
         }
     }
 

@@ -20,8 +20,6 @@
 using System;
 using Avalonia;
 using Avalonia.Input;
-using PicNetStudio.Avalonia.Utils;
-using SkiaSharp;
 
 namespace PicNetStudio.Avalonia.PicNet.Tools.Core;
 
@@ -29,8 +27,8 @@ namespace PicNetStudio.Avalonia.PicNet.Tools.Core;
 /// A tool which crates a selection region in the canvas
 /// </summary>
 public class SelectRegionTool : BaseCanvasTool {
-    private PixelPoint lastStartPoint;
-    
+    private Point clickPos;
+
     public SelectRegionTool() {
     }
 
@@ -38,8 +36,9 @@ public class SelectRegionTool : BaseCanvasTool {
         if (cursor != EnumCursorType.Primary || modifiers != KeyModifiers.None) {
             return false;
         }
-        
-        this.lastStartPoint = new PixelPoint(Math.Max(0, Maths.Floor(x)), Math.Max(0, Maths.Floor(y)));
+
+        this.clickPos = new Point(x, y);
+        document.Canvas.SelectionRegion = CreateSelection(this.clickPos, new Point(x, y));
         return true;
     }
 
@@ -53,17 +52,21 @@ public class SelectRegionTool : BaseCanvasTool {
 
     public override bool OnCursorMoved(Document document, double x, double y, EnumCursorType cursorMask) {
         if ((cursorMask & EnumCursorType.Primary) != 0) {
-            PixelPoint a = this.lastStartPoint;
-            PixelPoint b = new PixelPoint(Math.Max(0, Maths.Ceil(x)), Math.Max(0, Maths.Ceil(y)));
-            int width = Math.Abs(b.X - this.lastStartPoint.X);
-            int height = Math.Abs(b.Y - this.lastStartPoint.Y);
-            if (width != 0 && height != 0) {
-                document.Canvas.SelectionRegion = new RectangleSelection(
-                    new SKPointI(Math.Min(a.X, b.X), Math.Min(a.Y, b.Y)), 
-                    new SKPointI(Math.Max(a.X, b.X), Math.Max(a.Y, b.Y)));
-            }
+            document.Canvas.SelectionRegion = CreateSelection(this.clickPos, new Point(x, y));
         }
         
         return true;
     }
+
+    private static RectangleSelection CreateSelection(Point a, Point b) {
+        Point min = Min(a, b);
+        Point max = Max(a, b);
+
+        int x1 = (int) Math.Floor(min.X), x2 = (int) Math.Ceiling(max.X);
+        int y1 = (int) Math.Floor(min.Y), y2 = (int) Math.Ceiling(max.Y);
+        return new RectangleSelection(x1, y1, x2, y2);
+    }
+
+    private static Point Min(Point a, Point b) => new(Math.Min(a.X, b.X), Math.Min(a.Y, b.Y));
+    private static Point Max(Point a, Point b) => new(Math.Max(a.X, b.X), Math.Max(a.Y, b.Y));
 }

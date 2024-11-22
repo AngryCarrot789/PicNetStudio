@@ -23,6 +23,7 @@ using Avalonia.Interactivity;
 using Avalonia.Threading;
 using PicNetStudio.Avalonia.Bindings;
 using PicNetStudio.Avalonia.PicNet;
+using PicNetStudio.Avalonia.Services.Colours;
 using PicNetStudio.Avalonia.Themes.Controls;
 
 namespace PicNetStudio.Avalonia.Services.Messages.Controls;
@@ -66,6 +67,7 @@ public partial class UserInputDialog : WindowEx {
         Registry = new ModelControlRegistry<UserInputInfo, Control>();
         Registry.RegisterType<SingleUserInputInfo>((x) => new SingleUserInputControl());
         Registry.RegisterType<DoubleUserInputInfo>((x) => new DoubleUserInputControl());
+        Registry.RegisterType<ColourUserInputInfo>((x) => new ColourUserInputControl());
         
         UserInputDataProperty.Changed.AddClassHandler<UserInputDialog, UserInputInfo?>((o, e) => o.OnUserInputDataChanged(e.OldValue.GetValueOrDefault(), e.NewValue.GetValueOrDefault()));
     }
@@ -82,12 +84,11 @@ public partial class UserInputDialog : WindowEx {
         Size size = this.PART_DockPanelRoot.DesiredSize;
         size = new Size(size.Width + 2, size.Height);
         if (size.Width > 300.0) {
-            this.Width = size.Width;
+            this.Width = size.Width; 
         }
         
         const double TitleBarHeight = 32;
-        const double AdditionalPadding = 0;
-        this.Height = size.Height + TitleBarHeight + AdditionalPadding;
+        this.Height = size.Height + TitleBarHeight;
     }
 
     private void OnConfirmButtonClicked(object? sender, RoutedEventArgs e) {

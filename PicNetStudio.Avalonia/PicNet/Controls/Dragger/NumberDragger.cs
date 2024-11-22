@@ -29,7 +29,17 @@ using PicNetStudio.Avalonia.Utils;
 
 namespace PicNetStudio.Avalonia.PicNet.Controls.Dragger;
 
+public class InvalidInputEnteredEventArgs : RoutedEventArgs {
+    public string Input { get; }
+
+    public InvalidInputEnteredEventArgs(string input, NumberDragger dragger) : base(NumberDragger.InvalidInputEnteredEvent, dragger) {
+        Validate.NotNull(input);
+        this.Input = input;
+    }
+}
+
 public class NumberDragger : RangeBase {
+    public static readonly RoutedEvent<InvalidInputEnteredEventArgs> InvalidInputEnteredEvent = RoutedEvent.Register<RangeBase, InvalidInputEnteredEventArgs>("InvalidInputEntered", RoutingStrategies.Bubble);
     public static readonly StyledProperty<double> TinyChangeProperty = AvaloniaProperty.Register<NumberDragger, double>("TinyChange", 0.1);
     public static readonly StyledProperty<double> NormalChangeProperty = AvaloniaProperty.Register<NumberDragger, double>("NormalChange", 1.0);
     public static readonly StyledProperty<DragDirection> DragDirectionProperty = AvaloniaProperty.Register<NumberDragger, DragDirection>("DragDirection", DragDirection.LeftDecrRightIncr);
@@ -47,6 +57,7 @@ public class NumberDragger : RangeBase {
     private Point lastClickPos, lastMouseMove;
     private int dragState; // 0 = default, 1 = standby, 2 = active
     private bool isEditing;
+    private bool flagHasSpecialPropertyChangedWhileEditing;
 
     public double NormalChange {
         get => this.GetValue(NormalChangeProperty);
@@ -128,6 +139,7 @@ public class NumberDragger : RangeBase {
                 return;
 
             this.isEditing = value;
+            this.flagHasSpecialPropertyChangedWhileEditing = false;
             this.UpdateTextControlVisibility();
             this.UpdateTextBlockAndBox();
             if (value && this.PART_TextBox != null) {
@@ -137,6 +149,11 @@ public class NumberDragger : RangeBase {
             this.RaisePropertyChanged(IsEditingProperty, !value, value);
         }
     }
+    
+    public event EventHandler<InvalidInputEnteredEventArgs>? InvalidInputEntered {
+        add => this.AddHandler(InvalidInputEnteredEvent, value);
+        remove => this.RemoveHandler(InvalidInputEnteredEvent, value);
+    }
 
     public NumberDragger() {
     }
@@ -144,8 +161,22 @@ public class NumberDragger : RangeBase {
     static NumberDragger() {
         ValueProperty.Changed.AddClassHandler<NumberDragger, double>((o, e) => o.OnValueChanged(e.OldValue.GetValueOrDefault(), e.NewValue.GetValueOrDefault()));
         TextPreviewOverrideProperty.Changed.AddClassHandler<NumberDragger, string?>((o, e) => o.UpdateTextBlockOnly());
+        
+        PropertyAffectsIgnoreLostFocusValueChange(NonFormattedRoundedPlacesForEditProperty, NonFormattedRoundedPlacesProperty, ValueFormatterProperty, ValueProperty);
     }
-    
+
+    private static void PropertyAffectsIgnoreLostFocusValueChange(params AvaloniaProperty[] properties) {
+        foreach (AvaloniaProperty property in properties) {
+            property.Changed.AddClassHandler<NumberDragger>(InvalidateThingy);
+        }
+    }
+
+    private static void InvalidateThingy(NumberDragger dragger, AvaloniaPropertyChangedEventArgs arg2) {
+        if (dragger.isEditing) {
+            dragger.flagHasSpecialPropertyChangedWhileEditing = true;
+        }
+    }
+
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e) {
         base.OnApplyTemplate(e);
         this.PART_TextBlock = e.NameScope.GetTemplateChild<TextBlock>(nameof(this.PART_TextBlock));
@@ -207,7 +238,7 @@ public class NumberDragger : RangeBase {
 
     private void OnTextInputFocusLost(object? sender, RoutedEventArgs e) {
         if (this.IsEditing && this.CompleteEditOnTextBoxLostFocus == true) {
-            this.CompleteEdit(Key.Enter); // Simulate pressing enter
+            this.CompleteEdit(Key.Enter, true); // Simulate pressing enter
         }
         
         this.IsEditing = false;
@@ -215,15 +246,23 @@ public class NumberDragger : RangeBase {
 
     private void OnTextInputKeyPress(object? sender, KeyEventArgs e) {
         if (e.Key == Key.Enter || e.Key == Key.Escape) {
-            this.CompleteEdit(e.Key);
+            this.CompleteEdit(e.Key, false);
         }
     }
 
-    private bool CompleteEdit(Key inputKey) {
+    private bool CompleteEdit(Key inputKey, bool isCompletingFromLostFocus) {
+        bool specialFlag = this.flagHasSpecialPropertyChangedWhileEditing;
         string? parseText = this.PART_TextBox!.Text;
         this.IsEditing = false;
         if (parseText == null || inputKey == Key.Escape) {
             return false;
+        }
+
+        // If all the conditions are right, we can prevent the ValueChanged event firing
+        // when IsEditing is set to false since it can mess up certain systems if the value
+        // doesn't truly change by any marginal amount
+        if (isCompletingFromLostFocus && !specialFlag && parseText.Equals(this.GetValueToString(true))) {
+            return true;
         }
 
         if (this.ParseInput(parseText, out double parsedValue)) {
@@ -237,6 +276,7 @@ public class NumberDragger : RangeBase {
             parsedValue = state.Expression.Parse(parseText);
         }
         catch {
+            this.RaiseEvent(new InvalidInputEnteredEventArgs(parseText, this));
             return false;
         }
         

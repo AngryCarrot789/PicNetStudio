@@ -17,6 +17,9 @@
 // along with PicNetStudio. If not, see <https://www.gnu.org/licenses/>.
 // 
 
+using PicNetStudio.Avalonia.DataTransfer;
+using PicNetStudio.Avalonia.Utils;
+using PicNetStudio.Avalonia.Utils.Accessing;
 using SkiaSharp;
 
 namespace PicNetStudio.Avalonia.PicNet.Tools.Core;
@@ -25,17 +28,42 @@ namespace PicNetStudio.Avalonia.PicNet.Tools.Core;
 /// The brush tool, which lets you draw circular arrangement of pixels on the canvas, with an adjustable diameter
 /// </summary>
 public class BrushTool : BaseDiameterTool {
+    public static readonly DataParameterFloat HardnessParameter = DataParameter.Register(new DataParameterFloat(typeof(BrushTool), nameof(Hardness), 0.5F, 0.0F, 1.0F, ValueAccessors.Reflective<float>(typeof(BrushTool), nameof(hardness))));
+
+    private float hardness = HardnessParameter.DefaultValue;
+
+    public float Hardness {
+        get => this.hardness;
+        set => DataParameter.SetValueHelper(this, HardnessParameter, ref this.hardness, value);
+    }
+
     public BrushTool() {
         this.CanDrawSecondaryColour = true;
     }
 
     public override void DrawPixels(PNBitmap bitmap, Document document, double x, double y, bool isPrimaryColour) {
-        if (bitmap.Canvas == null)
-            return;
-        
-        using SKPaint paint = new SKPaint();
-        paint.Color = isPrimaryColour ? document.Editor!.PrimaryColour : document.Editor!.SecondaryColour;
-        paint.IsAntialias = true;
-        bitmap.Canvas.DrawCircle((float) x, (float) y, (this.Diameter / 2.0F), paint);
+        SKColor colour = isPrimaryColour ? document.Editor!.PrimaryColour : document.Editor!.SecondaryColour;
+        if (DoubleUtils.LessThanOrClose(this.Hardness, 0.9999)) {
+            float radius = this.Diameter / 2.0F;
+
+            SKPoint center = new SKPoint((float) x, (float) y);
+            using SKShader shader = SKShader.CreateRadialGradient(center, radius, new SKColor[] {
+                colour, colour.WithAlpha(0)
+            }, new float[] {
+                this.Hardness, 1.0f
+            }, SKShaderTileMode.Clamp);
+
+            using SKPaint paint = new SKPaint();
+            paint.IsAntialias = true;
+            paint.Shader = shader;
+            bitmap.Canvas!.DrawCircle(center, radius, paint);
+        }
+        else {
+            // Swap to fast method for almost 100% hardness, since they are effectively the same
+            using SKPaint paint = new SKPaint();
+            paint.Color = colour;
+            paint.IsAntialias = true;
+            bitmap.Canvas!.DrawCircle((float) x, (float) y, (this.Diameter / 2.0F), paint);
+        }
     }
 }

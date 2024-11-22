@@ -1,5 +1,6 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using PicNetStudio.Avalonia.Bindings;
 using PicNetStudio.Avalonia.DataTransfer;
 using PicNetStudio.Avalonia.PicNet.Controls.Dragger;
 using PicNetStudio.Avalonia.PicNet.PropertyEditing.DataTransfer;
@@ -24,8 +25,6 @@ public abstract class BaseDataParameterToolSettingControl : BaseToolSettingContr
     protected override void OnConnect() {
         base.OnConnect();
         BaseDataParameterToolSetting setting = this.ToolSetting!;
-        setting.Connected += this.OnToolConnected;
-        setting.Disconnected += this.OnToolDisconnected;
         setting.DisplayNameChanged += this.OnSettingDisplayNameChanged;
         setting.ValueChanged += this.OnSettingValueChanged;
         this.UpdateDisplayName();
@@ -35,11 +34,8 @@ public abstract class BaseDataParameterToolSettingControl : BaseToolSettingContr
     protected override void OnDisconnect() {
         base.OnDisconnect();
         BaseDataParameterToolSetting setting = this.ToolSetting!;
-        setting.Connected -= this.OnToolConnected;
-        setting.Disconnected -= this.OnToolDisconnected;
         setting.DisplayNameChanged -= this.OnSettingDisplayNameChanged;
         setting.ValueChanged -= this.OnSettingValueChanged;
-        this.OnModelValueChanged();
     }
     
     protected abstract void UpdateControlValue();
@@ -64,14 +60,20 @@ public abstract class BaseDataParameterToolSettingControl : BaseToolSettingContr
         }
     }
     
+    protected override void OnToolConnected() {
+        base.OnToolConnected();
+        this.OnModelValueChanged();
+    }
+    
+    protected override void OnToolDisconnected() {
+        base.OnToolDisconnected();
+        this.OnModelValueChanged();
+    }
+    
     private void OnSettingValueChanged(BaseDataParameterToolSetting sender) => this.OnModelValueChanged();
     
     private void OnSettingDisplayNameChanged(BaseDataParameterToolSetting sender) => this.UpdateDisplayName();
 
-    private void OnToolConnected(BaseToolSetting sender) => this.OnModelValueChanged();
-    
-    private void OnToolDisconnected(BaseToolSetting sender) => this.OnModelValueChanged();
-    
     private void UpdateDisplayName() {
         if (!this.IsConnected || this.displayNameTextBlock == null)
             return;
@@ -87,18 +89,25 @@ public abstract class BaseDataParameterToolSettingControl : BaseToolSettingContr
 
 public abstract class DataParameterNumberDraggerToolSettingControl : BaseDataParameterToolSettingControl {
     protected NumberDragger PART_Dragger;
+    private readonly AutoUpdateAndEventPropertyBinder<BaseDataParameterNumberDraggerToolSetting> valueFormatterBinder;
 
     public new BaseDataParameterNumberDraggerToolSetting? ToolSetting => (BaseDataParameterNumberDraggerToolSetting?) base.ToolSetting;
     
     protected abstract double SettingValue { get; set; }
 
     public DataParameterNumberDraggerToolSettingControl() {
+        this.valueFormatterBinder = new AutoUpdateAndEventPropertyBinder<BaseDataParameterNumberDraggerToolSetting>(null, nameof(BaseDataParameterNumberDraggerToolSetting.ValueFormatterChanged), (x) => {
+            DataParameterNumberDraggerToolSettingControl editor = (DataParameterNumberDraggerToolSettingControl) x.Control;
+            editor.PART_Dragger.ValueFormatter = x.Model.ValueFormatter;
+            editor.PART_Dragger.ValueFormatter = x.Model.ValueFormatter;
+        }, null);
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e) {
         base.OnApplyTemplate(e);
         this.PART_Dragger = e.NameScope.GetTemplateChild<NumberDragger>(nameof(this.PART_Dragger));
         this.PART_Dragger.ValueChanged += (sender, args) => this.OnControlValueChanged();
+        this.valueFormatterBinder.AttachControl(this);
     }
 
     protected override void UpdateControlValue() {
@@ -116,6 +125,7 @@ public abstract class DataParameterNumberDraggerToolSettingControl : BaseDataPar
         this.PART_Dragger.SmallChange = profile.SmallStep;
         this.PART_Dragger.NormalChange = profile.NormalStep;
         this.PART_Dragger.LargeChange = profile.LargeStep;
+        this.valueFormatterBinder.AttachModel(this.ToolSetting);
     }
 
     protected abstract void ResetValue();
@@ -139,6 +149,77 @@ public class DataParameterFloatToolSettingControl : DataParameterNumberDraggerTo
 
     protected override void ResetValue() {
         this.ToolSetting!.Value = this.ToolSetting.Parameter.DefaultValue;
+    }
+}
+public class AutomaticDataParameterFloatToolSettingControl : DataParameterNumberDraggerToolSettingControl {
+    public new AutomaticDataParameterFloatToolSetting? ToolSetting => (AutomaticDataParameterFloatToolSetting?) base.ToolSetting;
+
+    protected override double SettingValue {
+        get => this.ToolSetting!.Value;
+        set => this.ToolSetting!.SetValue((float) value, false);
+    }
+
+    public AutomaticDataParameterFloatToolSettingControl() {
+    }
+
+    protected override void OnConnect() {
+        base.OnConnect();
+        AutomaticDataParameterFloatToolSetting setting = this.ToolSetting!;
+        DataParameterFloat param = setting.Parameter;
+        this.PART_Dragger.Minimum = param.Minimum;
+        this.PART_Dragger.Maximum = param.Maximum;
+        
+        this.PART_Dragger.InvalidInputEntered += this.PartDraggerOnInvalidInputEntered;
+    }
+
+    protected override void OnDisconnect() {
+        base.OnDisconnect();
+        this.PART_Dragger.InvalidInputEntered -= this.PartDraggerOnInvalidInputEntered;
+    }
+
+    private void PartDraggerOnInvalidInputEntered(object? sender, InvalidInputEnteredEventArgs e) {
+        BaseCanvasTool? tool = this.ToolSetting!.Tool;
+        if (tool != null && ("auto".EqualsIgnoreCase(e.Input) || "automatic".EqualsIgnoreCase(e.Input))) {
+            this.ToolSetting!.IsAutomaticParameter.SetValue(tool, true);
+        }
+    }
+
+    protected override void OnToolConnected() {
+        base.OnToolConnected();
+        this.ToolSetting!.IsAutomaticParameter.AddValueChangedHandler(this.ToolSetting!.Tool!, this.OnIsAutomaticChanged);
+    }
+
+    protected override void OnToolDisconnected() {
+        base.OnToolDisconnected();
+        this.ToolSetting!.IsAutomaticParameter.RemoveValueChangedHandler(this.ToolSetting!.Tool!, this.OnIsAutomaticChanged);
+    }
+    
+    private void OnIsAutomaticChanged(DataParameter parameter, ITransferableData owner) {
+        this.UpdateTextPreview();
+    }
+
+    protected override void UpdateControlValue() {
+        base.UpdateControlValue();
+        this.UpdateTextPreview();
+    }
+
+    private void UpdateTextPreview() {
+        if (this.ToolSetting!.IsAutomaticParameter.GetValue(this.ToolSetting!.Tool!)) {
+            this.PART_Dragger.TextPreviewOverride = $"Auto ({this.SettingValue:F2})";
+        }
+        else {
+            this.PART_Dragger.TextPreviewOverride = null;
+        }
+    }
+
+    protected override void ResetValue() {
+        if (!this.IsConnected)
+            return;
+
+        BaseCanvasTool? tool = this.ToolSetting!.Tool;
+        if (tool != null) {
+            this.ToolSetting!.IsAutomaticParameter.SetValue(tool, true);
+        }
     }
 }
 

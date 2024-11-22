@@ -23,6 +23,7 @@ using PicNetStudio.Avalonia.CommandSystem;
 using PicNetStudio.Avalonia.PicNet.Commands;
 using PicNetStudio.Avalonia.PicNet.Tools.Core;
 using PicNetStudio.Avalonia.Services;
+using PicNetStudio.Avalonia.Services.Colours;
 using PicNetStudio.Avalonia.Services.Files;
 using PicNetStudio.Avalonia.Services.Messages;
 using PicNetStudio.Avalonia.Shortcuts.Avalonia;
@@ -82,6 +83,7 @@ public abstract class RZApplication {
         this.serviceManager.Register<IMessageDialogService>(new MessageDialogServiceImpl());
         this.serviceManager.Register<IUserInputDialogService>(new InputDialogServiceImpl());
         this.serviceManager.Register<IFilePickDialogService>(new DummyFilePickDialogService());
+        this.serviceManager.Register<IColourPickerService>(new ColourPickerServiceImpl());
         this.serviceManager.Register<TaskManager>(new TaskManager());
 
         this.RegisterCommands(CommandManager.Instance);
@@ -112,11 +114,12 @@ public abstract class RZApplication {
         manager.Register("command.toolbar.SelectPencilTool", new SelectPencilToolCommand());
         manager.Register("command.toolbar.SelectFillTool", new SelectFillToolCommand());
         manager.Register("command.toolbar.SelectSelectionTool", new SelectSelectionToolCommand());
+        manager.Register("command.toolbar.ClearSelection", new ClearSelectionCommand());
         manager.Register("command.layertree.CreateNewRasterLayer", new CreateNewRasterLayerCommand());
-        manager.Register("command.layertree.CreateNewTextLayerCommand", new CreateNewTextLayerCommand());
+        manager.Register("command.layertree.CreateNewTextLayer", new CreateNewTextLayerCommand());
         manager.Register("command.layertree.DeleteSelectedLayers", new DeleteSelectedLayersCommand());
         manager.Register("command.layertree.GroupSelectionIntoComposition", new GroupSelectionIntoCompositionCommand());
-        manager.Register("command.layertree.item.EditLayerNameCommand", new EditLayerNameCommand());
+        manager.Register("command.layertree.item.EditLayerName", new EditLayerNameCommand());
         manager.Register("command.layertree.item.ToggleLayerVisibility", new ToggleLayerVisibilityCommand());
         manager.Register("command.layertree.item.RasteriseLayer", new RasteriseLayerCommand());
     }

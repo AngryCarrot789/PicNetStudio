@@ -22,7 +22,7 @@
              BorderBrush="{DynamicResource ABrush.Tone1.Border.Static}" BorderThickness="1"
              FontFamily="{StaticResource FontOxanium}">
     <Grid RowDefinitions="Auto,1,*">
-        <Grid Grid.Row="2" ColumnDefinitions="50,*,0,300" RowDefinitions="30,*">
+        <Grid Grid.Row="2" ColumnDefinitions="40,*,0,300" RowDefinitions="30,*">
             <c:CanvasViewPortControl x:Name="PART_Canvas" Grid.Column="1" Grid.Row="1"
                                     HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                                     Background="Transparent" BorderBrush="{DynamicResource ABrush.Tone1.Border.Static}"
@@ -38,7 +38,30 @@
                 </c:CanvasViewPortControl.Styles>
             </c:CanvasViewPortControl>
             <Border Grid.Column="0" Grid.Row="1" Background="{DynamicResource PanelBackground3}">
-                <tbc:ToolBarItemListBox x:Name="PART_ToolBar" Margin="0" Padding="1,0"/>
+                <StackPanel>
+                    <tbc:ToolBarItemListBox x:Name="PART_ToolBar" Margin="2,0" Padding="0"/>
+                    <Separator/>
+                    <Canvas Margin="4,2">
+                        <Canvas.Resources>
+                            <ControlTheme x:Key="ColourPickerButtonTheme" TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Type Button}}">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="{x:Type Button}">
+                                            <Border x:Name="PART_Border" Background="{TemplateBinding Background}" 
+                                                    BorderBrush="{TemplateBinding BorderBrush}" 
+                                                    BorderThickness="{TemplateBinding BorderThickness}"/>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style Selector="^:pointerover /template/ Border#PART_Border">
+                                    <Setter Property="BorderBrush" Value="Orange"/>
+                                </Style>
+                            </ControlTheme>
+                        </Canvas.Resources>
+                        <Button x:Name="PART_SecondaryColourButton" Theme="{StaticResource ColourPickerButtonTheme}" Canvas.Left="10" Canvas.Top="10" Width="20" Height="20"/>
+                        <Button x:Name="PART_PrimaryColourButton" Theme="{StaticResource ColourPickerButtonTheme}" Width="20" Height="20"/>
+                    </Canvas>
+                </StackPanel>
             </Border>
             <Border Grid.Column="3" Grid.Row="1" Background="{DynamicResource PanelBackground3}">
                 <Grid RowDefinitions="*,1,*">
@@ -134,7 +157,7 @@
             </Border>
             <GridSplitter Grid.Column="2" Grid.Row="1" Background="Transparent" Margin="-2,0,-6,0" Cursor="SizeWestEast"/>
             <Border Grid.Column="0" Grid.ColumnSpan="4" Grid.Row="0" Background="{DynamicResource PanelBackground3}">
-                <settings:ToolSettingContainerControl x:Name="PART_ToolSettingsContainer"/>
+                <settings:ToolSettingContainerControl x:Name="PART_ToolSettingsContainer" Margin="5,0"/>
             </Border>
         </Grid>
         <Border Background="{DynamicResource ABrush.Tone1.Border.Static}" Grid.Row="1"/>

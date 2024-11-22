@@ -118,6 +118,44 @@ public class DataParameterFloatToolSetting : BaseDataParameterNumericToolSetting
     }
 }
 
+public class AutomaticDataParameterFloatToolSetting : BaseDataParameterNumberDraggerToolSetting {
+    public new DataParameterFloat Parameter => (DataParameterFloat) ((BaseDataParameterToolSetting) this).Parameter;
+
+    private float value;
+
+    public float Value => this.value;
+
+    public DataParameterBool IsAutomaticParameter { get; }
+    
+    public AutomaticDataParameterFloatToolSetting(DataParameterFloat parameter, DataParameterBool isAutomaticParameter, string displayName, DragStepProfile stepProfile) : base(parameter, displayName, stepProfile) {
+        this.IsAutomaticParameter = isAutomaticParameter;
+    }
+
+    public void SetValue(float newValue, bool? isAutomaticMode) {
+        if (this.Tool == null) {
+            return;
+        }
+        
+        if (isAutomaticMode.HasValue) {
+            this.IsAutomaticParameter.SetValue(this.Tool, isAutomaticMode.Value);
+            
+            // we assume when the automatic state parameter changes, the value parameter is changed immediately
+            if (isAutomaticMode.Value) {
+                return;
+            }
+        }
+        
+        newValue = this.Parameter.Clamp(newValue);
+        this.value = newValue;
+        this.Parameter.SetValue(this.Tool!, newValue);
+        this.OnValueChanged();
+    }
+    
+    public override void QueryValueFromHandlers() {
+        this.value = this.Parameter.GetValue(this.Tool!);
+    }
+}
+
 public class DataParameterDoubleToolSetting : BaseDataParameterNumericToolSetting<double> {
     public new DataParameterDouble Parameter => (DataParameterDouble) ((BaseDataParameterToolSetting) this).Parameter;
 

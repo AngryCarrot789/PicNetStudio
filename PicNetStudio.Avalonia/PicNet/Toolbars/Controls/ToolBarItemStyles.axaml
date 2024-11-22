@@ -6,13 +6,11 @@
         <Setter Property="BorderBrush" Value="Transparent"/>
         <Setter Property="Padding" Value="0"/>
         <Setter Property="BorderThickness" Value="1"/>
-        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto"/>
-        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
         <Setter Property="ScrollViewer.IsScrollChainingEnabled" Value="True"/>
         <Setter Property="ItemsPanel">
             <Setter.Value>
                 <ItemsPanelTemplate>
-                    <StackPanel Spacing="5"/>
+                    <StackPanel Spacing="4"/>
                 </ItemsPanelTemplate>
             </Setter.Value>
         </Setter>
@@ -27,10 +25,10 @@
                                   AllowAutoHide="{TemplateBinding (ScrollViewer.AllowAutoHide)}"
                                   BringIntoViewOnFocusChange="{TemplateBinding (ScrollViewer.BringIntoViewOnFocusChange)}"
                                   Background="{TemplateBinding Background}"
-                                  HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
-                                  IsScrollChainingEnabled="{TemplateBinding (ScrollViewer.IsScrollChainingEnabled)}"
+                                  HorizontalScrollBarVisibility="Disabled"
+                                  IsScrollChainingEnabled="True"
                                   IsDeferredScrollingEnabled="{TemplateBinding (ScrollViewer.IsDeferredScrollingEnabled)}"
-                                  VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}"
+                                  VerticalScrollBarVisibility="Disabled"
                                   VerticalSnapPointsType="{TemplateBinding (ScrollViewer.VerticalSnapPointsType)}"
                                   HorizontalSnapPointsType="{TemplateBinding (ScrollViewer.HorizontalSnapPointsType)}">
                         <ItemsPresenter x:Name="PART_ItemsPresenter"
@@ -53,7 +51,6 @@
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
         <Setter Property="VerticalContentAlignment" Value="Stretch"/>
-        <Setter Property="Padding" Value="3,0"/>
         <Setter Property="Template">
             <ControlTemplate TargetType="{x:Type tb:ToolBarItemControl}">
                 <ContentPresenter x:Name="PART_ContentPresenter"
@@ -122,12 +119,15 @@
         </Setter>
     </ControlTheme>
     <ControlTheme x:Key="{x:Type tb:ToolBarItemControlContent_SelectRegionTool}"
-                  TargetType="{x:Type tb:ToolBarItemControlContent_FloodFillTool}"
+                  TargetType="{x:Type tb:ToolBarItemControlContent_SelectRegionTool}"
                   BasedOn="{StaticResource {x:Type tb:ToolBarItemControlContentSingleTool}}">
-        <Setter Property="Template">
-            <ControlTemplate>
-                <TextBlock Text="RECT SEL" FontSize="9"/>
-            </ControlTemplate>
-        </Setter>
+        <Setter Property="BorderBrush" Value="{DynamicResource ABrush.Glyph.Static}"/>
+        <Setter Property="UseLayoutRounding" Value="False"/>
+        <Setter Property="DashOffset" Value="1"/>
+        <!-- custom drawn in class -->
     </ControlTheme>
+    
+    <Design.PreviewWith>
+        <tb:ToolBarItemControlContent_SelectRegionTool Width="32" Height="32" DashOffset="1"/>
+    </Design.PreviewWith>
 </ResourceDictionary>

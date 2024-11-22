@@ -28,30 +28,27 @@ public abstract class BaseSelection {
 }
 
 public class RectangleSelection : BaseSelection {
-    /// <summary>
-    /// The minimum point
-    /// </summary>
-    public SKPointI Min { get; }
+    public int Left { get; }
+    public int Top { get; }
+    public int Right { get; }
+    public int Bottom { get; }
+
+    public int Width => this.Right - this.Left;
+
+    public int Height => this.Bottom - this.Top;
     
-    /// <summary>
-    /// The maximum point
-    /// </summary>
-    public SKPointI Max { get; }
+    public SKRectI Rect => new SKRectI(this.Left, this.Top, this.Right, this.Bottom);
 
-    public SKRectI Rect => new SKRectI(this.Min.X, this.Min.Y, this.Max.X, this.Max.Y);
-
-    public int Width => this.Max.X - this.Min.X;
-    
-    public int Height => this.Max.Y - this.Min.Y;
-
-    public RectangleSelection(SKPointI min, SKPointI max) {
-        this.Min = min;
-        this.Max = max;
+    public RectangleSelection(int left, int top, int right, int bottom) {
+        this.Left = left;
+        this.Top = top;
+        this.Right = right;
+        this.Bottom = bottom;
     }
 
     public override void ApplyClip(PNBitmap bitmap) {
         bitmap.Canvas!.Save();
-        bitmap.Canvas!.ClipRect(this.Rect);
+        bitmap.Canvas!.ClipRect(new SKRect(this.Left, this.Top, this.Right, this.Bottom));
     }
 
     public override void FinishClip(PNBitmap bitmap) {

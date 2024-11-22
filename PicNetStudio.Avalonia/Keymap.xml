@@ -32,6 +32,9 @@
                 <Shortcut Name="SelectSelection" CommandId="command.toolbar.SelectSelectionTool">
                     <KeyStroke Key="S"/>
                 </Shortcut>
+                <Shortcut Name="ClearSelection" CommandId="command.toolbar.ClearSelection">
+                    <KeyStroke Mods="CTRL" Key="D"/>
+                </Shortcut>
             </Group>
             <Group Name="LayerTree">
                 <Shortcut Name="GroupSelection" CommandId="command.layertree.GroupSelectionIntoComposition">
@@ -41,10 +44,10 @@
                     <KeyStroke Key="Delete"/>
                 </Shortcut>
                 <Group Name="Item">
-                    <Shortcut Name="EditLayerName1" CommandId="command.layertree.item.EditLayerNameCommand">
+                    <Shortcut Name="EditLayerName1" CommandId="command.layertree.item.EditLayerName">
                         <KeyStroke Mods="CTRL" Key="R"/>
                     </Shortcut>
-                    <Shortcut Name="EditLayerName2" CommandId="command.layertree.item.EditLayerNameCommand">
+                    <Shortcut Name="EditLayerName2" CommandId="command.layertree.item.EditLayerName">
                         <KeyStroke Key="F2"/>
                     </Shortcut>
                     <Shortcut Name="ToggleVisibility" CommandId="command.layertree.item.ToggleLayerVisibility">

@@ -7,12 +7,34 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type s:ToolSettingContainerControl}">
-                    <StackPanel x:Name="PART_Panel" Orientation="Horizontal" Spacing="4"/>
+                    <StackPanel x:Name="PART_Panel" Orientation="Horizontal" Spacing="5"/>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
     </ControlTheme>    
-    <ControlTheme x:Key="{x:Type c:DataParameterNumberDraggerToolSettingControl}" TargetType="{x:Type c:DataParameterNumberDraggerToolSettingControl}">
+    <ControlTheme x:Key="{x:Type c:BaseToolSettingControl}" TargetType="{x:Type c:BaseToolSettingControl}">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type c:DataParameterNumberDraggerToolSettingControl}">
+                    <TextBlock Text="!SETTING FULLY UNIMPLEMENTED!"/>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </ControlTheme>   
+    <ControlTheme x:Key="{x:Type c:BaseDataParameterToolSettingControl}" TargetType="{x:Type c:BaseDataParameterToolSettingControl}" BasedOn="{StaticResource {x:Type c:BaseToolSettingControl}}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type c:DataParameterNumberDraggerToolSettingControl}">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="NAME" x:Name="PART_Label" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                        <TextBlock Text="!SETTING UNIMPLEMENTED!"/>
+                    </StackPanel>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </ControlTheme> 
+    <ControlTheme x:Key="{x:Type c:DataParameterNumberDraggerToolSettingControl}" TargetType="{x:Type c:DataParameterNumberDraggerToolSettingControl}" BasedOn="{StaticResource {x:Type c:BaseDataParameterToolSettingControl}}">
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type c:DataParameterNumberDraggerToolSettingControl}">
@@ -25,6 +47,8 @@
         </Setter>
     </ControlTheme>
     <ControlTheme x:Key="{x:Type c:DataParameterFloatToolSettingControl}" TargetType="{x:Type c:DataParameterFloatToolSettingControl}" BasedOn="{StaticResource {x:Type c:DataParameterNumberDraggerToolSettingControl}}">
+    </ControlTheme>
+    <ControlTheme x:Key="{x:Type c:AutomaticDataParameterFloatToolSettingControl}" TargetType="{x:Type c:DataParameterFloatToolSettingControl}" BasedOn="{StaticResource {x:Type c:DataParameterNumberDraggerToolSettingControl}}">
     </ControlTheme>
     <ControlTheme x:Key="{x:Type c:DataParameterDoubleToolSettingControl}" TargetType="{x:Type c:DataParameterDoubleToolSettingControl}" BasedOn="{StaticResource {x:Type c:DataParameterNumberDraggerToolSettingControl}}">
     </ControlTheme>

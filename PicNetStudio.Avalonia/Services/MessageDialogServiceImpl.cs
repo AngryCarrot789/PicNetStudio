@@ -44,20 +44,23 @@ public class MessageDialogServiceImpl : IMessageDialogService {
     public async Task<MessageBoxResult> ShowMessage(MessageBoxInfo info) {
         Validate.NotNull(info);
 
+        Window? parent = GetParentWindow();
+        if (parent == null)
+            return MessageBoxResult.None;
+
+        MessageBoxDialog dialog = new MessageBoxDialog {
+            MessageBoxData = info
+        };
+
+        MessageBoxResult? result = await dialog.ShowDialog<MessageBoxResult?>(parent);
+        return result ?? MessageBoxResult.None;
+    }
+
+    public static Window? GetParentWindow() {
         if (Application.Current!.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop) {
-            Window? parent = desktop.Windows.FirstOrDefault(x => x.IsActive) ?? desktop.MainWindow;
-            if (parent == null) {
-                return MessageBoxResult.None;
-            }
-
-            MessageBoxDialog dialog = new MessageBoxDialog {
-                MessageBoxData = info
-            };
-
-            MessageBoxResult? result = await dialog.ShowDialog<MessageBoxResult?>(parent);
-            return result ?? MessageBoxResult.None;
+            return desktop.Windows.FirstOrDefault(x => x.IsActive) ?? desktop.MainWindow;
         }
 
-        return MessageBoxResult.None;
+        return null;
     }
 }

@@ -20,7 +20,10 @@
 using System;
 using Avalonia;
 using Avalonia.Input;
+using PicNetStudio.Avalonia.DataTransfer;
 using PicNetStudio.Avalonia.PicNet.Layers.Core;
+using PicNetStudio.Avalonia.Utils;
+using PicNetStudio.Avalonia.Utils.Accessing;
 
 namespace PicNetStudio.Avalonia.PicNet.Tools;
 
@@ -28,27 +31,36 @@ namespace PicNetStudio.Avalonia.PicNet.Tools;
 /// The base class for a tool that draws onto a rasterised layer when the mouse is pressed and dragged around
 /// </summary>
 public abstract class BaseRasterisedDrawingTool : BaseDrawingTool {
-    private bool keepDrawing;
-    private Point lastDragDrawPoint;
+    // best result is Diameter / 8
+    public static readonly DataParameterFloat GapParameter = DataParameter.Register(new DataParameterFloat(typeof(BaseRasterisedDrawingTool), nameof(Gap), 2.0F, 0.5F, 100.0F, ValueAccessors.Reflective<float>(typeof(BaseRasterisedDrawingTool), nameof(gap))));
+    public static readonly DataParameterBool IsGapAutomaticParameter = DataParameter.Register(new DataParameterBool(typeof(BaseRasterisedDrawingTool), nameof(IsGapAutomatic), true, ValueAccessors.Reflective<bool>(typeof(BaseRasterisedDrawingTool), nameof(isGapAutomatic))));
 
-    /// <summary>
-    /// The recommended spacing interval that should be used to call the
-    /// <see cref="DrawPixels"/> function when the user is drag-drawing
-    /// (as apposed to a single click). General recommendation is 1.0 for a 1-pixel brush
-    /// </summary>
-    public abstract double SpacingFeedback { get; }
+    private bool keepDrawing;
+    private Point lastDragPos;
+    private float gap = GapParameter.DefaultValue;
+    private bool isGapAutomatic = IsGapAutomaticParameter.DefaultValue;
 
     /// <summary>
     /// Gets or sets a property indicating this drawing tool allows drawing with both primary and secondary cursor inputs (left and right mouse)
     /// </summary>
     protected bool CanDrawSecondaryColour { get; set; }
-    
+
     /// <summary>
     /// Gets or sets whether to bypass automatic clipping at a canvas-level when drawing with this
     /// tool. Setting this to true means the tool will implement its own clip processing
     /// </summary>
     protected bool BypassClipping { get; set; }
 
+    public float Gap {
+        get => this.gap;
+        set => DataParameter.SetValueHelper(this, GapParameter, ref this.gap, value);
+    }
+
+    public bool IsGapAutomatic {
+        get => this.isGapAutomatic;
+        set => DataParameter.SetValueHelper(this, IsGapAutomaticParameter, ref this.isGapAutomatic, value);
+    }
+    
     protected BaseRasterisedDrawingTool() {
     }
 
@@ -71,13 +83,12 @@ public abstract class BaseRasterisedDrawingTool : BaseDrawingTool {
         // Only allow without modifiers pressed to allow the canvas to be moved around with ALT+LMB
         if ((cursor != EnumCursorType.Primary && cursor != EnumCursorType.Secondary) || modifiers != KeyModifiers.None)
             return false;
-        
+
         if (cursor == EnumCursorType.Secondary && !this.CanDrawSecondaryColour)
             return false;
 
         this.keepDrawing = false;
-        bool ret = DrawEvent(this, document, x, y, cursor == EnumCursorType.Primary);
-        this.keepDrawing = true;
+        bool ret = DrawEventV2(this, document, x, y, cursor == EnumCursorType.Primary);
         return ret;
     }
 
@@ -95,53 +106,60 @@ public abstract class BaseRasterisedDrawingTool : BaseDrawingTool {
         if ((cursorMask & EnumCursorType.Primary) == 0 && (!this.CanDrawSecondaryColour || (cursorMask & EnumCursorType.Secondary) == 0))
             return false;
 
-        return DrawEvent(this, document, x, y, (cursorMask & EnumCursorType.Primary) != 0);
+        return DrawEventV2(this, document, x, y, (cursorMask & EnumCursorType.Primary) != 0);
     }
 
-    public static bool DrawEvent(BaseRasterisedDrawingTool tool, Document document, double x, double y, bool isPrimaryCursor) {
+    public static bool DrawEventV2(BaseRasterisedDrawingTool tool, Document document, double x, double y, bool isPrimaryCursor) {
         if (!(document.Canvas.ActiveLayerTreeObject is RasterLayer bitmapLayer)) {
             return false;
         }
 
         PNBitmap bitmap = bitmapLayer.Bitmap;
-        Point mPos = new Point(x, y);
-
+        if (!bitmap.IsInitialised) {
+            return false;
+        }
+        
         BaseSelection? selection = document.Canvas.SelectionRegion;
         bool useClip = selection != null && !tool.BypassClipping;
         if (useClip) {
             selection!.ApplyClip(bitmap);
         }
-        
+
         if (tool.keepDrawing) {
-            double distance = GetDistance(tool.lastDragDrawPoint, mPos);
-
-            if (distance > tool.SpacingFeedback) {
-                int steps = (int) (distance / tool.SpacingFeedback);
-                double deltaX = (mPos.X - tool.lastDragDrawPoint.X) / steps;
-                double deltaY = (mPos.Y - tool.lastDragDrawPoint.Y) / steps;
-
-                for (int i = 0; i < steps; i++) {
-                    double interpolatedX = tool.lastDragDrawPoint.X + i * deltaX;
-                    double interpolatedY = tool.lastDragDrawPoint.Y + i * deltaY;
-                    tool.DrawPixels(bitmap, document, interpolatedX, interpolatedY, isPrimaryCursor);
-                }
+            Point lastPos = tool.lastDragPos;
+            double dx = x - lastPos.X;
+            double dy = y - lastPos.Y;
+            double distance = Math.Sqrt(dx * dx + dy * dy);
+            double gap = tool.Gap;
+            if (distance < gap) {
+                return true;
             }
+
+            double remainingDistance = distance;
+            double curX = lastPos.X;
+            double curY = lastPos.Y;
+            double dirX = dx / distance;
+            double dirY = dy / distance;
+            while (DoubleUtils.GreaterThanOrClose(remainingDistance, gap)) {
+                curX += dirX * gap;
+                curY += dirY * gap;
+                tool.DrawPixels(bitmap, document, curX, curY, isPrimaryCursor);
+                remainingDistance -= gap;
+            }
+
+            goto EndFirstDraw;
         }
 
         tool.keepDrawing = true;
-        tool.DrawPixels(bitmap, document, mPos.X, mPos.Y, isPrimaryCursor);
+        tool.DrawPixels(bitmap, document, x, y, isPrimaryCursor);
+        EndFirstDraw:
+        
         if (useClip) {
             selection!.FinishClip(bitmap);
         }
-        
-        bitmapLayer.InvalidateVisual();
-        tool.lastDragDrawPoint = mPos;
-        return true;
-    }
 
-    private static double GetDistance(Point p1, Point p2) {
-        double dx = p2.X - p1.X;
-        double dy = p2.Y - p1.Y;
-        return Math.Sqrt(dx * dx + dy * dy);
+        bitmapLayer.InvalidateVisual();
+        tool.lastDragPos = new Point(x, y);
+        return true;
     }
 }

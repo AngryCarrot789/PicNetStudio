@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using PicNetStudio.Avalonia.PicNet.Controls.Dragger;
 using PicNetStudio.Avalonia.PicNet.PropertyEditing.DataTransfer;
 using PicNetStudio.Avalonia.PicNet.Tools.Core;
 using PicNetStudio.Avalonia.PicNet.Tools.Settings.Controls;
@@ -15,11 +16,26 @@ public class ToolSettingContainerControl : TemplatedControl {
     private readonly Dictionary<Type, List<BaseToolSetting>> ToolTypeToSettings;
 
     private StackPanel? PART_Panel;
-    
+
     public ToolSettingContainerControl() {
         this.ToolTypeToSettings = new Dictionary<Type, List<BaseToolSetting>>();
-        
-        this.AddSetting<BaseDiameterTool>(new DataParameterFloatToolSetting(BaseDiameterTool.DiameterDataParameter, "Dia.", DragStepProfile.UnitOne));
+
+        this.AddSetting<BrushTool>(new DataParameterFloatToolSetting(BaseDiameterTool.DiameterDataParameter, "Diameter:", DragStepProfile.SubPixel) {
+            ValueFormatter = new SuffixValueFormatter("px"), 
+            Description = "Change the diameter of this brush tool"
+        });
+        this.AddSetting<PencilTool>(new DataParameterFloatToolSetting(BaseDiameterTool.DiameterDataParameter, "Size:", DragStepProfile.SubPixel) {
+            ValueFormatter = new SuffixValueFormatter("px"), 
+            Description = "Change the size of this pencil tool"
+        });
+        this.AddSetting<BaseRasterisedDrawingTool>(new AutomaticDataParameterFloatToolSetting(BaseRasterisedDrawingTool.GapParameter, BaseRasterisedDrawingTool.IsGapAutomaticParameter, "Gap:", DragStepProfile.SubPixel) {
+            ValueFormatter = new SuffixValueFormatter("px"), 
+            Description = "Change the gap between each brush draw event. Bigger means more space between each draw event" + '\n' + "This is calculated automatically, but can be overridden. Click and enter \"auto\" and press enter to make it auto again"
+        });
+        this.AddSetting<BrushTool>(new DataParameterFloatToolSetting(BrushTool.HardnessParameter, "Hardness:", DragStepProfile.UnitOne) {
+            ValueFormatter = UnitToPercentFormatter.Standard, 
+            Description = "Change the hardness factor. Smaller means less solid pixels on the outside of the tool pattern"
+        });
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e) {

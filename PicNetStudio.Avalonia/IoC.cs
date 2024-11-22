@@ -17,6 +17,7 @@
 // along with PicNetStudio. If not, see <https://www.gnu.org/licenses/>.
 // 
 
+using PicNetStudio.Avalonia.Services;
 using PicNetStudio.Avalonia.Services.Files;
 using PicNetStudio.Avalonia.Services.Messages;
 using PicNetStudio.Avalonia.Tasks;
@@ -38,6 +39,8 @@ public static class IoC {
     /// Gets the application's file picking service, for picking files and directories to open/save
     /// </summary>
     public static IFilePickDialogService FilePickService => RZApplication.Instance.Services.GetService<IFilePickDialogService>();
+    
+    public static IColourPickerService ColourPickerService => RZApplication.Instance.Services.GetService<IColourPickerService>();
 
     /// <summary>
     /// Gets the application's task manager

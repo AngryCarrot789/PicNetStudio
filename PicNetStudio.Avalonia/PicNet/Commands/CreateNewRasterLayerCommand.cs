@@ -100,6 +100,6 @@ public class CreateNewRasterLayerCommandUsage : SelectionBasedCommandUsage {
 }
 
 public class CreateNewTextLayerCommandUsage : SelectionBasedCommandUsage {
-    public CreateNewTextLayerCommandUsage() : base("command.layertree.CreateNewTextLayerCommand") {
+    public CreateNewTextLayerCommandUsage() : base("command.layertree.CreateNewTextLayer") {
     }
 }

@@ -18,7 +18,10 @@
 // 
 
 using System;
+using Avalonia;
 using Avalonia.Controls.Primitives;
+using Avalonia.Media;
+using Avalonia.Media.Immutable;
 using PicNetStudio.Avalonia.PicNet.Tools;
 using PicNetStudio.Avalonia.PicNet.Tools.Core;
 
@@ -68,6 +71,11 @@ public class ToolBarItemControlContent : TemplatedControl {
 
     protected virtual void OnDisconnected() {
     }
+
+    protected override Size MeasureOverride(Size availableSize) {
+        base.MeasureOverride(availableSize);
+        return default;
+    }
 }
 
 /// <summary>
@@ -77,4 +85,33 @@ public abstract class ToolBarItemControlContentSingleTool : ToolBarItemControlCo
 public class ToolBarItemControlContent_BrushTool : ToolBarItemControlContentSingleTool;
 public class ToolBarItemControlContent_PencilTool : ToolBarItemControlContentSingleTool;
 public class ToolBarItemControlContent_FloodFillTool : ToolBarItemControlContentSingleTool;
-public class ToolBarItemControlContent_SelectRegionTool : ToolBarItemControlContentSingleTool;
+
+public class ToolBarItemControlContent_SelectRegionTool : ToolBarItemControlContentSingleTool {
+    public static readonly StyledProperty<double> DashOffsetProperty = AvaloniaProperty.Register<ToolBarItemControlContent_SelectRegionTool, double>("DashOffset");
+
+    public double DashOffset {
+        get => this.GetValue(DashOffsetProperty);
+        set => this.SetValue(DashOffsetProperty, value);
+    }
+
+    static ToolBarItemControlContent_SelectRegionTool() {
+        AffectsRender<ToolBarItemControlContent_SelectRegionTool>(DashOffsetProperty);
+    }
+    
+    private Pen? outlinePen1;
+
+    public override void Render(DrawingContext context) {
+        base.Render(context);
+        Rect myRect = this.Bounds;
+        if (this.BorderBrush is IBrush border) {
+            double mW = myRect.Width;
+            double mH = myRect.Height;
+            double tW = 16, tH = 16;
+            Rect rect = new Rect((mW / 2.0) - (tW / 2.0), (mH / 2.0) - (tH / 2.0), tW, tH);
+            
+            this.outlinePen1 ??= new Pen(border, 2.0, new ImmutableDashStyle(new double[] { 2, 2 }, this.DashOffset));
+            // context.DrawRectangle(null, this.outlinePen1, new Rect(myRect.X + (thickness / 2.0), myRect.Y + (thickness / 2.0), myRect.Width - thickness, myRect.Height - thickness));
+            context.DrawRectangle(null, this.outlinePen1, rect);
+        }
+    }
+}

@@ -68,7 +68,7 @@ public class Editor {
                 return;
 
             this.secondaryColour = value;
-            this.PrimaryColourChanged?.Invoke(this);
+            this.SecondaryColourChanged?.Invoke(this);
         }
     }
 

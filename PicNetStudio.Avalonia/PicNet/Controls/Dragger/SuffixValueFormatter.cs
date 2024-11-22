@@ -18,21 +18,16 @@
 // 
 
 using System;
-using PicNetStudio.Avalonia.Utils;
 
 namespace PicNetStudio.Avalonia.PicNet.Controls.Dragger;
 
 /// <summary>
 /// A value formatter that converts a unit value (0.0 to 1.0) into a percentage (0 to 100%) with an optional decimal precision
 /// </summary>
-public class UnitToPercentFormatter : IValueFormatter {
-    /// <summary>
-    /// Creates an instance of a basic unit to percentage formatter, which has a decimal precision of 2 when not editing and 6 when editing 
-    /// </summary>
-    public static UnitToPercentFormatter Standard => new UnitToPercentFormatter();
-
+public class SuffixValueFormatter : IValueFormatter {
     private int nonEditingRoundedPlaces;
     private int editingRoundedPlaces;
+    private string? suffix;
 
     public int NonEditingRoundedPlaces {
         get => this.nonEditingRoundedPlaces;
@@ -58,48 +53,52 @@ public class UnitToPercentFormatter : IValueFormatter {
         }
     }
 
+    public string? Suffix {
+        get => this.suffix;
+        set {
+            if (this.suffix == value)
+                return;
+            this.suffix = value;
+            this.InvalidateFormat?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
     public event EventHandler? InvalidateFormat;
 
-    public UnitToPercentFormatter(int nonEditingRoundedPlaces = 2, int editingRoundedPlaces = 6) {
+    public SuffixValueFormatter(string? suffix = null, int nonEditingRoundedPlaces = 2, int editingRoundedPlaces = 6) {
+        this.suffix = suffix;
         this.nonEditingRoundedPlaces = nonEditingRoundedPlaces;
         this.editingRoundedPlaces = editingRoundedPlaces;
     }
 
     public string ToString(double value, bool isEditing) {
-        double clamped = Maths.Clamp(value * 100.0, 0, 100);
-        return clamped.ToString("F" + (isEditing ? this.editingRoundedPlaces : this.nonEditingRoundedPlaces)) + " %";
+        return value.ToString("F" + (isEditing ? this.editingRoundedPlaces : this.nonEditingRoundedPlaces)) + (this.suffix ?? "");
     }
-    
+
     public bool TryConvertToDouble(string format, out double value) {
-        format = format.RemoveChar(' '); // Remove whitespaces first, such as the one between the percent
-        if (format.Length < 1) {
-            value = 0;
+        int parseLength = string.IsNullOrEmpty(this.suffix) ? format.Length : (format.Length - this.suffix.Length);
+        if (parseLength < 1) {
+            value = default;
             return false;
         }
-
-        int parseLength = (format[format.Length - 1] == '%') ? (format.Length - 1) : format.Length;
-        if (!double.TryParse(format.AsSpan(0, parseLength), out value)) {
-            return false;
-        }
-
-        value /= 100.0;
-        return true;
+        
+        return double.TryParse(format.AsSpan(0, parseLength), out value);
     }
 
-    public static UnitToPercentFormatter Parse(string input) {
+    public static SuffixValueFormatter Parse(string input) {
         if (string.IsNullOrWhiteSpace(input))
             throw new ArgumentException("Input is null, empty or whitespaces only", nameof(input));
 
-        int split = input.IndexOf(',');
-        if (split == -1)
-            throw new ArgumentException("Missing a splitter ',' character between the non-editing and editing rounded places", nameof(input));
-        
-        if (!int.TryParse(input.AsSpan(0, split), out int nonEditingPlaces))
-            throw new ArgumentException($"Invalid integer for non-editing part '{input.Substring(0, split)}'", nameof(input));
-        
-        if (!int.TryParse(input.AsSpan(split, input.Length - split), out int editingPlaces))
-            throw new ArgumentException($"Invalid integer for non-editing part '{input.Substring(0, split)}'", nameof(input));
+        string[] parts = input.Split(',');
+        if (parts.Length != 3)
+            throw new ArgumentException("Missing 3 parts split by ',' character between the non-editing and editing rounded places", nameof(input));
 
-        return new UnitToPercentFormatter(nonEditingPlaces, editingPlaces);
+        if (!int.TryParse(parts[0], out int nonEditingPlaces))
+            throw new ArgumentException($"Invalid integer for non-editing part '{parts[0]}'", nameof(input));
+
+        if (!int.TryParse(parts[1], out int editingPlaces))
+            throw new ArgumentException($"Invalid integer for non-editing part '{parts[1]}'", nameof(input));
+
+        return new SuffixValueFormatter(parts[2], nonEditingPlaces, editingPlaces);
     }
 }

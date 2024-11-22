@@ -10,8 +10,21 @@ public delegate void BaseToolSettingEventHandler(BaseToolSetting sender);
 /// classes, except they only accept a single handler being the <see cref="Tool"/>
 /// </summary>
 public class BaseToolSetting {
+    private string? description;
+    
     public BaseCanvasTool? Tool { get; private set; }
 
+    public string? Description {
+        get => this.description;
+        set {
+            if (this.description == value)
+                return;
+
+            this.description = value;
+            this.DescriptionChanged?.Invoke(this);
+        }
+    }
+    
     /// <summary>
     /// Fired when this setting is connected to a tool
     /// </summary>
@@ -21,6 +34,8 @@ public class BaseToolSetting {
     /// Fired when this setting is disconnected from a tool
     /// </summary>
     public event BaseToolSettingEventHandler? Disconnected;
+
+    public event BaseToolSettingEventHandler? DescriptionChanged;
 
     public BaseToolSetting() {
     }

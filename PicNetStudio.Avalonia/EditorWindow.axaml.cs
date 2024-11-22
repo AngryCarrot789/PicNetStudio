@@ -23,7 +23,9 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+using Avalonia.Media.Immutable;
 using Avalonia.Threading;
+using PicNetStudio.Avalonia.Bindings;
 using PicNetStudio.Avalonia.Interactivity.Contexts;
 using PicNetStudio.Avalonia.PicNet;
 using PicNetStudio.Avalonia.PicNet.Effects;
@@ -34,6 +36,7 @@ using PicNetStudio.Avalonia.PicNet.PropertyEditing;
 using PicNetStudio.Avalonia.PicNet.Toolbars;
 using PicNetStudio.Avalonia.PicNet.Tools;
 using PicNetStudio.Avalonia.Themes.Controls;
+using PicNetStudio.Avalonia.Utils;
 using SkiaSharp;
 
 namespace PicNetStudio.Avalonia;
@@ -43,9 +46,17 @@ public partial class EditorWindow : WindowEx {
 
     private readonly ContextData contextData;
 
+    private readonly AutoUpdateAndEventPropertyBinder<Editor> primaryColourBgBinder = new AutoUpdateAndEventPropertyBinder<Editor>(nameof(Editor.PrimaryColourChanged), b => ((Button) b.Control).Background = new ImmutableSolidColorBrush(SKUtils.SkiaToAv(b.Model.PrimaryColour)), null);
+    private readonly AutoUpdateAndEventPropertyBinder<Editor> secondaryColourBgBinder = new AutoUpdateAndEventPropertyBinder<Editor>(nameof(Editor.SecondaryColourChanged), b => ((Button) b.Control).Background = new ImmutableSolidColorBrush(SKUtils.SkiaToAv(b.Model.SecondaryColour)), null);
+
     public EditorWindow() {
         this.InitializeComponent();
         DataManager.SetContextData(this, this.contextData = new ContextData().Set(DataKeys.TopLevelHostKey, this));
+        
+        this.primaryColourBgBinder.AttachControl(this.PART_PrimaryColourButton);
+        this.secondaryColourBgBinder.AttachControl(this.PART_SecondaryColourButton);
+        this.PART_PrimaryColourButton.Click += this.PART_PrimaryColourClickOnClick;
+        this.PART_SecondaryColourButton.Click += this.PART_SecondaryColourClickOnClick;
     }
 
     protected override void OnLoaded(RoutedEventArgs e) {
@@ -59,6 +70,9 @@ public partial class EditorWindow : WindowEx {
         this.Editor = new Editor();
         this.Editor.ActiveDocumentChanged += this.OnActiveDocumentChanged;
         DataManager.InvalidateInheritedContext(this);
+        
+        this.primaryColourBgBinder.AttachModel(this.Editor);
+        this.secondaryColourBgBinder.AttachModel(this.Editor);
 
         this.PART_ToolBar.EditorToolBar = this.Editor.ToolBar;
         this.Editor.ToolBar.ActiveToolItemChanged += ToolBarOnActiveToolItemChanged;
@@ -166,5 +180,15 @@ public partial class EditorWindow : WindowEx {
                 this.PART_LayerTreeControl.ViewMode = mode;
             }
         }
+    }
+    
+    private async void PART_PrimaryColourClickOnClick(object? sender, RoutedEventArgs e) {
+        if (await IoC.ColourPickerService.PickColourAsync(this.Editor.PrimaryColour) is SKColor colour)
+            this.Editor.PrimaryColour = colour;
+    }
+    
+    private async void PART_SecondaryColourClickOnClick(object? sender, RoutedEventArgs e) {
+        if (await IoC.ColourPickerService.PickColourAsync(this.Editor.SecondaryColour) is SKColor colour)
+            this.Editor.SecondaryColour = colour;
     }
 }

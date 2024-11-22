@@ -17,6 +17,7 @@
 // along with PicNetStudio. If not, see <https://www.gnu.org/licenses/>.
 // 
 
+using System;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -24,11 +25,14 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using Avalonia.Threading;
 using PicNetStudio.Avalonia.PicNet.Layers;
 using PicNetStudio.Avalonia.PicNet.Layers.Core;
 using PicNetStudio.Avalonia.Utils;
 using PicNetStudio.Avalonia.Utils.RDA;
 using SkiaSharp;
+using Point = Avalonia.Point;
+using Size = Avalonia.Size;
 
 namespace PicNetStudio.Avalonia.PicNet.Controls;
 
@@ -55,11 +59,20 @@ public class CanvasViewPortControl : TemplatedControl, ICanvasElement {
         set => this.SetValue(ZoomScaleProperty, value);
     }
 
+    private readonly DispatcherTimer updateDashStyleOffsetTimer;
     public FreeMoveViewPortV2? PART_FreeMoveViewPort;
     public SKAsyncViewPort? PART_SkiaViewPort;
     private readonly CanvasInputHandler inptHandler;
     private readonly RapidDispatchAction rdaInvalidateRender;
     public TransformationContainer PART_CanvasContainer;
+
+    // tiled background + selection borders stuff
+    private static DrawingBrush? tiledTransparencyBrush;
+    private const double DashStrokeSize = 8;
+    private DashStyle? dashStyle1, dashStyle2;
+    private Pen? outlinePen1, outlinePen2;
+
+    public BaseSelection SelectionPreview { get; set; }
 
     static CanvasViewPortControl() {
         AffectsRender<Image>(DocumentProperty);
@@ -71,6 +84,21 @@ public class CanvasViewPortControl : TemplatedControl, ICanvasElement {
         this.Loaded += this.OnLoaded;
         this.inptHandler = new CanvasInputHandler(this);
         this.rdaInvalidateRender = new RapidDispatchAction(this.RenderCanvas, "RDAInvalidateRender");
+
+        this.updateDashStyleOffsetTimer = new DispatcherTimer(TimeSpan.FromSeconds(0.1d), DispatcherPriority.Background, (sender, args) => {
+            if (this.dashStyle1 == null || this.dashStyle2 == null) {
+                return;
+            }
+
+            if (this.Document is Document document && document.Canvas.SelectionRegion is RectangleSelection) {
+                this.dashStyle1.Offset = (this.dashStyle1.Offset + 1) % DashStrokeSize;
+                this.dashStyle2.Offset = (this.dashStyle2.Offset + 1) % DashStrokeSize;
+
+                // We aren't rendering the canvas at all, just re-drawing. The view port will
+                // retain the last render in its writeable bitmap, so this isn't very expensive.
+                this.PART_SkiaViewPort!.InvalidateVisual();
+            }
+        });
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e) {
@@ -78,10 +106,11 @@ public class CanvasViewPortControl : TemplatedControl, ICanvasElement {
         e.NameScope.GetTemplateChild("PART_FreeMoveViewPort", out this.PART_FreeMoveViewPort);
         e.NameScope.GetTemplateChild("PART_SkiaViewPort", out this.PART_SkiaViewPort);
         e.NameScope.GetTemplateChild("PART_CanvasContainer", out this.PART_CanvasContainer);
-        
+
         // nearest neighbour
         RenderOptions.SetBitmapInterpolationMode(this.PART_SkiaViewPort, BitmapInterpolationMode.None);
         RenderOptions.SetEdgeMode(this.PART_SkiaViewPort, EdgeMode.Aliased);
+        this.PART_SkiaViewPort.PreRenderExtension += this.OnEndRenderViewPort;
         this.PART_SkiaViewPort.PostRenderExtension += this.OnPostRenderViewPort;
 
         this.PART_FreeMoveViewPort.Setup(this);
@@ -90,11 +119,80 @@ public class CanvasViewPortControl : TemplatedControl, ICanvasElement {
         }
     }
 
-    private void OnPostRenderViewPort(SKAsyncViewPort sender, DrawingContext ctx, Rect bounds) {
-        if (this.Document is Document document && document.Canvas.SelectionRegion is RectangleSelection selection) {
-            SKRectI rect = selection.Rect;
-            ctx.DrawRectangle(null, new Pen(Brushes.Red, 1.0), new Rect(new Point(rect.Left - 0.5, rect.Top - 0.5), new Point(rect.Right + 0.5, rect.Bottom + 0.5)));
+    protected override void OnLoaded(RoutedEventArgs e) {
+        base.OnLoaded(e);
+        this.updateDashStyleOffsetTimer.Start();
+    }
+
+    protected override void OnUnloaded(RoutedEventArgs e) {
+        base.OnUnloaded(e);
+        this.updateDashStyleOffsetTimer.Stop();
+    }
+
+    private void OnEndRenderViewPort(SKAsyncViewPort sender, DrawingContext ctx, Size size, Point minatureOffset) {
+        // Not sure how render-intensive DrawingBrush is, especially with GeometryDrawing
+        // But since it's not drawing actual Visuals, just geometry, it should be lightning fast.
+        tiledTransparencyBrush ??= new DrawingBrush() {
+            Drawing = new DrawingGroup() {
+                Children = {
+                    new GeometryDrawing() {
+                        Brush = Brushes.White,
+                        Geometry = new GeometryGroup() {
+                            Children = {
+                                new RectangleGeometry(new Rect(0, 0, 8, 8)),
+                                new RectangleGeometry(new Rect(8, 8, 8, 8)),
+                            }
+                        }
+                    },
+                    new GeometryDrawing() {
+                        Brush = Brushes.DarkGray,
+                        Geometry = new GeometryGroup() {
+                            Children = {
+                                new RectangleGeometry(new Rect(8, 0, 8, 8)),
+                                new RectangleGeometry(new Rect(0, 8, 8, 8)),
+                            }
+                        }
+                    }
+                }
+            },
+            TileMode = TileMode.Tile,
+            // This is important in order for repeating tiles to work
+            DestinationRect = new RelativeRect(0, 0, 16, 16, RelativeUnit.Absolute),
+        };
+
+        using (this.PushInverseScale(ctx, out double scale)) {
+            ctx.DrawRectangle(tiledTransparencyBrush, null, new Rect(default, size * scale));
         }
+    }
+
+    private void OnPostRenderViewPort(SKAsyncViewPort sender, DrawingContext ctx, Size size, Point minatureOffset) {
+        if (this.Document is Document document && document.Canvas.SelectionRegion is RectangleSelection selection) {
+            SKRectI r = selection.Rect;
+            using (this.PushInverseScale(ctx, out double scale)) {
+                // Cache pens for performance
+                const double thickness = 1.0;
+                this.outlinePen1 ??= new Pen(Brushes.Black, thickness, this.dashStyle1 ??= new DashStyle(new double[] { 4, 4 }, 0));
+                this.outlinePen2 ??= new Pen(Brushes.White, thickness, this.dashStyle2 ??= new DashStyle(new double[] { 4, 4 }, DashStrokeSize / 2.0 /* start half way */));
+
+                // Can't seem to get minatureOffset to work correctly with this, sometimes the selection border
+                // is outside the pixel, sometimes inside, i guess it's just a float rounding problem happening
+                Rect theRect = new Rect(r.Left, r.Top, r.Right - r.Left, r.Bottom - r.Top);
+                Rect finalRect = theRect * scale;
+                ctx.DrawRectangle(null, this.outlinePen2, finalRect);
+                ctx.DrawRectangle(null, this.outlinePen1, finalRect);
+            }
+        }
+    }
+
+    private DrawingContext.PushedState PushInverseScale(DrawingContext ctx, out double realScale) {
+        // The ctx is relative to the fully translated and scaled view port.
+        // This means that any drawing into it is scaled according to the zoom,
+        // so we need to inverse it to get back to screen pixels.
+        // Translations/Sizes have to be multiplied by realScale too, or drawings will
+        // be positioned with the view port's translation but screen scale so it'd be all weird
+        realScale = this.PART_FreeMoveViewPort?.ZoomScale ?? 1.0;
+        double inverseScale = 1 / realScale;
+        return ctx.PushTransform(Matrix.CreateScale(inverseScale, inverseScale));
     }
 
     public void RenderCanvas() {
@@ -156,6 +254,4 @@ public class CanvasViewPortControl : TemplatedControl, ICanvasElement {
         this.PART_SkiaViewPort.Width = size.Width;
         this.PART_SkiaViewPort.Height = size.Height;
     }
-
-    public BaseSelection SelectionPreview { get; set; }
 }

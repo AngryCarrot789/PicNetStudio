@@ -59,13 +59,13 @@ public class FloodFillTool : BaseDrawingTool {
         int nBmpH = bitmap.Bitmap!.Height;
         int minX = 0, minY = 0, maxX = nBmpW, maxY = nBmpH;
         if (rectangle != null) {
-            minX = rectangle.Min.X;
-            minY = rectangle.Min.Y;
-            maxX = rectangle.Max.X;
-            maxY = rectangle.Max.Y;
+            minX = rectangle.Left;
+            minY = rectangle.Top;
+            maxX = rectangle.Right;
+            maxY = rectangle.Bottom;
         }
         
-        if (fillX < minX || fillX >= maxX || fillY < minY || fillY >= maxY)
+        if (fillX < minX || fillY < minY || fillX >= maxX || fillY >= maxY)
             return;
         
         uint* colourData = (uint*) bitmap.Bitmap!.GetPixels();
