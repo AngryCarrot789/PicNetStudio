@@ -228,6 +228,10 @@ public abstract class BaseLayerTreeObject : ITransferableData {
         
         this.OnEffectRemoved(index, effect);
     }
+    
+    public virtual bool IsHitTest(double x, double y) {
+        return false;
+    }
 
     public override string ToString() {
         return $"{this.GetType().Name}({this.Name})";

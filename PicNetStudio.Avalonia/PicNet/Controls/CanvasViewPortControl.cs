@@ -28,8 +28,6 @@ using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using PicNetStudio.Avalonia.PicNet.Layers;
 using PicNetStudio.Avalonia.PicNet.Layers.Core;
-using PicNetStudio.Avalonia.PicNet.Toolbars;
-using PicNetStudio.Avalonia.PicNet.Tools;
 using PicNetStudio.Avalonia.Utils;
 using PicNetStudio.Avalonia.Utils.RDA;
 using SkiaSharp;
@@ -264,7 +262,7 @@ public class CanvasViewPortControl : TemplatedControl, ICanvasElement {
             //     this.Cursor = cursor;
             //     return;
             // }
-            
+
             this.Cursor = new Cursor(!(document.Canvas.ActiveLayerTreeObject is RasterLayer) ? StandardCursorType.No : StandardCursorType.Cross);
         }
     }

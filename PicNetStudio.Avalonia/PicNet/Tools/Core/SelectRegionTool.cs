@@ -20,6 +20,7 @@
 using System;
 using Avalonia;
 using Avalonia.Input;
+using PicNetStudio.Avalonia.Utils;
 
 namespace PicNetStudio.Avalonia.PicNet.Tools.Core;
 
@@ -32,17 +33,17 @@ public class SelectRegionTool : BaseCanvasTool {
     public SelectRegionTool() {
     }
 
-    public override bool OnCursorPressed(Document document, double x, double y, int count, EnumCursorType cursor, KeyModifiers modifiers) {
+    public override bool OnCursorPressed(Document document, SKPointD pos, SKPointD absPos, int count, EnumCursorType cursor, KeyModifiers modifiers) {
         if (cursor != EnumCursorType.Primary || modifiers != KeyModifiers.None) {
             return false;
         }
 
-        this.clickPos = new Point(x, y);
-        document.Canvas.SelectionRegion = CreateSelection(this.clickPos, new Point(x, y));
+        this.clickPos = new Point(pos.X, pos.Y);
+        document.Canvas.SelectionRegion = CreateSelection(this.clickPos, new Point(pos.X, pos.Y));
         return true;
     }
 
-    public override bool OnCursorReleased(Document document, double x, double y, EnumCursorType cursor, KeyModifiers modifiers) {
+    public override bool OnCursorReleased(Document document, SKPointD pos, SKPointD absPos, EnumCursorType cursor, KeyModifiers modifiers) {
         if (cursor == EnumCursorType.Secondary) {
             document.Canvas.SelectionRegion = null;
         }
@@ -50,9 +51,9 @@ public class SelectRegionTool : BaseCanvasTool {
         return true;
     }
 
-    public override bool OnCursorMoved(Document document, double x, double y, EnumCursorType cursorMask) {
+    public override bool OnCursorMoved(Document document, SKPointD pos, SKPointD absPos, EnumCursorType cursorMask) {
         if ((cursorMask & EnumCursorType.Primary) != 0) {
-            document.Canvas.SelectionRegion = CreateSelection(this.clickPos, new Point(x, y));
+            document.Canvas.SelectionRegion = CreateSelection(this.clickPos, new Point(pos.X, pos.Y));
         }
         
         return true;

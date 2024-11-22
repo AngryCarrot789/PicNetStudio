@@ -132,7 +132,7 @@ public class Canvas {
 
     // QtBitmapEditor -> Project::paintEvent
     public void Render(SKSurface surface) {
-        RenderContext args = new RenderContext(this, surface, false, this.fullInvalidate);
+        RenderContext args = new RenderContext(this, surface, RenderVisibilityFlag.PreviewOnly, this.fullInvalidate);
         LayerRenderer.RenderCanvas(ref args, false);
     }
 

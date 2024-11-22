@@ -21,8 +21,8 @@ using System.IO;
 using Avalonia;
 using Avalonia.Input;
 using Avalonia.Media.Imaging;
-using Avalonia.Platform;
 using PicNetStudio.Avalonia.DataTransfer;
+using PicNetStudio.Avalonia.Utils;
 using SkiaSharp;
 
 namespace PicNetStudio.Avalonia.PicNet.Tools;
@@ -75,11 +75,6 @@ public abstract class BaseCanvasTool : ITransferableData {
         return this.myCursor = new Cursor(this.myCursorBitmap, hotspotPoint);
     }
     
-    // TODO: cursors
-
-    // /// <summary>
-    // /// </summary>
-
     /// <summary>
     /// Draws this tool's cursor into the canvas. This method is typically only ever called once per instance
     /// </summary>
@@ -94,8 +89,8 @@ public abstract class BaseCanvasTool : ITransferableData {
     /// Invoked when the user pressed the cursor or pressed down on their touch screen
     /// </summary>
     /// <param name="document"></param>
-    /// <param name="x">The X position where the event occurred (may be between 2 pixels)</param>
-    /// <param name="y">The Y position where the event occurred (may be between 2 pixels)</param>
+    /// <param name="pos">The position of the cursor, relative to the active layer</param>
+    /// <param name="absPos">The position of the cursor relative to the entire canvas</param>
     /// <param name="count">
     ///     The number of times the pointer was pressed in quick succession.
     ///     Typically not used on touch screens. A press and release event will occur
@@ -103,7 +98,7 @@ public abstract class BaseCanvasTool : ITransferableData {
     /// </param>
     /// <param name="cursor">The type of cursor that was involved</param>
     /// <param name="modifiers"></param>
-    public virtual bool OnCursorPressed(Document document, double x, double y, int count, EnumCursorType cursor, KeyModifiers modifiers) {
+    public virtual bool OnCursorPressed(Document document, SKPointD pos, SKPointD absPos, int count, EnumCursorType cursor, KeyModifiers modifiers) {
         return false;
     }
 
@@ -111,11 +106,13 @@ public abstract class BaseCanvasTool : ITransferableData {
     /// Invoked when the user releases their cursor or stopped pressing their touch screen
     /// </summary>
     /// <param name="document"></param>
-    /// <param name="x">The X position where the event occurred (may be between 2 pixels)</param>
-    /// <param name="y">The Y position where the event occurred (may be between 2 pixels)</param>
+    /// <param name="pos">The position of the cursor, relative to the active layer</param>
+    /// <param name="absPos">The position of the cursor relative to the entire canvas</param>
     /// <param name="cursor">The type of cursor that was involved</param>
     /// <param name="modifiers"></param>
-    public virtual bool OnCursorReleased(Document document, double x, double y, EnumCursorType cursor, KeyModifiers modifiers) {
+    /// <param name="x">The X position where the event occurred (may be between 2 pixels)</param>
+    /// <param name="y">The Y position where the event occurred (may be between 2 pixels)</param>
+    public virtual bool OnCursorReleased(Document document, SKPointD pos, SKPointD absPos, EnumCursorType cursor, KeyModifiers modifiers) {
         return false;
     }
 
@@ -123,10 +120,12 @@ public abstract class BaseCanvasTool : ITransferableData {
     /// Invoked when the user moves their cursor. It may be pressed or released
     /// </summary>
     /// <param name="document"></param>
+    /// <param name="pos">The position of the cursor, relative to the active layer</param>
+    /// <param name="absPos">The position of the cursor relative to the entire canvas</param>
+    /// <param name="cursorMask">All of the cursor buttons pressed during the mouse movement event (bitmask)</param>
     /// <param name="x">The X position where the event occurred (may be between 2 pixels)</param>
     /// <param name="y">The Y position where the event occurred (may be between 2 pixels)</param>
-    /// <param name="cursorMask">All of the cursor buttons pressed during the mouse movement event (bitmask)</param>
-    public virtual bool OnCursorMoved(Document document, double x, double y, EnumCursorType cursorMask) {
+    public virtual bool OnCursorMoved(Document document, SKPointD pos, SKPointD absPos, EnumCursorType cursorMask) {
         return false;
     }
 

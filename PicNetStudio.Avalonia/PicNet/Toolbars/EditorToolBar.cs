@@ -69,6 +69,7 @@ public class EditorToolBar {
         // TODO: Factories?
         // RZApplication.Instance.Services.GetService<>()
 
+        this.items.Add(new SingleToolBarItem(new PointerTool()));
         this.items.Add(new SingleToolBarItem(new BrushTool()));
         this.items.Add(new SingleToolBarItem(new PencilTool()));
         this.items.Add(new SingleToolBarItem(new FloodFillTool()));

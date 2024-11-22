@@ -17,6 +17,8 @@
 // along with PicNetStudio. If not, see <https://www.gnu.org/licenses/>.
 // 
 
+using PicNetStudio.Avalonia.PicNet.Layers.Core;
+using PicNetStudio.Avalonia.Utils;
 using SkiaSharp;
 
 namespace PicNetStudio.Avalonia.PicNet;
@@ -34,7 +36,7 @@ public readonly struct RenderContext {
 
     public readonly Canvas MyCanvas;
 
-    public readonly bool IsExporting;
+    public readonly RenderVisibilityFlag VisibilityFlag;
 
     /// <summary>
     /// True when invalidating the entire canvas, False when just
@@ -43,11 +45,35 @@ public readonly struct RenderContext {
     /// </summary>
     public readonly bool FullInvalidateHint;
     
-    public RenderContext(Canvas myCanvas, SKSurface surface, bool isExport, bool fullInvalidateHint) {
+    public RenderContext(Canvas myCanvas, SKSurface surface, RenderVisibilityFlag visibilityFlag, bool fullInvalidateHint) {
         this.FullInvalidateHint = fullInvalidateHint;
         this.Surface = surface;
         this.Canvas = surface.Canvas;
         this.MyCanvas = myCanvas;
-        this.IsExporting = isExport;
+        this.VisibilityFlag = visibilityFlag;
     }
+
+    public bool IsLayerVisibleToRender(BaseVisualLayer layer) {
+        switch (this.VisibilityFlag) {
+            case RenderVisibilityFlag.ExportOnly when !layer.IsExportVisible:
+            case RenderVisibilityFlag.PreviewOnly when !layer.IsVisible:
+                return false;
+            default: return !DoubleUtils.AreClose(layer.Opacity, 0.0);
+        }
+    }
+}
+
+public enum RenderVisibilityFlag {
+    /// <summary>
+    /// Only renders layers that are preview-visible (<see cref="BaseVisualLayer.IsVisible"/>)
+    /// </summary>
+    PreviewOnly = 0,
+    /// <summary>
+    /// Only renders layers that are export-visible (<see cref="BaseVisualLayer.IsExportVisible"/>)
+    /// </summary>
+    ExportOnly = 1,
+    /// <summary>
+    /// Force renders layers regardless of the visibility. Opacity is not ignored, so a 0 opacity will make it invisible 
+    /// </summary>
+    Ignored = 2
 }

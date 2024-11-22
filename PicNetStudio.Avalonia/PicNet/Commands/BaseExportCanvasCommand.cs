@@ -45,7 +45,7 @@ public abstract class BaseExportCanvasCommand : DocumentCommand {
 
         using SKPixmap pixmap = new SKPixmap(bitmap.Bitmap!.Info, bitmap.ColourData);
         using SKSurface skSurface = SKSurface.Create(pixmap);
-        RenderContext args = new RenderContext(document.Canvas, skSurface, true, true);
+        RenderContext args = new RenderContext(document.Canvas, skSurface, RenderVisibilityFlag.ExportOnly, true);
         LayerRenderer.RenderCanvas(ref args);
         using SKImage image = skSurface.Snapshot();
 

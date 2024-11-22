@@ -47,6 +47,7 @@ public class BrushTool : BaseDiameterTool {
     }
 
     protected internal override SKImage DrawCursor(out SKPoint hotSpot) {
+        // The problem is, this cursor needs to be scaled to the canvas zoom.
         int diameter = Maths.Ceil(this.Diameter);
         SKImageInfo info = new SKImageInfo(diameter, diameter);
         using (SKSurface surface = SKSurface.Create(info)) {

@@ -20,7 +20,6 @@
 using Avalonia;
 using PicNetStudio.Avalonia.PicNet.Layers;
 using PicNetStudio.Avalonia.PicNet.Layers.Core;
-using PicNetStudio.Avalonia.Utils;
 using PicNetStudio.Avalonia.Utils.Collections.Observable;
 using SkiaSharp;
 
@@ -51,11 +50,7 @@ public static class LayerRenderer {
     /// <param name="ctx"></param>
     /// <param name="layer"></param>
     public static void RenderLayer(ref RenderContext ctx, BaseVisualLayer layer) {
-        if (layer.Canvas == null) {
-            return;
-        }
-        
-        if ((ctx.IsExporting && !layer.IsExportVisible) || (!ctx.IsExporting && !layer.IsVisible) || DoubleUtils.AreClose(layer.Opacity, 0.0)) {
+        if (layer.Canvas == null || !ctx.IsLayerVisibleToRender(layer)) {
             return;
         }
 
@@ -107,7 +102,7 @@ public static class LayerRenderer {
                     
                     using SKSurface subSurface = SKSurface.Create(frameInfo);
                     subSurface.Canvas.Clear(SKColor.Empty);
-                    RenderContext subCtx = new RenderContext(ctx.MyCanvas, subSurface, ctx.IsExporting, ctx.FullInvalidateHint);
+                    RenderContext subCtx = new RenderContext(ctx.MyCanvas, subSurface, ctx.VisibilityFlag, ctx.FullInvalidateHint);
                     for (int i = layers.Count - 1; i >= 0; i--) {
                         if (layers[i] is BaseVisualLayer visualLayer)
                             RenderLayer(ref subCtx, visualLayer);

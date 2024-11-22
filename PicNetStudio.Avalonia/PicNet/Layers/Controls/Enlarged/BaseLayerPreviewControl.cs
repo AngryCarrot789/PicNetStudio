@@ -110,7 +110,7 @@ public class RasterLayerPreviewControl : BaseLayerPreviewControl {
             PixelSize sizeD = layer.Canvas.Size;
             surface.Canvas.Scale((float) (sizeP.Width / sizeD.Width), (float) (sizeP.Height / sizeD.Height));
             
-            RenderContext context = new RenderContext(layer.Canvas!, surface, false, true);
+            RenderContext context = new RenderContext(layer.Canvas!, surface, RenderVisibilityFlag.PreviewOnly, true);
             LayerRenderer.RenderLayer(ref context, layer);
             this.PART_ViewPortControl!.EndRender();
         }

@@ -48,6 +48,16 @@ public class CompositionLayer : BaseVisualLayer {
         this.cachedVisualHierarchy = new PNBitmap();
     }
 
+    public override bool IsHitTest(double x, double y) {
+        foreach (BaseLayerTreeObject layer in this.layers) {
+            if (layer.IsHitTest(x, y)) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+
     protected override void LoadDataIntoClone(BaseLayerTreeObject clone) {
         base.LoadDataIntoClone(clone);
         CompositionLayer compositionLayer = (CompositionLayer) clone;

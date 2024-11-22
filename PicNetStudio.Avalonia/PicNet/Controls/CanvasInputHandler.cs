@@ -22,6 +22,7 @@ using Avalonia;
 using Avalonia.Input;
 using PicNetStudio.Avalonia.PicNet.Layers.Core;
 using PicNetStudio.Avalonia.PicNet.Tools;
+using PicNetStudio.Avalonia.Utils;
 using SkiaSharp;
 
 namespace PicNetStudio.Avalonia.PicNet.Controls;
@@ -103,7 +104,9 @@ public class CanvasInputHandler {
         }
 
         if (this.control.Document is Document document && document.Editor?.ToolBar.ActiveTool is BaseCanvasTool activeTool) {
-            if (this.ProcessChangedButtons(pointer.Position, document, activeTool, e.ClickCount, oldButtons, newButtons, e.KeyModifiers)) {
+            Point absPos = pointer.Position;
+            Point relPos = this.TranslatePoint(absPos, document);
+            if (this.ProcessChangedButtons(relPos, absPos, document, activeTool, e.ClickCount, oldButtons, newButtons, e.KeyModifiers)) {
                 e.Pointer.Capture(this.control);
             }
         }
@@ -120,9 +123,12 @@ public class CanvasInputHandler {
         
         if (ReferenceEquals(e.Pointer.Captured, this.control))
             e.Pointer.Capture(null);
-        
-        if (this.control.Document is Document document && document.Editor?.ToolBar.ActiveTool is BaseCanvasTool activeTool)
-            this.ProcessChangedButtons(pointer.Position, document, activeTool, 1, oldButtons, newButtons, e.KeyModifiers);
+
+        if (this.control.Document is Document document && document.Editor?.ToolBar.ActiveTool is BaseCanvasTool activeTool) {
+            Point absPos = pointer.Position;
+            Point relPos = this.TranslatePoint(absPos, document);
+            this.ProcessChangedButtons(absPos, relPos, document, activeTool, 1, oldButtons, newButtons, e.KeyModifiers);
+        }
     }
 
     private void OnPointerPointerMoved(object? sender, PointerEventArgs e) {
@@ -134,24 +140,25 @@ public class CanvasInputHandler {
             return;
         }
         
+        Point absPos = pointer.Position;
         if (document.Editor?.ToolBar.ActiveTool is BaseCanvasTool activeTool) {
-            Point point = this.TranslatePoint(pointer.Position, document);
+            Point relPos = this.TranslatePoint(absPos, document);
             // We also need to do a final check on the last mouse move position,
             // because Avalonia receives WM_MOVE even though the mouse didn't actually move.
             // To reproduce: Click LMB then RMB then release RMB, and with the lastMouseMove check
             // removed you will hit a breakpoint on OnCursorMoved
-            if ((oldButtons == newButtons) && newButtons != EnumCursorType.None && (!this.lastMouseMove.HasValue || !this.lastMouseMove.Value.Equals(point))) {
+            if ((oldButtons == newButtons) && newButtons != EnumCursorType.None && (!this.lastMouseMove.HasValue || !this.lastMouseMove.Value.Equals(relPos))) {
                 // Debug.WriteLine("Cursor Moved with [" + newButtons + "] pressed");
-                e.Handled = activeTool.OnCursorMoved(document, point.X, point.Y, newButtons);
+                e.Handled = activeTool.OnCursorMoved(document, new SKPointD(relPos.X, relPos.Y), new SKPointD(absPos.X, absPos.Y), newButtons);
             }
             else {
-                e.Handled = this.ProcessChangedButtons(point, document, activeTool, 1, oldButtons, newButtons, e.KeyModifiers);
+                e.Handled = this.ProcessChangedButtons(relPos, absPos, document, activeTool, 1, oldButtons, newButtons, e.KeyModifiers);
             }
 
-            this.lastMouseMove = point;
+            this.lastMouseMove = relPos;
         }
         else {
-            this.lastMouseMove = pointer.Position;
+            this.lastMouseMove = absPos;
         }
     }
 
@@ -164,20 +171,20 @@ public class CanvasInputHandler {
         return pos;
     }
 
-    private bool ProcessChangedButtons(Point point, Document document, BaseCanvasTool activeTool, int clickCount, EnumCursorType oldButtons, EnumCursorType newButtons, KeyModifiers modifiers) {
-        point = this.TranslatePoint(point, document);
+    private bool ProcessChangedButtons(Point relPos, Point absPos, Document document, BaseCanvasTool activeTool, int clickCount, EnumCursorType oldButtons, EnumCursorType newButtons, KeyModifiers modifiers) {
+        relPos = this.TranslatePoint(relPos, document);
         
         bool handled = false;
         EnumCursorType addedFlags = (oldButtons ^ newButtons) & newButtons;
         foreach (EnumCursorType type in GetEnumerableFlagSet(addedFlags)) {
             // Debug.WriteLine("Cursor pressed: " + type);
-            handled |= activeTool.OnCursorPressed(document, point.X, point.Y, clickCount, type, modifiers);
+            handled |= activeTool.OnCursorPressed(document, new SKPointD(relPos.X, relPos.Y), new SKPointD(absPos.X, absPos.Y), clickCount, type, modifiers);
         }
 
         EnumCursorType removedFlags = (oldButtons ^ newButtons) & oldButtons;
         foreach (EnumCursorType type in GetEnumerableFlagSet(removedFlags)) {
             // Debug.WriteLine("Cursor released: " + type);
-            handled |= activeTool.OnCursorReleased(document, point.X, point.Y, type, modifiers);
+            handled |= activeTool.OnCursorReleased(document, new SKPointD(relPos.X, relPos.Y), new SKPointD(absPos.X, absPos.Y), type, modifiers);
         }
 
         return handled;

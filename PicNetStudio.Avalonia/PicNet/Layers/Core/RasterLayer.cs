@@ -73,6 +73,14 @@ public class RasterLayer : BaseVisualLayer {
         SetParameterAffectsRender(ChannelRParameter, ChannelGParameter, ChannelBParameter, ChannelAParameter);
     }
 
+    public override bool IsHitTest(double x, double y) {
+        if (!this.Bitmap.IsInitialised)
+            return false;
+        
+        int pixel = this.Bitmap.PixelAt(Maths.Floor(x), Maths.Floor(y));
+        return pixel != 0;
+    }
+
     protected override void LoadDataIntoClone(BaseLayerTreeObject clone) {
         base.LoadDataIntoClone(clone);
 

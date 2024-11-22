@@ -76,8 +76,8 @@ public abstract class BaseRasterisedDrawingTool : BaseDrawingTool {
     /// </param>
     public abstract void DrawPixels(PNBitmap bitmap, Document document, double x, double y, bool isPrimaryColour);
 
-    public override bool OnCursorPressed(Document document, double x, double y, int count, EnumCursorType cursor, KeyModifiers modifiers) {
-        if (base.OnCursorPressed(document, x, y, count, cursor, modifiers))
+    public override bool OnCursorPressed(Document document, SKPointD pos, SKPointD absPos, int count, EnumCursorType cursor, KeyModifiers modifiers) {
+        if (base.OnCursorPressed(document, pos, absPos, count, cursor, modifiers))
             return true;
 
         // Only allow without modifiers pressed to allow the canvas to be moved around with ALT+LMB
@@ -88,25 +88,25 @@ public abstract class BaseRasterisedDrawingTool : BaseDrawingTool {
             return false;
 
         this.keepDrawing = false;
-        bool ret = DrawEventV2(this, document, x, y, cursor == EnumCursorType.Primary);
+        bool ret = DrawEventV2(this, document, pos.X, pos.Y, cursor == EnumCursorType.Primary);
         return ret;
     }
 
-    public override bool OnCursorReleased(Document document, double x, double y, EnumCursorType cursor, KeyModifiers modifiers) {
+    public override bool OnCursorReleased(Document document, SKPointD pos, SKPointD absPos, EnumCursorType cursor, KeyModifiers modifiers) {
         if (cursor == EnumCursorType.Primary)
             this.keepDrawing = false;
-        return base.OnCursorReleased(document, x, y, cursor, modifiers);
+        return base.OnCursorReleased(document, pos, absPos, cursor, modifiers);
     }
 
-    public override bool OnCursorMoved(Document document, double x, double y, EnumCursorType cursorMask) {
-        if (base.OnCursorMoved(document, x, y, cursorMask))
+    public override bool OnCursorMoved(Document document, SKPointD pos, SKPointD absPos, EnumCursorType cursorMask) {
+        if (base.OnCursorMoved(document, pos, absPos, cursorMask))
             return true;
 
         // return if not primary cursor and this brush cannot use secondary, or, it can draw secondary but it wasn't pressed
         if ((cursorMask & EnumCursorType.Primary) == 0 && (!this.CanDrawSecondaryColour || (cursorMask & EnumCursorType.Secondary) == 0))
             return false;
 
-        return DrawEventV2(this, document, x, y, (cursorMask & EnumCursorType.Primary) != 0);
+        return DrawEventV2(this, document, pos.X, pos.Y, (cursorMask & EnumCursorType.Primary) != 0);
     }
 
     public static bool DrawEventV2(BaseRasterisedDrawingTool tool, Document document, double x, double y, bool isPrimaryCursor) {

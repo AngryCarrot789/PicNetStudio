@@ -44,7 +44,7 @@ public class RasteriseLayerCommand : AsyncDocumentCommand {
 
             using SKPixmap pixmap = new SKPixmap(bitmap.Bitmap!.Info, bitmap.ColourData);
             using SKSurface skSurface = SKSurface.Create(pixmap);
-            RenderContext args = new RenderContext(document.Canvas, skSurface, false, true);
+            RenderContext args = new RenderContext(document.Canvas, skSurface, RenderVisibilityFlag.Ignored, true);
             LayerRenderer.RenderLayer(ref args, layer);
             // using SKImage image = skSurface.Snapshot();
 

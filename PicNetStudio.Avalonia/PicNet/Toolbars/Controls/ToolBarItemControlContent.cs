@@ -53,6 +53,7 @@ public class ToolBarItemControlContent : TemplatedControl {
         Registry.RegisterType<SingleToolBarItem>((x) => SingleToolSubRegistry.NewInstance(x.Tool));
 
         // Register single-tool specific tools
+        SingleToolSubRegistry.RegisterType<PointerTool>(() => new ToolBarItemControlContent_PointerTool());
         SingleToolSubRegistry.RegisterType<BrushTool>(() => new ToolBarItemControlContent_BrushTool());
         SingleToolSubRegistry.RegisterType<PencilTool>(() => new ToolBarItemControlContent_PencilTool());
         SingleToolSubRegistry.RegisterType<FloodFillTool>(() => new ToolBarItemControlContent_FloodFillTool());
@@ -85,6 +86,26 @@ public class ToolBarItemControlContent : TemplatedControl {
 /// The base class for a toolbar list box item that activates a single tool
 /// </summary>
 public abstract class ToolBarItemControlContentSingleTool : ToolBarItemControlContent;
+
+public class ToolBarItemControlContent_PointerTool : ToolBarItemControlContentSingleTool {
+    private Path? PART_Path;
+
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e) {
+        base.OnApplyTemplate(e);
+        this.PART_Path = e.NameScope.GetTemplateChild<Path>(nameof(this.PART_Path));
+    }
+
+    protected override Size ArrangeOverride(Size finalSize) {
+        if (this.PART_Path == null)
+            return base.ArrangeOverride(finalSize);
+
+        Size size = finalSize.Deflate(this.Padding);
+        double sX = size.Width / this.PART_Path.Width, sY = size.Height / this.PART_Path.Height;
+        this.PART_Path!.RenderTransform = new ScaleTransform(Math.Min(sX, sY), Math.Min(sX, sY));
+        this.PART_Path.Arrange(new Rect(0, 0, finalSize.Width, finalSize.Height).CenterRect(new Rect(0, 0, size.Width, size.Height)));
+        return finalSize;
+    }
+}
 
 public class ToolBarItemControlContent_BrushTool : ToolBarItemControlContentSingleTool {
     private Panel? PART_Panel;
