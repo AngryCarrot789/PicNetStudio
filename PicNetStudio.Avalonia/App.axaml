@@ -9,7 +9,7 @@
     <Application.Styles>
         <SimpleTheme/>
         <StyleInclude Source="Themes/Controls.axaml"/>
-        <StyleInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Simple/Simple.xaml" />
+        <StyleInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Simple/Simple.xaml"/>
     </Application.Styles>
 
     <Application.Resources>
@@ -46,7 +46,7 @@
                                                   ZoomScale="{TemplateBinding ZoomScale}"
                                                   HorizontalAlignment="Stretch"
                                                   VerticalAlignment="Stretch"
-                                                  Margin="{TemplateBinding BorderThickness}" Background="Yellow">
+                                                  Margin="{TemplateBinding BorderThickness}">
                                 <a:TransformationContainer x:Name="PART_CanvasContainer" UseLayoutRounding="False">
                                     <c:SKAsyncViewPort x:Name="PART_SkiaViewPort" UseLayoutRounding="False"/>
                                 </a:TransformationContainer>

@@ -45,6 +45,13 @@ public abstract class BaseDiameterTool : BaseRasterisedDrawingTool {
         DiameterDataParameter.ValueChanged += OnDiameterDataParameterOnValueChanged;
         IsGapAutomaticParameter.ValueChanged += OnIsGapAutomaticParameterOnValueChanged;
     }
+    
+    /// <summary>
+    /// Invoked when our diameter property changes. This can be used to invalidate the render state of our cursor
+    /// </summary>
+    protected virtual void OnDiameterChanged() {
+        
+    }
 
     private static void OnIsGapAutomaticParameterOnValueChanged(DataParameter parameter, ITransferableData owner) {
         if (owner is BaseDiameterTool tool) {
@@ -54,6 +61,7 @@ public abstract class BaseDiameterTool : BaseRasterisedDrawingTool {
 
     private static void OnDiameterDataParameterOnValueChanged(DataParameter parameter, ITransferableData owner) {
         UpdateGap((BaseDiameterTool) owner);
+        ((BaseDiameterTool) owner).OnDiameterChanged();
     }
 
     private static void UpdateGap(BaseDiameterTool tool) {

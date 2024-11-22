@@ -56,7 +56,7 @@
         <Style Selector="^:checked /template/ Path#PART_Path">
             <Setter Property="Data" Value="M 0 0 L 8 0 L 8 2 L 0 2"/>
         </Style>
-        <Style Selector="^:pointerover /template/ Panel#PART_Panel">
+        <Style Selector="^:pointerover /template/ Panel#PART_Path">
             <Setter Property="Background" Value="{DynamicResource ABrush.Tone8.Background.MouseOver}"/>
         </Style>
     </ControlTheme>

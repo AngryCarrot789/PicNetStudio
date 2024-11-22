@@ -34,10 +34,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Folder Include="Resources\" />
-    </ItemGroup>
-
-    <ItemGroup>
         <None Remove="Resources\Fonts\Oxanium\Oxanium-Bold.ttf" />
         <AvaloniaResource Include="Resources\Fonts\Oxanium\Oxanium-Bold.ttf" />
         <None Remove="Resources\Fonts\Oxanium\Oxanium-ExtraBold.ttf" />
@@ -54,6 +50,8 @@
         <AvaloniaResource Include="Resources\Fonts\Oxanium\Oxanium-SemiBold.ttf" />
         <None Remove="Resources\Fonts\Oxanium\Oxanium-VariableFont_wght.ttf" />
         <AvaloniaResource Include="Resources\Fonts\Oxanium\Oxanium-VariableFont_wght.ttf" />
+        <None Remove="Resources\Icons\paint-brush-icon.png" />
+        <None Remove="Resources\Icons\pencil-icon.png" />
     </ItemGroup>
 
     <ItemGroup>

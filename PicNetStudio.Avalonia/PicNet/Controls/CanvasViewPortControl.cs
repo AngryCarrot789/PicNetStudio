@@ -28,6 +28,8 @@ using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using PicNetStudio.Avalonia.PicNet.Layers;
 using PicNetStudio.Avalonia.PicNet.Layers.Core;
+using PicNetStudio.Avalonia.PicNet.Toolbars;
+using PicNetStudio.Avalonia.PicNet.Tools;
 using PicNetStudio.Avalonia.Utils;
 using PicNetStudio.Avalonia.Utils.RDA;
 using SkiaSharp;
@@ -43,6 +45,13 @@ public class CanvasViewPortControl : TemplatedControl, ICanvasElement {
     public static readonly StyledProperty<Document?> DocumentProperty = AvaloniaProperty.Register<CanvasViewPortControl, Document?>(nameof(Document));
     public static readonly StyledProperty<double> ZoomScaleProperty = FreeMoveViewPortV2.ZoomScaleProperty.AddOwner<CanvasViewPortControl>();
 
+    public static readonly StyledProperty<Editor?> EditorProperty = AvaloniaProperty.Register<CanvasViewPortControl, Editor?>("Editor");
+
+    public Editor? Editor {
+        get => this.GetValue(EditorProperty);
+        set => this.SetValue(EditorProperty, value);
+    }
+    
     /// <summary>
     /// Gets or sets the document that this canvas control will draw and watch the states of
     /// </summary>
@@ -78,6 +87,7 @@ public class CanvasViewPortControl : TemplatedControl, ICanvasElement {
         AffectsRender<Image>(DocumentProperty);
         AffectsMeasure<Image>(DocumentProperty);
         DocumentProperty.Changed.AddClassHandler<CanvasViewPortControl, Document?>(OnDocumentChanged);
+        EditorProperty.Changed.AddClassHandler<CanvasViewPortControl, Editor?>((o, e) => o.OnEditorChanged(e.OldValue.GetValueOrDefault(), e.NewValue.GetValueOrDefault()));
     }
 
     public CanvasViewPortControl() {
@@ -238,9 +248,25 @@ public class CanvasViewPortControl : TemplatedControl, ICanvasElement {
     private void OnActiveLayerChanged(Canvas canvas, BaseLayerTreeObject? oldactivelayertreeobject, BaseLayerTreeObject? newactivelayertreeobject) {
         this.UpdateCursorForActiveLayer(newactivelayertreeobject);
     }
+    
+    private void OnEditorChanged(Editor? oldEditor, Editor? newEditor) {
+    }
 
     private void UpdateCursorForActiveLayer(BaseLayerTreeObject? layer) {
-        this.Cursor = new Cursor(!(layer is RasterLayer) ? StandardCursorType.No : StandardCursorType.Cross);
+        // this.Cursor = new Cursor(!(layer is RasterLayer) ? StandardCursorType.No : StandardCursorType.Cross);
+        this.UpdateCursor();
+    }
+
+    private void UpdateCursor() {
+        if (this.Document is Document document && document.Editor != null) {
+            // BaseCanvasTool? tool = document.Editor.ToolBar.ActiveTool;
+            // if (tool != null && tool.GetCursor() is Cursor cursor) {
+            //     this.Cursor = cursor;
+            //     return;
+            // }
+            
+            this.Cursor = new Cursor(!(document.Canvas.ActiveLayerTreeObject is RasterLayer) ? StandardCursorType.No : StandardCursorType.Cross);
+        }
     }
 
     private void OnResolutionChanged(Canvas canvas, PixelSize oldSize, PixelSize newSize) {

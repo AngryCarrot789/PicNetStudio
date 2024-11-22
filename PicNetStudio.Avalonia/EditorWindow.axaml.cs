@@ -69,6 +69,7 @@ public partial class EditorWindow : WindowEx {
 
         this.Editor = new Editor();
         this.Editor.ActiveDocumentChanged += this.OnActiveDocumentChanged;
+        this.PART_Canvas.Editor = this.Editor;
         DataManager.InvalidateInheritedContext(this);
         
         this.primaryColourBgBinder.AttachModel(this.Editor);

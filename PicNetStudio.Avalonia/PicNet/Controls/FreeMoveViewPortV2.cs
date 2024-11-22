@@ -48,7 +48,22 @@ public class FreeMoveViewPortV2 : Border {
     public static readonly StyledProperty<double> HorizontalOffsetProperty = AvaloniaProperty.Register<FreeMoveViewPortV2, double>("HorizontalOffset");
     public static readonly StyledProperty<double> VerticalOffsetProperty = AvaloniaProperty.Register<FreeMoveViewPortV2, double>("VerticalOffset");
     public static readonly StyledProperty<bool> PanToCursorOnUserZoomProperty = AvaloniaProperty.Register<FreeMoveViewPortV2, bool>("PanToCursorOnUserZoom");
+    public static readonly DirectProperty<FreeMoveViewPortV2, double> ExtentWidthProperty = AvaloniaProperty.RegisterDirect<FreeMoveViewPortV2, double>("ExtentWidth", o => o.ExtentWidth, null);
+    public static readonly DirectProperty<FreeMoveViewPortV2, double> ExtentHeightProperty = AvaloniaProperty.RegisterDirect<FreeMoveViewPortV2, double>("ExtentHeight", o => o.ExtentHeight, null);
+    
+    private double _extentWidth;
+    private double _extentHeight;
 
+    public double ExtentWidth {
+        get => this._extentWidth;
+        set => this.SetAndRaise(ExtentWidthProperty, ref this._extentWidth, value);
+    }
+    
+    public double ExtentHeight {
+        get => this._extentHeight;
+        set => this.SetAndRaise(ExtentHeightProperty, ref this._extentHeight, value);
+    }
+    
     public double MinimumZoomScale {
         get => this.GetValue(MinimumZoomScaleProperty);
         set => this.SetValue(MinimumZoomScaleProperty, value);
@@ -219,6 +234,8 @@ public class FreeMoveViewPortV2 : Border {
     protected override Size MeasureOverride(Size constraint) {
         Size size = new Size();
         this.AsyncViewPort?.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+        this.ExtentWidth = constraint.Width * this.ZoomScale;
+        this.ExtentHeight = constraint.Height * this.ZoomScale;
         return size;
     }
 

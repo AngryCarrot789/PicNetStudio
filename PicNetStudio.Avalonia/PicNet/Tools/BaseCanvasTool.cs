@@ -17,10 +17,17 @@
 // along with PicNetStudio. If not, see <https://www.gnu.org/licenses/>.
 // 
 
+using System.IO;
+using Avalonia;
 using Avalonia.Input;
+using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 using PicNetStudio.Avalonia.DataTransfer;
+using SkiaSharp;
 
 namespace PicNetStudio.Avalonia.PicNet.Tools;
+
+public delegate void BaseCanvasToolEventHandler(BaseCanvasTool sender);
 
 /// <summary>
 /// The base class for all tools that can be used on the canvas
@@ -29,13 +36,59 @@ namespace PicNetStudio.Avalonia.PicNet.Tools;
 /// </para>
 /// </summary>
 public abstract class BaseCanvasTool : ITransferableData {
+    private Bitmap? myCursorBitmap;
+    private Cursor? myCursor;
+    private bool hasProcessedCursor;
+    
     public TransferableData TransferableData { get; }
+    
+    public event BaseCanvasToolEventHandler? CursorInvalidated;
 
     protected BaseCanvasTool() {
         this.TransferableData = new TransferableData(this);
     }
+
+    protected void InvalidateCursor() {
+        this.myCursor?.Dispose();
+        this.myCursorBitmap?.Dispose();
+        
+        this.myCursor = null;
+        this.myCursorBitmap = null;
+        this.CursorInvalidated?.Invoke(this);
+        this.hasProcessedCursor = false;
+    }
+
+    internal Cursor? GetCursor() {
+        if (this.myCursor != null || this.hasProcessedCursor)
+            return this.myCursor;
+
+        SKImage? img = this.DrawCursor(out SKPoint hotSpot);
+        this.hasProcessedCursor = true;
+
+        if (img == null)
+            return null;
+
+        using SKData? data = img.Encode(SKEncodedImageFormat.Png, 100);
+        using MemoryStream stream = new MemoryStream(data.ToArray());
+        this.myCursorBitmap = new Bitmap(stream);
+        PixelPoint hotspotPoint = new PixelPoint((int)hotSpot.X, (int)hotSpot.Y);
+        return this.myCursor = new Cursor(this.myCursorBitmap, hotspotPoint);
+    }
     
     // TODO: cursors
+
+    // /// <summary>
+    // /// </summary>
+
+    /// <summary>
+    /// Draws this tool's cursor into the canvas. This method is typically only ever called once per instance
+    /// </summary>
+    /// <param name="hotSpot"></param>
+    /// <returns></returns>
+    protected internal virtual SKImage? DrawCursor(out SKPoint hotSpot) {
+        hotSpot = default;
+        return null;
+    }
 
     /// <summary>
     /// Invoked when the user pressed the cursor or pressed down on their touch screen

@@ -41,6 +41,27 @@ public class BrushTool : BaseDiameterTool {
         this.CanDrawSecondaryColour = true;
     }
 
+    protected override void OnDiameterChanged() {
+        base.OnDiameterChanged();
+        this.InvalidateCursor();
+    }
+
+    protected internal override SKImage DrawCursor(out SKPoint hotSpot) {
+        int diameter = Maths.Ceil(this.Diameter);
+        SKImageInfo info = new SKImageInfo(diameter, diameter);
+        using (SKSurface surface = SKSurface.Create(info)) {
+            int middle = Maths.Floor(this.Diameter / 2.0);
+            using SKPaint paint = new SKPaint();
+            paint.Color = SKColors.Orange;
+            paint.Style = SKPaintStyle.Stroke;
+            paint.StrokeWidth = 2.0F;
+            surface.Canvas.DrawCircle(middle, middle, this.Diameter / 2.0F, paint);
+
+            hotSpot = new SKPoint(middle, middle);
+            return surface.Snapshot();
+        }
+    }
+
     public override void DrawPixels(PNBitmap bitmap, Document document, double x, double y, bool isPrimaryColour) {
         SKColor colour = isPrimaryColour ? document.Editor!.PrimaryColour : document.Editor!.SecondaryColour;
         if (DoubleUtils.LessThanOrClose(this.Hardness, 0.9999)) {

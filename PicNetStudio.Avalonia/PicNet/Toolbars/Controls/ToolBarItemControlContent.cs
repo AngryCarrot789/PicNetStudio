@@ -19,11 +19,14 @@
 
 using System;
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Shapes;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using PicNetStudio.Avalonia.PicNet.Tools;
 using PicNetStudio.Avalonia.PicNet.Tools.Core;
+using PicNetStudio.Avalonia.Utils;
 
 namespace PicNetStudio.Avalonia.PicNet.Toolbars.Controls;
 
@@ -82,9 +85,64 @@ public class ToolBarItemControlContent : TemplatedControl {
 /// The base class for a toolbar list box item that activates a single tool
 /// </summary>
 public abstract class ToolBarItemControlContentSingleTool : ToolBarItemControlContent;
-public class ToolBarItemControlContent_BrushTool : ToolBarItemControlContentSingleTool;
-public class ToolBarItemControlContent_PencilTool : ToolBarItemControlContentSingleTool;
-public class ToolBarItemControlContent_FloodFillTool : ToolBarItemControlContentSingleTool;
+
+public class ToolBarItemControlContent_BrushTool : ToolBarItemControlContentSingleTool {
+    private Panel? PART_Panel;
+
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e) {
+        base.OnApplyTemplate(e);
+        this.PART_Panel = e.NameScope.GetTemplateChild<Panel>(nameof(this.PART_Panel));
+    }
+
+    protected override Size ArrangeOverride(Size finalSize) {
+        if (this.PART_Panel == null)
+            return base.ArrangeOverride(finalSize);
+
+        Size size = finalSize.Deflate(this.Padding);
+        this.PART_Panel!.RenderTransform = new ScaleTransform(size.Width / this.PART_Panel.Width, size.Height / this.PART_Panel.Height);
+        this.PART_Panel.Arrange(new Rect(0, 0, finalSize.Width, finalSize.Height).CenterRect(new Rect(0, 0, size.Width, size.Height)));
+        return finalSize;
+    }
+}
+
+public class ToolBarItemControlContent_PencilTool : ToolBarItemControlContentSingleTool {
+    private Path? PART_Path;
+
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e) {
+        base.OnApplyTemplate(e);
+        this.PART_Path = e.NameScope.GetTemplateChild<Path>(nameof(this.PART_Path));
+    }
+
+    protected override Size ArrangeOverride(Size finalSize) {
+        if (this.PART_Path == null)
+            return base.ArrangeOverride(finalSize);
+
+        Size size = finalSize.Deflate(this.Padding);
+        this.PART_Path!.RenderTransform = new ScaleTransform(size.Width / this.PART_Path.Width, size.Height / this.PART_Path.Height);
+        this.PART_Path.Arrange(new Rect(0, 0, finalSize.Width, finalSize.Height).CenterRect(new Rect(0, 0, size.Width, size.Height)));
+        return finalSize;
+    }
+}
+
+public class ToolBarItemControlContent_FloodFillTool : ToolBarItemControlContentSingleTool {
+    private Panel? PART_Panel;
+
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e) {
+        base.OnApplyTemplate(e);
+        this.PART_Panel = e.NameScope.GetTemplateChild<Panel>(nameof(this.PART_Panel));
+    }
+
+    protected override Size ArrangeOverride(Size finalSize) {
+        if (this.PART_Panel == null)
+            return base.ArrangeOverride(finalSize);
+
+        Size size = finalSize.Deflate(this.Padding);
+        double sX = size.Width / this.PART_Panel.Width, sY = size.Height / this.PART_Panel.Height;
+        this.PART_Panel!.RenderTransform = new ScaleTransform(Math.Min(sX, sY), Math.Min(sX, sY));
+        this.PART_Panel.Arrange(new Rect(0, 0, finalSize.Width, finalSize.Height).CenterRect(new Rect(0, 0, size.Width, size.Height)));
+        return finalSize;
+    }
+}
 
 public class ToolBarItemControlContent_SelectRegionTool : ToolBarItemControlContentSingleTool {
     public static readonly StyledProperty<double> DashOffsetProperty = AvaloniaProperty.Register<ToolBarItemControlContent_SelectRegionTool, double>("DashOffset");
