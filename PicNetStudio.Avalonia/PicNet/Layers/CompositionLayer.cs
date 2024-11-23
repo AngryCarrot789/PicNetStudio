@@ -22,6 +22,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using PicNetStudio.Avalonia.PicNet.Layers.Core;
+using PicNetStudio.Avalonia.RBC;
 using PicNetStudio.Avalonia.Utils.Collections.Observable;
 
 namespace PicNetStudio.Avalonia.PicNet.Layers;
@@ -41,11 +42,37 @@ public class CompositionLayer : BaseVisualLayer {
 
     protected bool isHierarchyVisualInvalid = true;
     internal readonly PNBitmap cachedVisualHierarchy;
+    private bool ignoreInvalidateVisual;
 
     public CompositionLayer() {
         this.layers = new SuspendableObservableList<BaseLayerTreeObject>();
         this.Layers = new ReadOnlyObservableList<BaseLayerTreeObject>(this.layers);
         this.cachedVisualHierarchy = new PNBitmap();
+    }
+
+    static CompositionLayer() {
+        SerialisationRegistry.Register<CompositionLayer>(0, (layer, data, ctx) => {
+            ctx.DeserialiseBaseType(data);
+            layer.isHierarchyVisualInvalid = true;
+            RBEList list = data.GetList("Layers");
+            try {
+                layer.ignoreInvalidateVisual = true;
+                foreach (RBEDictionary dictionary in list.Cast<RBEDictionary>()) {
+                    layer.AddLayer(ReadSerialisedWithId(dictionary));
+                }
+            }
+            finally {
+                layer.ignoreInvalidateVisual = false;
+            }
+
+            layer.InvalidateVisual();
+        }, (layer, data, ctx) => {
+            ctx.SerialiseBaseType(data);
+            RBEList list = data.CreateList("Layers");
+            foreach (BaseLayerTreeObject childLayer in layer.Layers) {
+                WriteSerialisedWithId(list.AddDictionary(), childLayer);
+            }
+        });
     }
 
     public override bool IsHitTest(double x, double y) {
@@ -61,9 +88,17 @@ public class CompositionLayer : BaseVisualLayer {
     protected override void LoadDataIntoClone(BaseLayerTreeObject clone) {
         base.LoadDataIntoClone(clone);
         CompositionLayer compositionLayer = (CompositionLayer) clone;
-        foreach (BaseLayerTreeObject child in this.layers) {
-            compositionLayer.AddLayer(child.Clone());
+        try {
+            compositionLayer.ignoreInvalidateVisual = true;
+            foreach (BaseLayerTreeObject child in this.layers) {
+                compositionLayer.AddLayer(child.Clone());
+            }
         }
+        finally {
+            compositionLayer.ignoreInvalidateVisual = false;
+        }
+        
+        compositionLayer.InvalidateVisual();
     }
 
     public void AddLayer(BaseLayerTreeObject layer) => this.InsertLayer(this.layers.Count, layer);
@@ -173,6 +208,8 @@ public class CompositionLayer : BaseVisualLayer {
     }
 
     public override void InvalidateVisual() {
+        if (this.ignoreInvalidateVisual)
+            return;
         this.isHierarchyVisualInvalid = true;
         base.InvalidateVisual();
     }

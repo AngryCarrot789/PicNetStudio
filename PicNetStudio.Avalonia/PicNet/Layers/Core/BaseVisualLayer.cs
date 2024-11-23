@@ -192,6 +192,31 @@ public abstract class BaseVisualLayer : BaseLayerTreeObject {
     }
 
     static BaseVisualLayer() {
+        SerialisationRegistry.Register<BaseVisualLayer>(0, (layer, data, ctx) => {
+            ctx.DeserialiseBaseType(data);
+            layer.opacity = data.GetFloat("Opacity");
+            layer.isVisible = data.GetBool("IsVisible");
+            layer.isExportVisible = data.GetBool("IsExportVisible");
+            layer.blendMode = data.GetStruct<SKBlendMode>("BlendMode");
+            layer.position = data.GetStruct<SKPoint>("Position");
+            layer.scale = data.GetStruct<SKPoint>("Scale");
+            layer.scaleOrigin = data.GetStruct<SKPoint>("ScaleOrigin");
+            layer.rotation = data.GetFloat("Rotation");
+            layer.rotationOrigin = data.GetStruct<SKPoint>("RotationOrigin");
+            layer.isMatrixDirty = true;
+        }, (layer, data, ctx) => {
+            ctx.SerialiseBaseType(data);
+            data.SetFloat("Opacity", layer.opacity);
+            data.SetBool("IsVisible", layer.isVisible);
+            data.SetBool("IsExportVisible", layer.isExportVisible);
+            data.SetStruct("BlendMode", layer.blendMode);
+            data.SetStruct("Position", layer.position);
+            data.SetStruct("Scale", layer.scale);
+            data.SetStruct("ScaleOrigin", layer.scaleOrigin);
+            data.SetFloat("Rotation", layer.rotation);
+            data.SetStruct("RotationOrigin", layer.rotationOrigin);
+        });
+
         // TODO: Maybe we can optimise with invalidation and re-paint events?
         // Maybe i'm not thinking about it right but we make it so the cached
         // visual never has the composition layer opacity applied; we use it
@@ -199,10 +224,10 @@ public abstract class BaseVisualLayer : BaseLayerTreeObject {
         // than re-drawing the composition layer when its opacity changes?
         // Not sure...
         SetParameterAffectsRender(OpacityParameter, IsRenderVisibleParameter, BlendModeParameter);
-        
+
         // Add internal handler for solo system
         IsSoloParameter.ValueChanged += OnIsSoloValueChanged;
-        
+
         // Add handlers to properties that affect the transformation matrix
         DataParameter.AddMultipleHandlers(OnMatrixInvalidatingPropertyChanged, PositionParameter, ScaleParameter, ScaleOriginParameter, RotationParameter, RotationOriginParameter);
     }
@@ -214,7 +239,7 @@ public abstract class BaseVisualLayer : BaseLayerTreeObject {
     // Update for the entire 
     private static void OnIsSoloValueChanged(DataParameter parameter, ITransferableData owner) {
         BaseVisualLayer layer = (BaseVisualLayer) owner;
-        
+
         // Something set the property while not in a canvas tree. This is basically pointless
         // since IsSolo is set to false when adding/removing a layer, so we can ignore it
         if (layer.Canvas == null) {

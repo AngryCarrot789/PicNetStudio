@@ -64,10 +64,10 @@ public interface ITypeEntry<out T> {
     /// <summary>
     /// Gets this entry's base type entry
     /// </summary>
-    ITypeEntry<T> BaseType { get; }
+    ITypeEntry<T>? BaseType { get; }
 
     /// <summary>
     /// Gets the nearest entry which has a local value set
     /// </summary>
-    ITypeEntry<T> NearestBaseTypeWithLocalValue { get; }
+    ITypeEntry<T>? NearestBaseTypeWithLocalValue { get; }
 }

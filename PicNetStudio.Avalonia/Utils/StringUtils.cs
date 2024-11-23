@@ -104,7 +104,7 @@ public static class StringUtils {
         }
     }
 
-    public static bool EqualsIgnoreCase(this string @this, string value) {
+    public static bool EqualsIgnoreCase(this string @this, string? value) {
         return @this.Equals(value, StringComparison.OrdinalIgnoreCase);
     }
 

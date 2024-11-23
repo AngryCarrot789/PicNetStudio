@@ -71,6 +71,11 @@ public abstract class RZApplication {
     /// </summary>
     public Version CurrentVersion { get; } = new Version(1, 0, 0, 0);
 
+    /// <summary>
+    /// Gets the current build version for this application. This accesses <see cref="CurrentVersion"/>, and changes whenever a new change is made to the application (regardless of how small)
+    /// </summary>
+    public int CurrentBuild => this.CurrentVersion.Build;
+    
     protected RZApplication(App app) {
         this.App = app ?? throw new ArgumentNullException(nameof(app));
         this.serviceManager = new ServiceManager();
@@ -108,6 +113,8 @@ public abstract class RZApplication {
         // tools
         manager.Register("command.tool.BaseDiameterTool.IncreaseBrushSize", new IncreaseBaseDiameterToolSizeCommand());
         manager.Register("command.tool.BaseDiameterTool.DecreaseBrushSize", new DecreaseBaseDiameterToolSizeCommand());
+        manager.Register("command.generic.OpenDocument", new OpenDocumentCommand());
+        manager.Register("command.generic.SaveDocument", new SaveDocumentCommand());
         manager.Register("command.generic.ExportImage", new ExportImageCommand());
         manager.Register("command.generic.ExportCanvasToClipboard", new ExportCanvasToClipboardCommand());
         manager.Register("command.toolbar.SelectCursorTool", new SelectCursorToolCommand());

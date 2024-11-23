@@ -17,6 +17,7 @@
 // along with PicNetStudio. If not, see <https://www.gnu.org/licenses/>.
 // 
 
+using System;
 using PicNetStudio.Avalonia.DataTransfer;
 using PicNetStudio.Avalonia.Utils;
 using PicNetStudio.Avalonia.Utils.Accessing;
@@ -41,27 +42,27 @@ public class RasterLayer : BaseVisualLayer {
     // TODO: Make channels an effect
     // and maybe use internal effect detection to improve performance;
     // RenderLayer uses the channels in the paint when drawing the bitmap
-    
+
     public float ChannelR {
         get => this.channelR;
         set => DataParameter.SetValueHelper(this, ChannelRParameter, ref this.channelR, value);
     }
-    
+
     public float ChannelG {
         get => this.channelG;
         set => DataParameter.SetValueHelper(this, ChannelGParameter, ref this.channelG, value);
     }
-    
+
     public float ChannelB {
         get => this.channelB;
         set => DataParameter.SetValueHelper(this, ChannelRParameter, ref this.channelB, value);
     }
-    
+
     public float ChannelA {
         get => this.channelA;
         set => DataParameter.SetValueHelper(this, ChannelAParameter, ref this.channelA, value);
     }
-    
+
     public PNBitmap Bitmap { get; }
 
     public RasterLayer() {
@@ -73,14 +74,57 @@ public class RasterLayer : BaseVisualLayer {
         this.UsesCustomOpacityCalculation = true;
     }
 
+    private readonly struct UnmanagedBmpInfo {
+        public readonly int width, height;
+        public readonly SKColorType colourType;
+        public readonly SKAlphaType alphaType;
+
+        public SKImageInfo AsSkia => new SKImageInfo(this.width, this.height, this.colourType, this.alphaType);
+        
+        public UnmanagedBmpInfo(SKImageInfo info) {
+            this.width = info.Width;
+            this.height = info.Height;
+            this.colourType = info.ColorType;
+            this.alphaType = info.AlphaType;
+        }
+    }
+
     static RasterLayer() {
         SetParameterAffectsRender(ChannelRParameter, ChannelGParameter, ChannelBParameter, ChannelAParameter);
+        SerialisationRegistry.Register<RasterLayer>(0, (layer, data, ctx) => {
+            ctx.DeserialiseBaseType(data);
+            layer.channelR = data.GetFloat("ChannelR");
+            layer.channelG = data.GetFloat("ChannelG");
+            layer.channelB = data.GetFloat("ChannelB");
+            layer.channelA = data.GetFloat("ChannelA");
+            if (data.TryGetStruct("BmpInfo", out UnmanagedBmpInfo bmpInfo) && data.TryGetByteArray("BmpData", out byte[]? array)) {
+                SKBitmap bmp = new SKBitmap(bmpInfo.AsSkia);
+                unsafe {
+                    fixed (byte* address = &new ReadOnlySpan<byte>(array).GetPinnableReference()) {
+                        using SKPixmap map = new SKPixmap(bmp.Info, (IntPtr) address);
+                        bmp.InstallPixels(map);
+                    }
+                }
+                
+                layer.Bitmap.InitialiseUsingBitmap(bmp);
+            }
+        }, (layer, data, ctx) => {
+            ctx.SerialiseBaseType(data);
+            data.SetFloat("ChannelR", layer.channelR);
+            data.SetFloat("ChannelG", layer.channelG);
+            data.SetFloat("ChannelB", layer.channelB);
+            data.SetFloat("ChannelA", layer.channelA);
+            if (layer.Bitmap.IsInitialised) {
+                data.SetByteArray("BmpData", layer.Bitmap.Bitmap!.Bytes);
+                data.SetStruct("BmpInfo", new UnmanagedBmpInfo(layer.Bitmap.Bitmap.Info));
+            }
+        });
     }
 
     public override bool IsHitTest(double x, double y) {
         if (!this.Bitmap.IsInitialised)
             return false;
-        
+
         int pixel = this.Bitmap.PixelAt(Maths.Floor(x), Maths.Floor(y));
         return pixel != 0;
     }
@@ -94,6 +138,11 @@ public class RasterLayer : BaseVisualLayer {
                 raster.Bitmap.InitialiseBitmap(this.Bitmap.Size);
             raster.Bitmap.Paste(this.Bitmap);
         }
+        
+        raster.channelR = this.channelR;
+        raster.channelG = this.channelG;
+        raster.channelB = this.channelB;
+        raster.channelA = this.channelA;
     }
 
     public override void RenderLayer(ref RenderContext ctx) {
@@ -101,12 +150,13 @@ public class RasterLayer : BaseVisualLayer {
             using SKPaint paint = new SKPaint();
             paint.Color = RenderUtils.BlendAlpha(SKColors.White, this.Opacity);
             paint.BlendMode = this.BlendMode;
-            if (!DoubleUtils.AreClose(this.ChannelR, 1.0) || !DoubleUtils.AreClose(this.ChannelG, 1.0) || !DoubleUtils.AreClose(this.ChannelB, 1.0) || !DoubleUtils.AreClose(this.ChannelA, 1.0)) {
+            float r = this.channelR, g = this.channelG, b = this.channelB, a = this.channelA;
+            if (!DoubleUtils.AreClose(r, 1.0) || !DoubleUtils.AreClose(g, 1.0) || !DoubleUtils.AreClose(b, 1.0) || !DoubleUtils.AreClose(a, 1.0)) {
                 float[] matrix = new float[] {
-                    this.ChannelR, 0, 0, 0, 0,
-                    0, this.ChannelG, 0, 0, 0,
-                    0, 0, this.ChannelB, 0, 0,
-                    0, 0, 0, this.ChannelA, 0
+                    r, 0, 0, 0, 0,
+                    0, g, 0, 0, 0,
+                    0, 0, b, 0, 0,
+                    0, 0, 0, a, 0
                 };
 
                 paint.ColorFilter = SKColorFilter.CreateColorMatrix(matrix);

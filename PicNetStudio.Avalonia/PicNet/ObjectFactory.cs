@@ -19,6 +19,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace PicNetStudio.Avalonia.PicNet;
 
@@ -42,11 +43,13 @@ public class ObjectFactory {
         ValidateId(id);
         if (type == null)
             throw new ArgumentNullException(nameof(type));
+        if (type.IsAbstract || type.IsInterface)
+            throw new InvalidOperationException("The type is abstract or an interface and therefore cannot be used");
         if (!this.IsTypeValid(type))
             throw new ArgumentException($"Incompatible type: {type.Name}", nameof(type));
-        if (this.idToType.TryGetValue(id, out Type existingType))
+        if (this.idToType.TryGetValue(id, out Type? existingType))
             throw new InvalidOperationException($"ID '{id}' already registered with type '{existingType.Name}'");
-        if (this.typeToId.TryGetValue(type, out string existingId))
+        if (this.typeToId.TryGetValue(type, out string? existingId))
             throw new InvalidOperationException($"Type '{type.Name}' already registered with ID '{existingId}'");
         this.idToType[id] = type;
         this.typeToId[type] = id;
@@ -55,10 +58,9 @@ public class ObjectFactory {
 
     protected bool UnregisterType(string id) {
         ValidateId(id);
-        if (!this.idToType.TryGetValue(id, out Type type))
+        if (!this.idToType.Remove(id, out Type? type))
             return false;
 
-        this.idToType.Remove(id);
         this.OnUnregistered(id, type);
         return true;
     }
@@ -80,12 +82,12 @@ public class ObjectFactory {
         return this.typeToId.ContainsKey(type);
     }
 
-    public bool TryGetType(string id, out Type type) {
+    public bool TryGetType(string id, [NotNullWhen(true)] out Type? type) {
         ValidateId(id);
         return this.idToType.TryGetValue(id, out type);
     }
 
-    public bool TryGetId(Type type, out string id) {
+    public bool TryGetId(Type type, [NotNullWhen(true)] out string? id) {
         if (type == null)
             throw new ArgumentNullException(nameof(type));
         return this.typeToId.TryGetValue(type, out id);
@@ -93,7 +95,7 @@ public class ObjectFactory {
 
     public Type GetType(string id) {
         ValidateId(id);
-        if (!this.idToType.TryGetValue(id, out Type type))
+        if (!this.idToType.TryGetValue(id, out Type? type))
             throw new Exception($"No entry registered with ID '{id}'");
         return type;
     }
@@ -101,8 +103,10 @@ public class ObjectFactory {
     public string GetId(Type type) {
         if (type == null)
             throw new ArgumentNullException(nameof(type));
-        if (!this.typeToId.TryGetValue(type, out string id))
+        if (!this.typeToId.TryGetValue(type, out string? id))
             throw new Exception($"No entry registered with type '{type.Name}'");
+        if (string.IsNullOrWhiteSpace(id))
+            throw new Exception("Invalid factory ID");
         return id;
     }
 

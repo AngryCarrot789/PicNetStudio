@@ -52,7 +52,7 @@ public partial class EditorWindow : WindowEx {
     public EditorWindow() {
         this.InitializeComponent();
         DataManager.SetContextData(this, this.contextData = new ContextData().Set(DataKeys.TopLevelHostKey, this));
-        
+
         this.primaryColourBgBinder.AttachControl(this.PART_PrimaryColourButton);
         this.secondaryColourBgBinder.AttachControl(this.PART_SecondaryColourButton);
         this.PART_PrimaryColourButton.Click += this.PART_PrimaryColourClickOnClick;
@@ -65,13 +65,15 @@ public partial class EditorWindow : WindowEx {
         this.ThePropertyEditor.ApplyTemplate();
         this.ThePropertyEditor.PropertyEditor = PicNetPropertyEditor.Instance;
         this.PART_ColourPicker.Color = Color.FromUInt32((uint) SKColors.DodgerBlue);
-        DataManager.SetContextData(this, this.contextData.Set(DataKeys.LayerSelectionManagerKey, this.PART_LayerTreeControl.SelectionManager));
 
         this.Editor = new Editor();
         this.Editor.ActiveDocumentChanged += this.OnActiveDocumentChanged;
         this.PART_Canvas.Editor = this.Editor;
+        this.contextData.
+             Set(DataKeys.EditorKey, this.Editor).
+             Set(DataKeys.LayerSelectionManagerKey, this.PART_LayerTreeControl.SelectionManager);
         DataManager.InvalidateInheritedContext(this);
-        
+
         this.primaryColourBgBinder.AttachModel(this.Editor);
         this.secondaryColourBgBinder.AttachModel(this.Editor);
 
@@ -79,7 +81,7 @@ public partial class EditorWindow : WindowEx {
         this.Editor.ToolBar.ActiveToolItemChanged += ToolBarOnActiveToolItemChanged;
 
         void ToolBarOnActiveToolItemChanged(EditorToolBar sender, SingleToolBarItem? oldactivetoolitem, SingleToolBarItem? newactivetoolitem) {
-            this.PART_ToolSettingsContainer.SetActiveTool(newactivetoolitem?.Tool);    
+            this.PART_ToolSettingsContainer.SetActiveTool(newactivetoolitem?.Tool);
         }
 
         if (this.Editor.ToolBar.ActiveTool is BaseCanvasTool tool)
@@ -100,13 +102,13 @@ public partial class EditorWindow : WindowEx {
             (parent ?? document.Canvas.RootComposition).AddLayer(layer);
             return layer;
         }
-        
+
         TextLayer MakeTextLayer(string text, string name, CompositionLayer? parent = null) {
             TextLayer layer = new TextLayer() {
                 Name = name,
                 Text = text
             };
-            
+
             (parent ?? document.Canvas.RootComposition).AddLayer(layer);
             return layer;
         }
@@ -182,12 +184,12 @@ public partial class EditorWindow : WindowEx {
             }
         }
     }
-    
+
     private async void PART_PrimaryColourClickOnClick(object? sender, RoutedEventArgs e) {
         if (await IoC.ColourPickerService.PickColourAsync(this.Editor.PrimaryColour) is SKColor colour)
             this.Editor.PrimaryColour = colour;
     }
-    
+
     private async void PART_SecondaryColourClickOnClick(object? sender, RoutedEventArgs e) {
         if (await IoC.ColourPickerService.PickColourAsync(this.Editor.SecondaryColour) is SKColor colour)
             this.Editor.SecondaryColour = colour;

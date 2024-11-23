@@ -24,19 +24,25 @@ using System.Diagnostics.CodeAnalysis;
 using PicNetStudio.Avalonia.DataTransfer;
 using PicNetStudio.Avalonia.PicNet.Effects;
 using PicNetStudio.Avalonia.PicNet.Layers.Core;
+using PicNetStudio.Avalonia.RBC;
+using PicNetStudio.Avalonia.Serialisation;
 using PicNetStudio.Avalonia.Utils.Collections.Observable;
 
 namespace PicNetStudio.Avalonia.PicNet.Layers;
 
 public delegate void BaseLayerTreeObjectParentLayerChangedEventHandler(BaseLayerTreeObject sender, CompositionLayer? oldParentLayer, CompositionLayer? newParentLayer);
+
 public delegate void BaseLayerTreeObjectCanvasChangedEventHandler(BaseLayerTreeObject sender, Canvas? oldCanvas, Canvas? newCanvas);
+
 public delegate void BaseLayerTreeObjectEventHandler(BaseLayerTreeObject sender);
+
 public delegate void BaseLayerTreeObjectNameChangedEventHandler(BaseLayerTreeObject sender);
 
 /// <summary>
 /// The base class for an object in the layer hierarchy for a canvas
 /// </summary>
 public abstract class BaseLayerTreeObject : ITransferableData {
+    public static readonly SerialisationRegistry SerialisationRegistry;
     private readonly SuspendableObservableList<BaseLayerEffect> effects;
 
     private CompositionLayer? parentLayer;
@@ -97,6 +103,39 @@ public abstract class BaseLayerTreeObject : ITransferableData {
         this.Effects = new ReadOnlyObservableList<BaseLayerEffect>(this.effects);
     }
 
+    static BaseLayerTreeObject() {
+        // This is a really crap system but it works, just about. Need a better system
+        SerialisationRegistry = new SerialisationRegistry();
+
+        // Is this even a good system? Minor updates could be handled in one of these too i suppose...
+        // Build Version 0 is the absolute lowest version the app can be in. If there's a new feature added,
+        // that obviously means the app build number is now higher and so that version should be used to register
+        // a new serialiser/deserialiser that also calls the previous version (or does a complete rewrite, if necessary)
+        SerialisationRegistry.Register<BaseLayerTreeObject>(0, (layer, data, ctx) => {
+            layer.name = data.GetString("Name", "");
+            BaseLayerEffect.ReadSerialisedWithIdList(layer, data.GetList("Effects"));
+        }, (layer, data, ctx) => {
+            if (!string.IsNullOrEmpty(layer.name))
+                data.SetString("Name", layer.name);
+            BaseLayerEffect.WriteSerialisedWithIdList(layer, data.CreateList("Effects"));
+        });
+    }
+
+    public static void WriteSerialisedWithId(RBEDictionary dictionary, BaseLayerTreeObject clip) {
+        dictionary.SetString(nameof(FactoryId), clip.FactoryId);
+        SerialisationRegistry.Serialise(clip, dictionary.CreateDictionary("Data"));
+    }
+
+    public static BaseLayerTreeObject ReadSerialisedWithId(RBEDictionary dictionary) {
+        string? factoryId = dictionary.GetString(nameof(FactoryId));
+        if (factoryId == null)
+            throw new InvalidOperationException("Invalid factory ID");
+        
+        BaseLayerTreeObject clip = LayerTypeFactory.Instance.NewInstance(factoryId);
+        SerialisationRegistry.Deserialise(clip, dictionary.GetDictionary("Data"));
+        return clip;
+    }
+
     /// <summary>
     /// Creates a new instance with the same data which will be completely unaffected by the current instance
     /// </summary>
@@ -115,7 +154,7 @@ public abstract class BaseLayerTreeObject : ITransferableData {
     protected virtual void LoadDataIntoClone(BaseLayerTreeObject clone) {
         clone.name = this.name;
     }
-    
+
     public int GetIndexInParent() {
         return this.parentLayer != null ? this.indexInParent : -1;
     }
@@ -130,7 +169,6 @@ public abstract class BaseLayerTreeObject : ITransferableData {
     /// <param name="oldParent">The previous parent (non-null when removing or moving)</param>
     /// <param name="newParent">The new parent (non-null when adding or moving)</param>
     protected virtual void OnParentChanged(CompositionLayer? oldParent, CompositionLayer? newParent) {
-        
     }
 
     /// <summary>
@@ -146,7 +184,6 @@ public abstract class BaseLayerTreeObject : ITransferableData {
     /// <param name="origin">The parent that was actually added. It may equal this layer's parent layer</param>
     /// <param name="oldParent">The origin's previous parent (non-null when removing or moving)</param>
     protected virtual void OnHierarchicalParentChanged(BaseLayerTreeObject origin, CompositionLayer? originOldParent) {
-        
     }
 
     /// <summary>
@@ -161,7 +198,6 @@ public abstract class BaseLayerTreeObject : ITransferableData {
     /// or being added into a composition layer that exists in a canvas). May equal the current instance
     /// </param>
     protected virtual void OnAttachedToCanvas(BaseLayerTreeObject origin) {
-        
     }
 
     /// <summary>
@@ -177,17 +213,14 @@ public abstract class BaseLayerTreeObject : ITransferableData {
     /// </param>
     /// <param name="oldCanvas">The canvas that we previously existed in</param>
     protected virtual void OnDetachedFromCanvas(BaseLayerTreeObject origin, Canvas oldCanvas) {
-        
     }
 
     protected virtual void OnEffectAdded(int index, BaseLayerEffect effect) {
-        
     }
 
     protected virtual void OnEffectRemoved(int index, BaseLayerEffect effect) {
-        
     }
-    
+
     public void AddEffect(BaseLayerEffect effect) => this.InsertEffect(this.effects.Count, effect);
 
     public void InsertEffect(int index, BaseLayerEffect effect) {
@@ -225,10 +258,10 @@ public abstract class BaseLayerTreeObject : ITransferableData {
             this.effects.RemoveAt(index);
             BaseLayerEffect.InternalOnRemovedFromLayer(effect, this);
         }
-        
+
         this.OnEffectRemoved(index, effect);
     }
-    
+
     public virtual bool IsHitTest(double x, double y) {
         return false;
     }
@@ -316,7 +349,7 @@ public abstract class BaseLayerTreeObject : ITransferableData {
     // User deleted some layer from composition layer
     internal static void InternalOnRemovedFromLayer(BaseLayerTreeObject layer, CompositionLayer oldParent) {
         Debug.Assert(layer.ParentLayer != null, "Did not expect layer to not be in a composition layer when removing it from another");
-        
+
         BaseVisualLayer.InternalClearIsSolo(layer as BaseVisualLayer);
 
         // While child layers are notified of canvas detachment first, should we do the same here???

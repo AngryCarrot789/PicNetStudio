@@ -27,6 +27,8 @@ public class LayerTypeFactory : ReflectiveObjectFactory<BaseLayerTreeObject> {
     private LayerTypeFactory() {
         this.RegisterType("l_comp", typeof(CompositionLayer));
         this.RegisterType("l_raster", typeof(RasterLayer));
+        this.RegisterType("l_rectshape", typeof(RectangleShapeLayer));
+        this.RegisterType("l_text", typeof(TextLayer));
     }
 
     public new BaseLayerTreeObject NewInstance(string id) => base.NewInstance(id);

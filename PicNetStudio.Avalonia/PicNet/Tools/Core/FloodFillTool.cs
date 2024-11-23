@@ -19,7 +19,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Net;
 using Avalonia.Input;
 using PicNetStudio.Avalonia.PicNet.Layers.Core;
 using PicNetStudio.Avalonia.Utils;
@@ -33,7 +32,7 @@ namespace PicNetStudio.Avalonia.PicNet.Tools.Core;
 public class FloodFillTool : BaseDrawingTool {
     public FloodFillTool() {
     }
-    
+
     public override bool OnCursorPressed(Document document, SKPointD relPos, SKPointD absPos, int count, EnumCursorType cursor, KeyModifiers modifiers) {
         if (base.OnCursorPressed(document, relPos, absPos, count, cursor, modifiers))
             return true;
@@ -60,21 +59,31 @@ public class FloodFillTool : BaseDrawingTool {
         // ExtFloodFill is better maybe???
         RectangleSelection? rectangle = selection as RectangleSelection;
         int saveCount = bitmap.Canvas.Save();
-        
-        bitmap.Canvas.SetMatrix(bitmap.Canvas.TotalMatrix.PostConcat(layer.AbsoluteInverseTransformationMatrix));
+
+        SKMatrix matrix = layer.AbsoluteInverseTransformationMatrix;
         int nBmpW = bitmap.Bitmap!.Width;
         int nBmpH = bitmap.Bitmap!.Height;
         int minX = 0, minY = 0, maxX = nBmpW, maxY = nBmpH;
         SKPath? selPath = null;
         if (rectangle != null) {
-            selPath = new SKPath();
-            selPath.AddRect(new SKRect(rectangle.Left, rectangle.Top, rectangle.Right - 0.00001F, rectangle.Bottom - 0.00001F));
-            selPath.Transform(layer.AbsoluteInverseTransformationMatrix);
+            // use fast mode if possible
+            if (matrix.IsIdentity) {
+                minX = rectangle.Left;
+                minY = rectangle.Top;
+                maxX = Math.Min(maxX, rectangle.Right);
+                maxY = Math.Min(maxY, rectangle.Bottom);
+            }
+            else {
+                bitmap.Canvas.SetMatrix(bitmap.Canvas.TotalMatrix.PostConcat(matrix));
+                selPath = new SKPath();
+                selPath.AddRect(new SKRect(rectangle.Left, rectangle.Top, rectangle.Right, rectangle.Bottom));
+                selPath.Transform(layer.AbsoluteInverseTransformationMatrix);
+            }
         }
 
         if (fillX < minX || fillY < minY || fillX >= maxX || fillY >= maxY)
             goto End;
-        
+
         uint* colourData = (uint*) bitmap.Bitmap!.GetPixels();
         uint bgraTarget = *(colourData + (fillY * nBmpW + fillX));
         if (bgraTarget == bgraReplace)
@@ -86,9 +95,9 @@ public class FloodFillTool : BaseDrawingTool {
             SKPointI p = queue.Dequeue();
             if (p.X < minX || p.X >= maxX || p.Y < minY || p.Y >= maxY)
                 continue;
-            
+
             if (selPath != null && !selPath.Contains(p.X, p.Y))
-                continue;
+                continue;     
             
             uint* pColour = colourData + (p.Y * nBmpW + p.X);
             if (*pColour == bgraTarget) {
@@ -96,7 +105,7 @@ public class FloodFillTool : BaseDrawingTool {
                 ScanNeighbours(p.X, p.Y, maxX, maxY, queue);
             }
         }
-        
+
         End:
         bitmap.Canvas.RestoreToCount(saveCount);
         selPath?.Dispose();

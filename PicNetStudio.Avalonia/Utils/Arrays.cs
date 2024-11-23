@@ -82,7 +82,7 @@ public static class Arrays {
     /// <param name="array"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    public static unsafe T[] CloneArrayUnsafe<T>(this T[] array) where T : unmanaged {
+    public static unsafe T[]? CloneArrayUnsafe<T>(this T[]? array) where T : unmanaged {
         if (array == null)
             return null;
         int length = array.Length;
@@ -100,7 +100,7 @@ public static class Arrays {
         return values;
     }
 
-    public static T[] CloneArrayMax<T>(this T[] array) => CloneArrayMax(array, array.Length);
+    public static T[]? CloneArrayMax<T>(this T[]? array) => array != null ? CloneArrayMax(array, array.Length) : null;
 
     public static T[] CloneArrayMax<T>(this T[] array, int count) {
         int len = array.Length;

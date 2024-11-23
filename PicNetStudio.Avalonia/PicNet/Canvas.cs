@@ -21,6 +21,7 @@ using System;
 using Avalonia;
 using PicNetStudio.Avalonia.PicNet.Layers;
 using PicNetStudio.Avalonia.PicNet.Layers.Core;
+using PicNetStudio.Avalonia.RBC;
 using SkiaSharp;
 
 namespace PicNetStudio.Avalonia.PicNet;
@@ -128,6 +129,22 @@ public class Canvas {
 
     private void OnRootRenderInvalidated(BaseVisualLayer layer) {
         this.RenderInvalidated?.Invoke(this);
+    }
+    
+    public void WriteToRBE(RBEDictionary data) {
+        data.SetStruct("CanvasSize", this.size);
+        RBEList list = data.CreateList("RootLayers");
+        foreach (BaseLayerTreeObject layer in this.RootComposition.Layers) {
+            BaseLayerTreeObject.WriteSerialisedWithId(list.AddDictionary(), layer);
+        }
+    }
+    
+    public void ReadFromRBE(RBEDictionary data) {
+        this.size = data.GetStruct<PixelSize>("CanvasSize");
+        RBEList list = data.GetList("RootLayers");
+        foreach (RBEDictionary dictionary in list.Cast<RBEDictionary>()) {
+            this.RootComposition.AddLayer(BaseLayerTreeObject.ReadSerialisedWithId(dictionary));
+        }
     }
 
     // QtBitmapEditor -> Project::paintEvent

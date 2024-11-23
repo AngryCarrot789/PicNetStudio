@@ -107,17 +107,51 @@ public class TextLayer : BaseVisualLayer {
         this.border = SKColors.DarkGray;
     }
 
+    static TextLayer() {
+        SetParameterAffectsRender(TextParameter);
+        DataParameter.AddMultipleHandlers((_, owner) => ((TextLayer) owner).InvalidateFontData(), FontSizeParameter, FontFamilyParameter, BorderThicknessParameter, SkewXParameter, IsAntiAliasedParameter, LineHeightMultiplierParameter);
+        DataParameter.AddMultipleHandlers((_, owner) => ((TextLayer) owner).DisposeText(), TextParameter);
+        
+        SerialisationRegistry.Register<TextLayer>(0, (layer, data, ctx) => {
+            ctx.DeserialiseBaseType(data);
+            layer.text = data.GetString("Text", null);
+            layer.fontSize = data.GetDouble("FontSize");
+            layer.fontFamily = data.GetString("FontFamily", FontFamilyParameter.GetDefaultValue(layer)!);
+            layer.borderThickness = data.GetDouble("BorderThickness");
+            layer.skewX = data.GetFloat("SkewX");
+            layer.isAntiAliased = data.GetBool("IsAntiAliased");
+            layer.lineHeightMultiplier = data.GetDouble("LineHeightMultiplier");
+            layer.clipProps = data.GetStruct<BitVector32>("ClipProps");
+            layer.foreground = data.GetStruct<SKColor>("Foreground");
+            layer.border = data.GetStruct<SKColor>("Border");
+        }, (layer, data, ctx) => {
+            ctx.SerialiseBaseType(data);
+            data.SetString("Text", layer.text!);
+            data.SetDouble("FontSize", layer.fontSize);
+            data.SetString("FontFamily", layer.fontFamily!);
+            data.SetDouble("BorderThickness", layer.borderThickness);
+            data.SetFloat("SkewX", layer.skewX);
+            data.SetBool("IsAntiAliased", layer.isAntiAliased);
+            data.SetDouble("LineHeightMultiplier", layer.lineHeightMultiplier);
+            data.SetStruct("ClipProps", layer.clipProps);
+            data.SetStruct("Foreground", layer.foreground);
+            data.SetStruct("Border", layer.border);
+        });
+    }
+
     protected override void LoadDataIntoClone(BaseLayerTreeObject clone) {
         base.LoadDataIntoClone(clone);
         TextLayer layer = (TextLayer) clone;
         layer.text = this.text;
         layer.clipProps = this.clipProps;
-    }
-
-    static TextLayer() {
-        SetParameterAffectsRender(TextParameter);
-        DataParameter.AddMultipleHandlers((_, owner) => ((TextLayer) owner).InvalidateFontData(), FontSizeParameter, FontFamilyParameter, BorderThicknessParameter, SkewXParameter, IsAntiAliasedParameter, LineHeightMultiplierParameter);
-        DataParameter.AddMultipleHandlers((_, owner) => ((TextLayer) owner).DisposeText(), TextParameter);
+        layer.fontSize = this.fontSize;
+        layer.fontFamily = this.fontFamily;
+        layer.borderThickness = this.borderThickness;
+        layer.skewX = this.skewX;
+        layer.isAntiAliased = this.isAntiAliased;
+        layer.lineHeightMultiplier = this.lineHeightMultiplier;
+        layer.foreground = this.foreground;
+        layer.border = this.border;
     }
 
     public void DisposeText() {

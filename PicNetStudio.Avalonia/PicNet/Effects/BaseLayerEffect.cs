@@ -17,12 +17,13 @@
 // along with PicNetStudio. If not, see <https://www.gnu.org/licenses/>.
 // 
 
+using System;
 using System.Diagnostics;
 using PicNetStudio.Avalonia.DataTransfer;
 using PicNetStudio.Avalonia.PicNet.Layers;
+using PicNetStudio.Avalonia.RBC;
 
 namespace PicNetStudio.Avalonia.PicNet.Effects;
-
 
 public delegate void EffectOwnerChangedEventHandler(BaseLayerEffect sender, BaseLayerTreeObject? oldLayer, BaseLayerTreeObject? newLayer);
 
@@ -40,7 +41,7 @@ public abstract class BaseLayerEffect : ITransferableData {
     public BaseLayerTreeObject? Layer { get; private set; }
 
     public TransferableData TransferableData { get; }
-    
+
     public string FactoryId => EffectFactory.Instance.GetId(this.GetType());
 
     /// <summary>
@@ -49,9 +50,33 @@ public abstract class BaseLayerEffect : ITransferableData {
     /// after this event is fired (see <see cref="CanvasChanged"/>)
     /// </summary>
     public event EffectOwnerChangedEventHandler? LayerChanged;
-    
+
+    protected virtual bool AllowMultipleInstancesPerLayer => true;
+
     protected BaseLayerEffect() {
         this.TransferableData = new TransferableData(this);
+    }
+
+    public static void WriteSerialisedWithIdList(BaseLayerTreeObject owner, RBEList list) {
+        foreach (BaseLayerEffect effect in owner.Effects) {
+            if (!(effect.FactoryId is string id))
+                throw new Exception("Unknown clip type: " + effect.GetType());
+            RBEDictionary dictionary = list.AddDictionary();
+            dictionary.SetString(nameof(FactoryId), id);
+            effect.WriteToRBE(dictionary.CreateDictionary("Data"));
+        }
+    }
+
+    public static void ReadSerialisedWithIdList(BaseLayerTreeObject owner, RBEList list) {
+        foreach (RBEDictionary dictionary in list.Cast<RBEDictionary>()) {
+            string? factoryId = dictionary.GetString(nameof(FactoryId));
+            if (factoryId == null)
+                throw new Exception("Invalid factory ID");
+            
+            BaseLayerEffect effect = EffectFactory.Instance.NewInstance(factoryId);
+            effect.ReadFromRBE(dictionary.GetDictionary("Data"));
+            owner.AddEffect(effect);
+        }
     }
 
     /// <summary>
@@ -62,7 +87,15 @@ public abstract class BaseLayerEffect : ITransferableData {
     protected void OnLayerChanged(BaseLayerTreeObject? oldLayer, BaseLayerTreeObject? newLayer) {
         
     }
-    
+
+    public virtual void WriteToRBE(RBEDictionary data) {
+        
+    }
+
+    public virtual void ReadFromRBE(RBEDictionary data) {
+        
+    }
+
     internal static void InternalOnAddedToLayer(BaseLayerEffect effect, BaseLayerTreeObject newLayer) {
         Debug.Assert(effect.Layer == null, "Did not expect layer to be in a composition layer when adding it to another");
 

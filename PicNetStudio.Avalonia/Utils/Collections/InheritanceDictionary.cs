@@ -19,6 +19,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace PicNetStudio.Avalonia.Utils.Collections;
 
@@ -33,9 +34,9 @@ public class InheritanceDictionary<T> {
 
     public bool IsEmpty => this.totalEntries <= 1;
 
-    public T this[Type key] {
+    public T? this[Type key] {
         get => this.GetEffectiveValue(key);
-        set => this.SetValue(key, value);
+        set => this.SetValue(key, value!);
     }
 
     public InheritanceDictionary() : this(int.MinValue) {
@@ -47,12 +48,12 @@ public class InheritanceDictionary<T> {
         this.totalEntries = 1;
     }
 
-    private bool TryGetEntrySlow(Type key, out TypeEntry entry) {
+    private bool TryGetEntrySlow(Type key, [NotNullWhen(true)] out TypeEntry? entry) {
         if (this.items.TryGetValue(key, out entry)) {
             return true;
         }
 
-        for (Type type = key.BaseType; type != null; type = type.BaseType) {
+        for (Type? type = key.BaseType; type != null; type = type.BaseType) {
             if (this.items.TryGetValue(type, out entry)) {
                 return true;
             }
@@ -62,7 +63,7 @@ public class InheritanceDictionary<T> {
     }
 
     private TypeEntry GetOrCreateEntryInternal(Type key) {
-        if (this.items.TryGetValue(key, out TypeEntry entry)) {
+        if (this.items.TryGetValue(key, out TypeEntry? entry)) {
             return entry;
         }
 
@@ -71,7 +72,7 @@ public class InheritanceDictionary<T> {
         }
 
         List<Type> types = new List<Type> { key };
-        for (Type type = key.BaseType; type != null; type = type.BaseType) {
+        for (Type? type = key.BaseType; type != null; type = type.BaseType) {
             if (this.items.TryGetValue(type, out entry)) {
                 return this.BakeTypes(entry, types);
             }
@@ -94,7 +95,7 @@ public class InheritanceDictionary<T> {
     /// </summary>
     /// <param name="key">The key to get the local (or inherited) value of</param>
     /// <returns>The effective value, or default</returns>
-    public T GetEffectiveValue(Type key) {
+    public T? GetEffectiveValue(Type key) {
         return this.GetOrCreateEntryInternal(key).inheritedItem;
     }
 
@@ -103,7 +104,7 @@ public class InheritanceDictionary<T> {
     /// </summary>
     /// <param name="key">The key to get the local (or inherited) value of</param>
     /// <returns>The effective value, or default</returns>
-    public T GetLocalValue(Type key) {
+    public T? GetLocalValue(Type key) {
         return this.GetOrCreateEntryInternal(key).item;
     }
 
@@ -114,7 +115,7 @@ public class InheritanceDictionary<T> {
     /// <param name="key">The key to get the local (or inherited) value of</param>
     /// <param name="value">The value found</param>
     /// <returns>True if a value was available, false if not</returns>
-    public bool TryGetEffectiveValue(Type key, out T value) {
+    public bool TryGetEffectiveValue(Type key, [NotNullWhen(true)] out T? value) {
         TypeEntry entry = this.GetOrCreateEntryInternal(key);
         value = entry.inheritedItem;
         return entry.HasInheritedValue;
@@ -126,9 +127,9 @@ public class InheritanceDictionary<T> {
     /// <param name="key"></param>
     /// <param name="value"></param>
     /// <returns></returns>
-    public bool TryGetLocalValue(Type key, out T value) {
-        if (this.items.TryGetValue(key, out TypeEntry entry) && entry.HasLocalValue) {
-            value = entry.item;
+    public bool TryGetLocalValue(Type key, [NotNullWhen(true)] out T? value) {
+        if (this.items.TryGetValue(key, out TypeEntry? entry) && entry.HasLocalValue) {
+            value = entry.item!;
             return true;
         }
 
@@ -150,7 +151,7 @@ public class InheritanceDictionary<T> {
     /// </summary>
     /// <param name="key"></param>
     /// <returns></returns>
-    public ITypeEntry<T> GetEntrySlowlyOrNull(Type key) => this.TryGetEntrySlow(key, out TypeEntry entry) ? entry : null;
+    public ITypeEntry<T>? GetEntrySlowlyOrNull(Type key) => this.TryGetEntrySlow(key, out TypeEntry? entry) ? entry : null;
 
     /// <summary>
     /// Explicitly sets (or replaces) the local value of the given key, and updates any
@@ -159,7 +160,7 @@ public class InheritanceDictionary<T> {
     /// <param name="key">The type to set the value for</param>
     /// <param name="value">The value to set</param>
     /// <returns>The previous local or inherited value</returns>
-    public T SetValue(Type key, T value) {
+    public T? SetValue(Type key, T value) {
         return this.GetOrCreateEntryInternal(key).SetItemAndUpdateInherited(value);
     }
 
@@ -169,9 +170,9 @@ public class InheritanceDictionary<T> {
     /// </summary>
     /// <param name="entry"></param>
     /// <param name="value"></param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentException"></exception>
-    public T SetValue(ITypeEntry<T> entry, T value) {
+    /// <returns>The previous local or inherited value</returns>
+    /// <exception cref="ArgumentException">Invalid entry; does not belong to us</exception>
+    public T? SetValue(ITypeEntry<T> entry, T value) {
         if (!(entry is TypeEntry te) || te.Owner != this)
             throw new ArgumentException("Invalid entry");
         return te.SetItemAndUpdateInherited(value);
@@ -184,7 +185,7 @@ public class InheritanceDictionary<T> {
     /// <returns></returns>
     /// <exception cref="NotImplementedException"></exception>
     public bool HasLocalValue(Type type) {
-        return this.items.TryGetValue(type, out TypeEntry entry) && entry.HasLocalValue;
+        return this.items.TryGetValue(type, out TypeEntry? entry) && entry.HasLocalValue;
     }
 
     /// <summary>
@@ -204,7 +205,7 @@ public class InheritanceDictionary<T> {
     /// </summary>
     /// <param name="key">The key to clear/remove</param>
     public void Clear(Type key) {
-        if (this.items.TryGetValue(key, out TypeEntry entry)) {
+        if (this.items.TryGetValue(key, out TypeEntry? entry)) {
             entry.OnClear();
             this.version++;
         }
@@ -240,16 +241,12 @@ public class InheritanceDictionary<T> {
         /// <summary>
         /// Gets the current entry
         /// </summary>
-        public ITypeEntry<T> Current => this.currentEntry;
-
-        public T CurrentValue => this.currentEntry.item;
-
-        // object IEnumerator.Current => this.Current;
+        public ITypeEntry<T> Current => this.currentEntry ?? throw new InvalidOperationException("Enumerator not started or has finished");
 
         private readonly InheritanceDictionary<T> dictionary;
         private readonly Type startingKey;
         private readonly bool canMutate;
-        private TypeEntry currentEntry;
+        private TypeEntry? currentEntry;
         private int state;
         private int version;
         private int depth;
@@ -284,7 +281,7 @@ public class InheritanceDictionary<T> {
                 case 0: return false;
                 case 1: {
                     // slower at startup until all types are baked, making for fast reads
-                    TypeEntry entry;
+                    TypeEntry? entry;
                     if (this.canMutate) {
                         entry = this.dictionary.GetOrCreateEntryInternal(this.startingKey);
                     }
@@ -315,13 +312,13 @@ public class InheritanceDictionary<T> {
                         throw new InvalidOperationException("Concurrent modification of the original dictionary while enumerating");
                     }
 
-                    if ((this.currentEntry = this.currentEntry.nearestBaseTypeToExplicitValue) != null) {
+                    if ((this.currentEntry = this.currentEntry!.nearestBaseTypeToExplicitValue) != null) {
                         if (this.currentEntry.HasLocalValue) {
                             this.depth++;
                             return true;
                         }
 
-                        // lol invalid program
+                        // Technically is invalid program I suppose... major bug
                         throw new InvalidProgramException("Fatal error: nearest base type did not have an explicitly set value");
                     }
 
@@ -388,21 +385,21 @@ public class InheritanceDictionary<T> {
 
     private class TypeEntry : ITypeEntry<T> {
         public readonly Type type;
-        public T item;
-        public T inheritedItem;
+        public T? item;
+        public T? inheritedItem;
         public bool HasLocalValue, HasInheritedValue; // is item explicitly set
         public readonly List<TypeEntry> derivedList;
-        public TypeEntry baseType;
-        public TypeEntry nearestBaseTypeToExplicitValue;
+        public TypeEntry? baseType;
+        public TypeEntry? nearestBaseTypeToExplicitValue;
 
         Type ITypeEntry<T>.Type => this.type;
         bool ITypeEntry<T>.HasLocalValue => this.HasLocalValue;
         bool ITypeEntry<T>.HasInheritedValue => this.HasInheritedValue;
-        T ITypeEntry<T>.LocalValue => this.HasLocalValue ? this.item : throw new InvalidOperationException("No local value set");
-        T ITypeEntry<T>.EffectiveValue => this.HasInheritedValue ? this.inheritedItem : throw new InvalidOperationException("No inherited value set");
+        T ITypeEntry<T>.LocalValue => this.HasLocalValue ? this.item! : throw new InvalidOperationException("No local value set");
+        T ITypeEntry<T>.EffectiveValue => this.HasInheritedValue ? this.inheritedItem! : throw new InvalidOperationException("No inherited value set");
         IReadOnlyList<ITypeEntry<T>> ITypeEntry<T>.DerivedTypes => this.derivedList;
-        ITypeEntry<T> ITypeEntry<T>.BaseType => this.baseType;
-        ITypeEntry<T> ITypeEntry<T>.NearestBaseTypeWithLocalValue => this.nearestBaseTypeToExplicitValue;
+        ITypeEntry<T>? ITypeEntry<T>.BaseType => this.baseType;
+        ITypeEntry<T>? ITypeEntry<T>.NearestBaseTypeWithLocalValue => this.nearestBaseTypeToExplicitValue;
         public readonly InheritanceDictionary<T> Owner;
 
         public TypeEntry(InheritanceDictionary<T> owner, Type type) {
@@ -426,7 +423,7 @@ public class InheritanceDictionary<T> {
             this.baseType = superType;
             if (superType.HasInheritedValue)
                 this.inheritedItem = superType.inheritedItem;
-            for (TypeEntry super = superType; super != null; super = super.baseType) {
+            for (TypeEntry? super = superType; super != null; super = super.baseType) {
                 if (super.HasLocalValue) {
                     this.nearestBaseTypeToExplicitValue = super;
                 }
@@ -441,8 +438,8 @@ public class InheritanceDictionary<T> {
             }
         }
 
-        public T SetItemAndUpdateInherited(T value) {
-            T prev = this.HasInheritedValue ? this.inheritedItem : default;
+        public T? SetItemAndUpdateInherited(T value) {
+            T? prev = this.HasInheritedValue ? this.inheritedItem : default;
             this.item = value;
             this.HasLocalValue = true;
             this.SetInheritedValue(this, ref value);

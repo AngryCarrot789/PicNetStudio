@@ -17,7 +17,10 @@
 // along with PicNetStudio. If not, see <https://www.gnu.org/licenses/>.
 // 
 
+using System;
+using System.IO;
 using PicNetStudio.Avalonia.DataTransfer;
+using PicNetStudio.Avalonia.RBC;
 using PicNetStudio.Avalonia.Utils.Accessing;
 
 namespace PicNetStudio.Avalonia.PicNet;
@@ -56,6 +59,60 @@ public class Document : ITransferableData {
         this.Canvas = new Canvas(this);
     }
 
+    public void SaveTo(string path, bool updateFilePath) {
+        if (string.IsNullOrWhiteSpace(path))
+            throw new InvalidOperationException("Invalid file path");
+
+        if (updateFilePath)
+            this.FilePath = path;
+
+        RBEDictionary dictionary = new RBEDictionary();
+        this.WriteProjectData(dictionary);
+
+        try {
+            RBEUtils.WriteToFilePacked(dictionary, path);
+        }
+        catch (Exception e) {
+            throw new IOException("Failed to write RBE data to file", e);
+        }
+    }
+
+    public void ReadFrom(string path, bool updateFilePath) {
+        if (string.IsNullOrWhiteSpace(path))
+            throw new InvalidOperationException("Invalid file path");
+
+        if (updateFilePath)
+            this.FilePath = path;
+
+        RBEDictionary dictionary;
+        try {
+            dictionary = (RBEDictionary) RBEUtils.ReadFromFilePacked(path);
+        }
+        catch (Exception e) {
+            throw new IOException("Failed to read RBE data from file", e);
+        }
+        
+        this.ReadProjectData(dictionary);
+    }
+
+    private void WriteProjectData(RBEDictionary data) {
+        try {
+            this.Canvas.WriteToRBE(data.CreateDictionary("Canvas"));
+        }
+        catch (Exception e) {
+            throw new Exception("Failed to serialise project data", e);
+        }
+    }
+    
+    private void ReadProjectData(RBEDictionary data) {
+        try {
+            this.Canvas.ReadFromRBE(data.GetDictionary("Canvas"));
+        }
+        catch (Exception e) {
+            throw new Exception("Failed to deserialise project data", e);
+        }
+    }
+    
     internal static void InternalSetEditor(Document document, Editor? editor) {
         Editor? oldEditor = document.Editor;
         if (ReferenceEquals(oldEditor, editor))

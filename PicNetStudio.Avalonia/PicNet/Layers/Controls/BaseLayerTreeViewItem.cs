@@ -64,11 +64,21 @@ public abstract class BaseLayerTreeViewItem : TreeViewItem, ILayerNodeItem {
     private bool isProcessingAsyncDrop;
     private bool isEditingNameState;
     private string? nameBeforeEditBegin;
+    private bool wasSelectedOnPress;
 
     private TextBlock? PART_HeaderTextBlock;
     private TextBox? PART_HeaderTextBox;
     private readonly ContextData contextData;
-    private int dragBtnState;
+
+    private enum DragState {
+        None = 0,       // No drag drop has been started yet
+        Standby = 1,    // User left-clicked, so wait for enough move mvoement
+        Active = 2,     // User moved their mouse enough. DragDrop is running
+        Completed = 3   // Layer dropped, this is used to ensure we don't restart
+                        // when the mouse moves again until they release the left mouse
+    }
+    
+    private DragState dragBtnState;
 
     BaseLayerTreeObject? ILayerNodeItem.Layer => this.LayerObject;
 
@@ -107,6 +117,9 @@ public abstract class BaseLayerTreeViewItem : TreeViewItem, ILayerNodeItem {
         DragDrop.DragOverEvent.AddClassHandler<BaseLayerTreeViewItem>((o, e) => o.OnDragOver(e));
         DragDrop.DragLeaveEvent.AddClassHandler<BaseLayerTreeViewItem>((o, e) => o.OnDragLeave(e));
         DragDrop.DropEvent.AddClassHandler<BaseLayerTreeViewItem>((o, e) => o.OnDrop(e));
+        IsSelectedProperty.Changed.AddClassHandler<BaseLayerTreeViewItem, bool>((o, e) => {
+
+        });
     }
 
     private void UpdateHeaderEditorControls() {
@@ -268,7 +281,7 @@ public abstract class BaseLayerTreeViewItem : TreeViewItem, ILayerNodeItem {
     #region Drag Drop
 
     public static bool CanBeginDragDrop(KeyModifiers modifiers) {
-        return (modifiers & (KeyModifiers.Control | KeyModifiers.Shift)) == 0;
+        return (modifiers & (KeyModifiers.Shift)) == 0;
     }
 
     protected override void OnPointerPressed(PointerPressedEventArgs e) {
@@ -278,40 +291,75 @@ public abstract class BaseLayerTreeViewItem : TreeViewItem, ILayerNodeItem {
         }
 
         PointerPoint point = e.GetCurrentPoint(this);
-        if (point.Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonPressed && (e.KeyModifiers & KeyModifiers.Control) == 0) {
+        if (point.Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonPressed) {
+            bool isToggle = (e.KeyModifiers & KeyModifiers.Control) != 0;
             if ((e.ClickCount % 2) == 0) {
-                this.SetCurrentValue(IsExpandedProperty, !this.IsExpanded);
-                e.Handled = true;
+                if (!isToggle) {
+                    this.SetCurrentValue(IsExpandedProperty, !this.IsExpanded);
+                    e.Handled = true;
+                }
             }
             else if (CanBeginDragDrop(e.KeyModifiers)) {
                 if ((this.IsFocused || this.Focus()) && !this.isDragDropping) {
-                    this.dragBtnState = 1;
+                    this.dragBtnState = DragState.Standby;
                     e.Pointer.Capture(this);
                     this.originMousePoint = point.Position;
                     this.isDragActive = true;
-                    if (this.LayerTree != null && this.LayerTree.SelectedItems.Count < 2) {
-                        this.LayerTree?.SetSelection(this);
+                    if (this.LayerTree != null) {
+                        this.wasSelectedOnPress = this.IsSelected;
+                        if (isToggle) {
+                            if (this.wasSelectedOnPress) {
+                                // do nothing; toggle selection in mouse release
+                            }
+                            else {
+                                this.SetCurrentValue(IsSelectedProperty, true);
+                            }
+                        }
+                        else {
+                            this.LayerTree?.SetSelection(this);
+                        }
                     }
                 }
 
                 // handle to stop tree view from selecting stuff
                 e.Handled = true;
             }
+
         }
     }
 
     protected override void OnPointerReleased(PointerReleasedEventArgs e) {
         base.OnPointerReleased(e);
         PointerPoint point = e.GetCurrentPoint(this);
-        if (this.isDragActive && point.Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonReleased) {
-            this.dragBtnState = 0;
-            this.isDragActive = false;
-            if (ReferenceEquals(e.Pointer.Captured, this)) {
-                e.Pointer.Capture(null);
-            }
+        if (point.Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonReleased) {
+            if (this.isDragActive) {
+                DragState lastDragState = this.dragBtnState;
+                this.dragBtnState = DragState.None;
+                this.isDragActive = false;
+                if (ReferenceEquals(e.Pointer.Captured, this)) {
+                    e.Pointer.Capture(null);
+                }
 
-            if (this.LayerTree != null && this.LayerTree.SelectedItems.Count > 1) {
-                this.LayerTree?.SetSelection(this);
+                if (this.LayerTree != null) {
+                    bool isToggle = (e.KeyModifiers & KeyModifiers.Control) != 0;
+                    int selCount = this.LayerTree!.SelectedItems.Count;
+                    if (selCount == 0) {
+                        // very rare scenario, shouldn't really occur
+                        this.LayerTree?.SetSelection(this);
+                    }
+                    else if (isToggle && this.wasSelectedOnPress && lastDragState != DragState.Completed) {
+                        // Check we want to toggle, check we were selected on click and we probably are still selected,
+                        // and also check that the last drag wasn't completed/cancelled just because it feels more normal that way
+                        this.SetCurrentValue(IsSelectedProperty, false);
+                    }
+                }
+                // if (this.dragBtnState != DragState.Completed && (e.KeyModifiers & KeyModifiers.Control) != 0) {
+                //     this.SetCurrentValue(IsSelectedProperty, !this.IsSelected);
+                //     e.Handled = true;
+                // }
+                // else if (this.LayerTree != null && this.LayerTree.SelectedItems.Count > 1) {
+                //     this.LayerTree?.SetSelection(this);
+                // }
             }
         }
     }
@@ -329,7 +377,7 @@ public abstract class BaseLayerTreeViewItem : TreeViewItem, ILayerNodeItem {
             return;
         }
 
-        if (this.dragBtnState != 1) {
+        if (this.dragBtnState != DragState.Standby) {
             return;
         }
 
@@ -357,14 +405,14 @@ public abstract class BaseLayerTreeViewItem : TreeViewItem, ILayerNodeItem {
                 DataObject obj = new DataObject();
                 obj.Set(LayerDropRegistry.DropTypeText, list);
 
-                this.dragBtnState = 2;
+                this.dragBtnState = DragState.Active;
                 DragDrop.DoDragDrop(e, obj, DragDropEffects.Move | DragDropEffects.Copy);
             }
             catch (Exception ex) {
                 Debug.WriteLine("Exception while executing resource tree item drag drop: " + ex.GetToString());
             }
             finally {
-                this.dragBtnState = 3;
+                this.dragBtnState = DragState.Completed;
                 this.isDragDropping = false;
             }
         }
@@ -404,7 +452,7 @@ public abstract class BaseLayerTreeViewItem : TreeViewItem, ILayerNodeItem {
                 e.DragEffects = DragDropEffects.None;
                 return;
             }
-            
+
             this.GetDropBorder(!(canDragOver ?? false), out double borderTop, out double borderBottom);
             Point point = e.GetPosition(this);
             if (DoubleUtils.LessThan(point.Y, borderTop)) {
@@ -466,7 +514,7 @@ public abstract class BaseLayerTreeViewItem : TreeViewItem, ILayerNodeItem {
             this.isProcessingAsyncDrop = true;
             Point point = e.GetPosition(this);
             double borderTop, borderBottom;
-            if (!GetDropResourceListForEvent(e, out List<BaseLayerTreeObject>? itemList, out EnumDropType dropType)) {
+            if (!GetDropResourceListForEvent(e, out List<BaseLayerTreeObject>? srcItemList, out EnumDropType dropType)) {
                 this.GetDropBorder(true, out borderTop, out borderBottom);
                 bool thing = DoubleUtils.LessThan(point.Y, borderTop);
                 ContextData ctx = new ContextData().Set(LayerDropRegistry.IsAboveTarget, thing);
@@ -483,7 +531,8 @@ public abstract class BaseLayerTreeViewItem : TreeViewItem, ILayerNodeItem {
             if (!canDragOver.HasValue) {
                 return;
             }
-            
+
+            List<BaseLayerTreeObject> newList;
             this.GetDropBorder(!(canDragOver ?? false), out borderTop, out borderBottom);
             if (DoubleUtils.LessThan(point.Y, borderTop)) {
                 isDropAbove = true;
@@ -496,8 +545,8 @@ public abstract class BaseLayerTreeViewItem : TreeViewItem, ILayerNodeItem {
                     return;
                 }
 
-                List<BaseLayerTreeObject> newList = new List<BaseLayerTreeObject>();
-                foreach (BaseLayerTreeObject item in itemList) {
+                newList = new List<BaseLayerTreeObject>();
+                foreach (BaseLayerTreeObject item in srcItemList) {
                     if (item is CompositionLayer composition && composition.IsParentInHierarchy(folder)) {
                         continue;
                     }
@@ -526,7 +575,7 @@ public abstract class BaseLayerTreeViewItem : TreeViewItem, ILayerNodeItem {
                 return;
             }
             else {
-                await LayerDropRegistry.DropRegistry.OnDropped(layer, itemList, dropType);
+                await LayerDropRegistry.DropRegistry.OnDropped(layer, srcItemList, dropType);
                 return;
             }
 
@@ -536,24 +585,23 @@ public abstract class BaseLayerTreeViewItem : TreeViewItem, ILayerNodeItem {
 
             // I think this works?
             CompositionLayer? target = layer.ParentLayer;
-            if (target == null || (!target.IsRootLayer && itemList.Any(x => x is CompositionLayer cl && cl.ParentLayer != null && cl.ParentLayer.IsParentInHierarchy(cl)))) {
+            if (target == null || (!target.IsRootLayer && srcItemList.Any(x => x is CompositionLayer cl && cl.ParentLayer != null && cl.ParentLayer.IsParentInHierarchy(cl)))) {
                 return;
             }
 
             int index;
             bool isLayerInList = false;
-            List<BaseLayerTreeObject> theList;
             switch (dropType) {
                 case EnumDropType.Move:
-                    isLayerInList = itemList.Remove(layer);
-                    BaseLayerTreeObject.RemoveListFromTree(itemList);
+                    isLayerInList = srcItemList.Remove(layer);
+                    BaseLayerTreeObject.RemoveListFromTree(srcItemList);
                     index = layer.ParentLayer.IndexOf(layer);
-                    theList = itemList;
+                    newList = srcItemList;
                     break;
                 case EnumDropType.Copy: {
                     index = layer.ParentLayer.IndexOf(layer);
                     List<BaseLayerTreeObject> cloneList = new List<BaseLayerTreeObject>();
-                    foreach (BaseLayerTreeObject layerInList in itemList) {
+                    foreach (BaseLayerTreeObject layerInList in srcItemList) {
                         BaseLayerTreeObject clone = layerInList.Clone();
                         if (!TextIncrement.GetIncrementableString((s => true), clone.Name, out string name))
                             name = clone.Name;
@@ -561,18 +609,18 @@ public abstract class BaseLayerTreeViewItem : TreeViewItem, ILayerNodeItem {
                         cloneList.Add(clone);
                     }
 
-                    theList = cloneList;
+                    newList = cloneList;
                     break;
                 }
                 default: return;
             }
 
-            layer.ParentLayer.InsertLayers(isDropAbove ? index : (index + 1), itemList);
+            layer.ParentLayer.InsertLayers(isDropAbove ? index : (index + 1), newList);
             if (dropType == EnumDropType.Move && isLayerInList) {
-                itemList.Add(layer);
+                newList.Add(layer);
             }
 
-            this.LayerTree!.SetSelection(theList);
+            this.LayerTree!.SetSelection(newList);
         }
         finally {
             this.IsDroppableTargetOver = false;

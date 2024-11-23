@@ -58,11 +58,6 @@ public abstract class BaseSimpleShapeLayer : BaseShapeLayer {
     private float width;
     private float height;
 
-    public BaseSimpleShapeLayer() {
-        this.width = WidthParameter.GetDefaultValue(this);
-        this.height = HeightParameter.GetDefaultValue(this);
-    }
-
     public float Width {
         get => this.width;
         set => DataParameter.SetValueHelper(this, WidthParameter, ref this.width, value);
@@ -71,7 +66,31 @@ public abstract class BaseSimpleShapeLayer : BaseShapeLayer {
     public float Height {
         get => this.height;
         set => DataParameter.SetValueHelper(this, HeightParameter, ref this.height, value);
-    }    
+    }  
+    
+    public BaseSimpleShapeLayer() {
+        this.width = WidthParameter.GetDefaultValue(this);
+        this.height = HeightParameter.GetDefaultValue(this);
+    }
+
+    static BaseSimpleShapeLayer() {
+        SerialisationRegistry.Register<BaseSimpleShapeLayer>(0, (layer, data, ctx) => {
+            ctx.DeserialiseBaseType(data);
+            layer.width = data.GetFloat("Width");
+            layer.height = data.GetFloat("Height");
+        }, (layer, data, ctx) => {
+            ctx.SerialiseBaseType(data);
+            data.SetFloat("Width", layer.width);
+            data.SetFloat("Height", layer.height);
+        });
+    }
+
+    protected override void LoadDataIntoClone(BaseLayerTreeObject clone) {
+        base.LoadDataIntoClone(clone);
+        BaseSimpleShapeLayer layer = (BaseSimpleShapeLayer) clone;
+        layer.width = this.width;
+        layer.height = this.height;
+    }
 }
 
 public class RectangleShapeLayer : BaseSimpleShapeLayer {
