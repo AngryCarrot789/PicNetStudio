@@ -24,7 +24,9 @@ using Avalonia;
 namespace PicNetStudio.Avalonia.Utils;
 
 public static class DoubleUtils {
-    internal const double DBL_EPSILON = 2.22044604925031E-16;
+    // https://en.wikipedia.org/wiki/Machine_epsilon
+    internal const double DBL_EPSILON = 2.22E-16;
+    internal const float FLT_EPSILON = 1.19E-7F;
 
     public static bool AreClose(double a, double b) {
         if (a == b)

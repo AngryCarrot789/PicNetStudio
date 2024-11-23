@@ -19,6 +19,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net;
 using Avalonia.Input;
 using PicNetStudio.Avalonia.PicNet.Layers.Core;
 using PicNetStudio.Avalonia.Utils;
@@ -42,7 +43,7 @@ public class FloodFillTool : BaseDrawingTool {
 
         if (document.Canvas.ActiveLayerTreeObject is RasterLayer bitmapLayer) {
             SKColor replaceColour = cursor == EnumCursorType.Primary ? document.Editor!.PrimaryColour : document.Editor!.SecondaryColour;
-            DrawPixels(bitmapLayer.Bitmap, (int) Math.Floor(relPos.X), (int) Math.Floor(relPos.Y), (uint) replaceColour, document.Canvas.SelectionRegion);
+            DrawPixels(bitmapLayer, (int) Math.Floor(relPos.X), (int) Math.Floor(relPos.Y), (uint) replaceColour, document.Canvas.SelectionRegion);
 
             bitmapLayer.InvalidateVisual();
             return true;
@@ -51,41 +52,42 @@ public class FloodFillTool : BaseDrawingTool {
         return false;
     }
 
-    public static unsafe void DrawPixels(PNBitmap bitmap, int fillX, int fillY, uint bgraReplace, BaseSelection? selection) {
+    public static unsafe void DrawPixels(RasterLayer layer, int fillX, int fillY, uint bgraReplace, BaseSelection? selection) {
+        PNBitmap bitmap = layer.Bitmap;
         if (bitmap.Canvas == null)
             return;
 
         // ExtFloodFill is better maybe???
         RectangleSelection? rectangle = selection as RectangleSelection;
+        int saveCount = bitmap.Canvas.Save();
+        
+        bitmap.Canvas.SetMatrix(bitmap.Canvas.TotalMatrix.PostConcat(layer.AbsoluteInverseTransformationMatrix));
         int nBmpW = bitmap.Bitmap!.Width;
         int nBmpH = bitmap.Bitmap!.Height;
         int minX = 0, minY = 0, maxX = nBmpW, maxY = nBmpH;
+        SKPath? selPath = null;
         if (rectangle != null) {
-            minX = rectangle.Left;
-            minY = rectangle.Top;
-            maxX = rectangle.Right;
-            maxY = rectangle.Bottom;
-            // TODO: need to take into account transformation matrices
+            selPath = new SKPath();
+            selPath.AddRect(new SKRect(rectangle.Left, rectangle.Top, rectangle.Right - 0.00001F, rectangle.Bottom - 0.00001F));
+            selPath.Transform(layer.AbsoluteInverseTransformationMatrix);
         }
-        
+
         if (fillX < minX || fillY < minY || fillX >= maxX || fillY >= maxY)
-            return;
+            goto End;
         
         uint* colourData = (uint*) bitmap.Bitmap!.GetPixels();
         uint bgraTarget = *(colourData + (fillY * nBmpW + fillX));
         if (bgraTarget == bgraReplace)
-            return;
+            goto End;
 
-        // Could maybe optimise this by making ScanNeighbour prioritise
-        // certain directions, then maybe cache parts of the pointer offsets? eh
-        // (specifically the multiplication p.Y * width)
-        // Not sure if a ternary checking the last p.Y is faster than an integer multiplication though
-        
         Queue<SKPointI> queue = new Queue<SKPointI>(2048);
         queue.Enqueue(new SKPointI(fillX, fillY));
         while (queue.Count > 0) {
             SKPointI p = queue.Dequeue();
             if (p.X < minX || p.X >= maxX || p.Y < minY || p.Y >= maxY)
+                continue;
+            
+            if (selPath != null && !selPath.Contains(p.X, p.Y))
                 continue;
             
             uint* pColour = colourData + (p.Y * nBmpW + p.X);
@@ -94,6 +96,10 @@ public class FloodFillTool : BaseDrawingTool {
                 ScanNeighbours(p.X, p.Y, maxX, maxY, queue);
             }
         }
+        
+        End:
+        bitmap.Canvas.RestoreToCount(saveCount);
+        selPath?.Dispose();
     }
 
     // Probably need to replace 0s and -1s with minX/minY. But it still works anyway even with selection so :-)
