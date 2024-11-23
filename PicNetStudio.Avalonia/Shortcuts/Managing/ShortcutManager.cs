@@ -19,10 +19,10 @@
 
 using System;
 using System.Collections.Generic;
-using PicNetStudio.Avalonia.CommandSystem;
 using PicNetStudio.Avalonia.Shortcuts.Events;
 using PicNetStudio.Avalonia.Shortcuts.Inputs;
 using PicNetStudio.Avalonia.Shortcuts.Usage;
+using PicNetStudio.CommandSystem;
 
 namespace PicNetStudio.Avalonia.Shortcuts.Managing;
 

@@ -19,7 +19,7 @@
 
 using System;
 using Avalonia;
-using PicNetStudio.Avalonia.Utils.Accessing;
+using PicNetStudio.Utils.Accessing;
 
 namespace PicNetStudio.Avalonia.Bindings;
 

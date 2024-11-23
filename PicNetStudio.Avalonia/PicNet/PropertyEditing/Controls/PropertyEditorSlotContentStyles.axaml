@@ -6,7 +6,7 @@
                     xmlns:dt="clr-namespace:PicNetStudio.Avalonia.PicNet.PropertyEditing.Controls.DataTransfer"
                     xmlns:d="clr-namespace:PicNetStudio.Avalonia.PicNet.Controls.Dragger"
                     xmlns:ac="clr-namespace:PicNetStudio.Avalonia.PicNet.PropertyEditing.Controls.Core"
-                    xmlns:bm="clr-namespace:PicNetStudio.Avalonia.PicNet.Layers.CustomParameters.BlendMode">
+                    xmlns:bm="clr-namespace:PicNetStudio.Avalonia.PicNet.CustomParameters">
     <ControlTheme x:Key="NonToggleableCheckBox" TargetType="{x:Type CheckBox}">
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="BorderBrush" Value="Transparent"/>

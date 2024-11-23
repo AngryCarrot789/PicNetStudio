@@ -23,6 +23,8 @@ using Avalonia.Input;
 using PicNetStudio.Avalonia.Shortcuts.Inputs;
 using PicNetStudio.Avalonia.Shortcuts.Keymapping;
 using PicNetStudio.Avalonia.Utils;
+using PicNetStudio.Utils;
+using Key = Avalonia.Input.Key;
 
 namespace PicNetStudio.Avalonia.Shortcuts.Avalonia;
 

@@ -21,6 +21,7 @@ using System;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using PicNetStudio.PicNet.PropertyEditing;
 
 namespace PicNetStudio.Avalonia.PicNet.PropertyEditing.Controls;
 

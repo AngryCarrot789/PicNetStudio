@@ -25,7 +25,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.VisualTree;
-using PicNetStudio.Avalonia.Utils;
+using PicNetStudio.Utils;
 using SkiaSharp;
 
 namespace PicNetStudio.Avalonia.PicNet.Controls;

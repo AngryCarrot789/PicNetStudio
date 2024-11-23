@@ -20,8 +20,10 @@
 using System;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
-using PicNetStudio.Avalonia.PicNet.Tools.Settings.DataTransfer;
 using PicNetStudio.Avalonia.Utils;
+using PicNetStudio.PicNet.Tools.Settings;
+using PicNetStudio.PicNet.Tools.Settings.DataTransfer;
+using PicNetStudio.Utils;
 
 namespace PicNetStudio.Avalonia.PicNet.Tools.Settings.Controls;
 

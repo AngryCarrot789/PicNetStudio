@@ -22,7 +22,7 @@ using System.Globalization;
 using Avalonia;
 using Avalonia.Data.Converters;
 using Avalonia.Media;
-using PicNetStudio.Avalonia.Utils;
+using PicNetStudio.Utils;
 
 namespace PicNetStudio.Avalonia.Converters;
 

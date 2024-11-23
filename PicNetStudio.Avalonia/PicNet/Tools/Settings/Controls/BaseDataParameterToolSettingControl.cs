@@ -20,11 +20,14 @@
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using PicNetStudio.Avalonia.Bindings;
-using PicNetStudio.Avalonia.DataTransfer;
 using PicNetStudio.Avalonia.PicNet.Controls.Dragger;
-using PicNetStudio.Avalonia.PicNet.PropertyEditing.DataTransfer;
-using PicNetStudio.Avalonia.PicNet.Tools.Settings.DataTransfer;
 using PicNetStudio.Avalonia.Utils;
+using PicNetStudio.DataTransfer;
+using PicNetStudio.PicNet.PropertyEditing.DataTransfer;
+using PicNetStudio.PicNet.Tools;
+using PicNetStudio.PicNet.Tools.Settings;
+using PicNetStudio.PicNet.Tools.Settings.DataTransfer;
+using PicNetStudio.Utils;
 
 namespace PicNetStudio.Avalonia.PicNet.Tools.Settings.Controls;
 

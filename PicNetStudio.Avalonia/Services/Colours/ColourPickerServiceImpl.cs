@@ -18,6 +18,7 @@
 // 
 
 using System.Threading.Tasks;
+using PicNetStudio.Services.ColourPicking;
 using SkiaSharp;
 
 namespace PicNetStudio.Avalonia.Services.Colours;

@@ -20,7 +20,9 @@
 using System.Collections.Generic;
 using Avalonia;
 using Avalonia.Controls.Primitives;
-using PicNetStudio.Avalonia.PicNet.Layers;
+using PicNetStudio.Avalonia.Utils;
+using PicNetStudio.PicNet.Effects;
+using PicNetStudio.PicNet.Layers;
 
 namespace PicNetStudio.Avalonia.PicNet.Effects.Controls;
 

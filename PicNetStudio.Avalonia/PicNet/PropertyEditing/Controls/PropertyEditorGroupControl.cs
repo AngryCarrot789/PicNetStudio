@@ -24,6 +24,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using PicNetStudio.Avalonia.Bindings;
 using PicNetStudio.Avalonia.Utils;
+using PicNetStudio.PicNet.PropertyEditing;
 
 namespace PicNetStudio.Avalonia.PicNet.PropertyEditing.Controls;
 

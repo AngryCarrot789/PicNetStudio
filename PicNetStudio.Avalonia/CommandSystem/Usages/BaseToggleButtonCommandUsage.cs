@@ -20,7 +20,8 @@
 using System;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
-using PicNetStudio.Avalonia.Interactivity.Contexts;
+using PicNetStudio.Avalonia.Interactivity;
+using PicNetStudio.CommandSystem;
 
 namespace PicNetStudio.Avalonia.CommandSystem.Usages;
 

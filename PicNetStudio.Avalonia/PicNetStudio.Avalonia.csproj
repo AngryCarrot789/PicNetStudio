@@ -68,4 +68,8 @@
       <UpToDateCheckInput Remove="Services\Messages\Controls\SingleUserInputControl.axaml" />
       <UpToDateCheckInput Remove="Services\Messages\Controls\UserInputDialog.axaml" />
     </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\PicNetStudio\PicNetStudio.csproj" />
+    </ItemGroup>
 </Project>

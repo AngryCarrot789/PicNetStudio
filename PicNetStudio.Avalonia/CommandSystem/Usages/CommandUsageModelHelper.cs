@@ -17,7 +17,7 @@
 // along with PicNetStudio. If not, see <https://www.gnu.org/licenses/>.
 // 
 
-using PicNetStudio.Avalonia.Interactivity.Contexts;
+using PicNetStudio.Interactivity.Contexts;
 
 namespace PicNetStudio.Avalonia.CommandSystem.Usages;
 

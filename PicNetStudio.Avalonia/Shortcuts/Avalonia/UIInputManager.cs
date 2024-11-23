@@ -25,7 +25,7 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using PicNetStudio.Avalonia.Shortcuts.Managing;
-using PicNetStudio.Avalonia.Utils.Visuals;
+using PicNetStudio.Avalonia.Utils;
 
 namespace PicNetStudio.Avalonia.Shortcuts.Avalonia;
 

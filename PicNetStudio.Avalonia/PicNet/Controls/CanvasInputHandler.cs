@@ -20,9 +20,10 @@
 using System.Collections.Generic;
 using Avalonia;
 using Avalonia.Input;
-using PicNetStudio.Avalonia.PicNet.Layers.Core;
-using PicNetStudio.Avalonia.PicNet.Tools;
-using PicNetStudio.Avalonia.Utils;
+using PicNetStudio.PicNet;
+using PicNetStudio.PicNet.Layers.Core;
+using PicNetStudio.PicNet.Tools;
+using PicNetStudio.Utils;
 using SkiaSharp;
 
 namespace PicNetStudio.Avalonia.PicNet.Controls;
@@ -57,13 +58,13 @@ public class CanvasInputHandler {
             this.control.Focus(NavigationMethod.Pointer);
 
         if (this.control.Document is Document document && document.Editor?.ToolBar.ActiveTool is BaseCanvasTool tool) {
-            bool? result = tool.OnCharacterPress(document, e.Key, e.KeyModifiers);
+            bool? result = tool.OnCharacterPress(document, (PNKey) e.Key, (ModifierKeys) e.KeyModifiers);
             if (result.HasValue) {
                 if (result.Value) {
                     e.Handled = true;
                 }
                 else {
-                    tool.OnCharacterInput(document, e.Key, e.KeyModifiers);
+                    tool.OnCharacterInput(document, (PNKey) e.Key, (ModifierKeys) e.KeyModifiers);
                 }
             }
         }
@@ -71,7 +72,7 @@ public class CanvasInputHandler {
 
     private void OnControlKeyUp(object? sender, KeyEventArgs e) {
         if (this.control.Document is Document document && document.Editor?.ToolBar.ActiveTool is BaseCanvasTool activeTool) {
-            e.Handled = activeTool.OnCharacterRelease(document, e.Key, e.KeyModifiers);
+            e.Handled = activeTool.OnCharacterRelease(document, (PNKey) e.Key, (ModifierKeys) e.KeyModifiers);
         }
     }
 
@@ -176,13 +177,13 @@ public class CanvasInputHandler {
         EnumCursorType addedFlags = (oldButtons ^ newButtons) & newButtons;
         foreach (EnumCursorType type in GetEnumerableFlagSet(addedFlags)) {
             // Debug.WriteLine("Cursor pressed: " + type);
-            handled |= activeTool.OnCursorPressed(document, new SKPointD(relPos.X, relPos.Y), new SKPointD(absPos.X, absPos.Y), clickCount, type, modifiers);
+            handled |= activeTool.OnCursorPressed(document, new SKPointD(relPos.X, relPos.Y), new SKPointD(absPos.X, absPos.Y), clickCount, type, (ModifierKeys) modifiers);
         }
 
         EnumCursorType removedFlags = (oldButtons ^ newButtons) & oldButtons;
         foreach (EnumCursorType type in GetEnumerableFlagSet(removedFlags)) {
             // Debug.WriteLine("Cursor released: " + type);
-            handled |= activeTool.OnCursorReleased(document, new SKPointD(relPos.X, relPos.Y), new SKPointD(absPos.X, absPos.Y), type, modifiers);
+            handled |= activeTool.OnCursorReleased(document, new SKPointD(relPos.X, relPos.Y), new SKPointD(absPos.X, absPos.Y), type, (ModifierKeys) modifiers);
         }
 
         return handled;

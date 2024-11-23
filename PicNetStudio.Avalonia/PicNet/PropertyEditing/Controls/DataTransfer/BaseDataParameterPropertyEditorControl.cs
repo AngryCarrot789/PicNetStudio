@@ -21,9 +21,10 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
-using PicNetStudio.Avalonia.DataTransfer;
-using PicNetStudio.Avalonia.PicNet.PropertyEditing.DataTransfer;
 using PicNetStudio.Avalonia.Utils;
+using PicNetStudio.DataTransfer;
+using PicNetStudio.PicNet.PropertyEditing;
+using PicNetStudio.PicNet.PropertyEditing.DataTransfer;
 
 namespace PicNetStudio.Avalonia.PicNet.PropertyEditing.Controls.DataTransfer;
 

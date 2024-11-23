@@ -26,7 +26,7 @@ using PicNetStudio.Avalonia.Shortcuts.Inputs;
 using PicNetStudio.Avalonia.Shortcuts.Keymapping;
 using PicNetStudio.Avalonia.Shortcuts.Managing;
 using PicNetStudio.Avalonia.Shortcuts.Usage;
-using PicNetStudio.Avalonia.Utils;
+using PicNetStudio.Utils;
 
 namespace PicNetStudio.Avalonia.Shortcuts.Avalonia;
 

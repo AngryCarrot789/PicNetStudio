@@ -20,7 +20,8 @@
 using Avalonia.Controls;
 using Avalonia.Input;
 using PicNetStudio.Avalonia.Bindings;
-using PicNetStudio.Avalonia.DataTransfer;
+using PicNetStudio.DataTransfer;
+using PicNetStudio.Services.UserInputs;
 
 namespace PicNetStudio.Avalonia.Services.Messages.Controls;
 

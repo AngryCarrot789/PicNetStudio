@@ -20,9 +20,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using PicNetStudio.Avalonia.Interactivity.Contexts;
 using PicNetStudio.Avalonia.Shortcuts.Inputs;
 using PicNetStudio.Avalonia.Shortcuts.Usage;
+using PicNetStudio.Interactivity.Contexts;
 
 namespace PicNetStudio.Avalonia.Shortcuts.Managing;
 

@@ -19,6 +19,7 @@
 
 using Avalonia;
 using Avalonia.Controls;
+using PicNetStudio.Services.Messaging;
 
 namespace PicNetStudio.Avalonia.Services.Messages.Classic;
 

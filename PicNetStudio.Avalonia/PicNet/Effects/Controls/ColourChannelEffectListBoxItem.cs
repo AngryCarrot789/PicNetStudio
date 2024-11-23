@@ -18,7 +18,7 @@
 // 
 
 using Avalonia.Controls.Primitives;
-using PicNetStudio.Avalonia.PicNet.Layers.Core;
+using PicNetStudio.PicNet.Layers.Core;
 
 namespace PicNetStudio.Avalonia.PicNet.Effects.Controls;
 

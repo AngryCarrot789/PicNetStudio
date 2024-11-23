@@ -20,7 +20,7 @@
 using System;
 using System.Globalization;
 using Avalonia.Data.Converters;
-using PicNetStudio.Avalonia.Utils;
+using PicNetStudio.Utils;
 
 namespace PicNetStudio.Avalonia.Converters;
 

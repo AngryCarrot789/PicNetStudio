@@ -24,7 +24,7 @@ using System.Linq;
 using System.Xml;
 using PicNetStudio.Avalonia.Shortcuts.Inputs;
 using PicNetStudio.Avalonia.Shortcuts.Managing;
-using PicNetStudio.Avalonia.Utils;
+using PicNetStudio.Utils;
 
 namespace PicNetStudio.Avalonia.Shortcuts.Keymapping;
 

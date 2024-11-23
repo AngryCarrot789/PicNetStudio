@@ -19,6 +19,7 @@
 
 using System.Collections.Generic;
 using Avalonia.Input;
+using PicNetStudio.Interactivity;
 
 namespace PicNetStudio.Avalonia.Interactivity;
 

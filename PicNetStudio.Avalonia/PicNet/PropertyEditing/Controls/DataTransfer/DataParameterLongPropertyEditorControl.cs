@@ -18,8 +18,8 @@
 //
 
 using System;
-using PicNetStudio.Avalonia.DataTransfer;
-using PicNetStudio.Avalonia.PicNet.PropertyEditing.DataTransfer;
+using PicNetStudio.DataTransfer;
+using PicNetStudio.PicNet.PropertyEditing.DataTransfer;
 
 namespace PicNetStudio.Avalonia.PicNet.PropertyEditing.Controls.DataTransfer;
 

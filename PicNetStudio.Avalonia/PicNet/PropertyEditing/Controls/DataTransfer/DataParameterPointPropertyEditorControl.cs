@@ -22,10 +22,10 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using PicNetStudio.Avalonia.Bindings;
-using PicNetStudio.Avalonia.DataTransfer;
 using PicNetStudio.Avalonia.PicNet.Controls.Dragger;
-using PicNetStudio.Avalonia.PicNet.PropertyEditing.DataTransfer;
 using PicNetStudio.Avalonia.Utils;
+using PicNetStudio.DataTransfer;
+using PicNetStudio.PicNet.PropertyEditing.DataTransfer;
 using SkiaSharp;
 
 namespace PicNetStudio.Avalonia.PicNet.PropertyEditing.Controls.DataTransfer;

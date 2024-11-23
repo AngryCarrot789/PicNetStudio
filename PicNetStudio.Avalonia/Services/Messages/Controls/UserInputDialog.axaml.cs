@@ -22,9 +22,11 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
 using PicNetStudio.Avalonia.Bindings;
-using PicNetStudio.Avalonia.PicNet;
 using PicNetStudio.Avalonia.Services.Colours;
 using PicNetStudio.Avalonia.Themes.Controls;
+using PicNetStudio.Avalonia.Utils;
+using PicNetStudio.Services.ColourPicking;
+using PicNetStudio.Services.UserInputs;
 
 namespace PicNetStudio.Avalonia.Services.Messages.Controls;
 

@@ -24,6 +24,7 @@ using Avalonia.Interactivity;
 using Avalonia.Threading;
 using PicNetStudio.Avalonia.Bindings;
 using PicNetStudio.Avalonia.Themes.Controls;
+using PicNetStudio.Services.Messaging;
 
 namespace PicNetStudio.Avalonia.Services.Messages.Controls;
 

@@ -20,7 +20,7 @@
 using System;
 using System.Collections.Generic;
 using PicNetStudio.Avalonia.Shortcuts.Inputs;
-using PicNetStudio.Avalonia.Utils;
+using PicNetStudio.Utils;
 
 namespace PicNetStudio.Avalonia.Shortcuts.Managing;
 

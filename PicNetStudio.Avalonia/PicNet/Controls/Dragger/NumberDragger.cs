@@ -26,6 +26,9 @@ using Avalonia.Interactivity;
 using Avalonia.Media;
 using PicNetStudio.Avalonia.PicNet.Controls.Dragger.Expressions;
 using PicNetStudio.Avalonia.Utils;
+using PicNetStudio.PicNet.Formatting;
+using PicNetStudio.Utils;
+using Key = Avalonia.Input.Key;
 
 namespace PicNetStudio.Avalonia.PicNet.Controls.Dragger;
 

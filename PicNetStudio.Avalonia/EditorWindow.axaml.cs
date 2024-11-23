@@ -18,7 +18,6 @@
 // 
 
 using System.Collections.Generic;
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
@@ -26,22 +25,24 @@ using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using Avalonia.Threading;
 using PicNetStudio.Avalonia.Bindings;
-using PicNetStudio.Avalonia.Interactivity.Contexts;
-using PicNetStudio.Avalonia.PicNet;
-using PicNetStudio.Avalonia.PicNet.Effects;
+using PicNetStudio.Avalonia.Interactivity;
 using PicNetStudio.Avalonia.PicNet.Layers;
-using PicNetStudio.Avalonia.PicNet.Layers.Controls;
-using PicNetStudio.Avalonia.PicNet.Layers.Core;
-using PicNetStudio.Avalonia.PicNet.PropertyEditing;
-using PicNetStudio.Avalonia.PicNet.Toolbars;
-using PicNetStudio.Avalonia.PicNet.Tools;
 using PicNetStudio.Avalonia.Themes.Controls;
 using PicNetStudio.Avalonia.Utils;
+using PicNetStudio.Interactivity.Contexts;
+using PicNetStudio.PicNet;
+using PicNetStudio.PicNet.Effects;
+using PicNetStudio.PicNet.Layers;
+using PicNetStudio.PicNet.Layers.Core;
+using PicNetStudio.PicNet.PropertyEditing;
+using PicNetStudio.PicNet.Toolbars;
+using PicNetStudio.PicNet.Tools;
+using PicNetStudio.Utils;
 using SkiaSharp;
 
 namespace PicNetStudio.Avalonia;
 
-public partial class EditorWindow : WindowEx {
+public partial class EditorWindow : WindowEx, ITopLevel {
     public Editor Editor { get; private set; }
 
     private readonly ContextData contextData;
@@ -88,7 +89,7 @@ public partial class EditorWindow : WindowEx {
             this.PART_ToolSettingsContainer.SetActiveTool(tool);
 
         Document document = new Document();
-        document.Canvas.Size = new PixelSize(800, 400);
+        document.Canvas.Size = new PixSize(800, 400);
 
 
         RasterLayer MakeLayer(SKColor fill, string name, CompositionLayer? parent = null) {

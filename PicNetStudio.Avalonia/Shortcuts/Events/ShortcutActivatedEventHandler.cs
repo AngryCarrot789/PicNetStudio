@@ -17,8 +17,8 @@
 // along with PicNetStudio. If not, see <https://www.gnu.org/licenses/>.
 // 
 
-using PicNetStudio.Avalonia.Interactivity.Contexts;
 using PicNetStudio.Avalonia.Shortcuts.Managing;
+using PicNetStudio.Interactivity.Contexts;
 
 namespace PicNetStudio.Avalonia.Shortcuts.Events;
 

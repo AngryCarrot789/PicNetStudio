@@ -23,7 +23,8 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using PicNetStudio.Avalonia.Bindings;
-using PicNetStudio.Avalonia.Utils;
+using PicNetStudio.PicNet.PropertyEditing;
+using PicNetStudio.Utils;
 
 namespace PicNetStudio.Avalonia.PicNet.PropertyEditing.Controls;
 

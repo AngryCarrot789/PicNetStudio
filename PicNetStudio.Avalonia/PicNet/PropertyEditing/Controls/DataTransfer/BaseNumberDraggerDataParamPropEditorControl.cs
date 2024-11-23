@@ -24,8 +24,8 @@ using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using PicNetStudio.Avalonia.Bindings;
 using PicNetStudio.Avalonia.PicNet.Controls.Dragger;
-using PicNetStudio.Avalonia.PicNet.PropertyEditing.DataTransfer;
 using PicNetStudio.Avalonia.Utils;
+using PicNetStudio.PicNet.PropertyEditing.DataTransfer;
 
 namespace PicNetStudio.Avalonia.PicNet.PropertyEditing.Controls.DataTransfer;
 

@@ -2,9 +2,10 @@
 
 using Avalonia;
 using Avalonia.Input;
-using PicNetStudio.Avalonia.Interactivity.Contexts;
+using PicNetStudio.Avalonia.Interactivity;
 using PicNetStudio.Avalonia.Shortcuts.Inputs;
 using PicNetStudio.Avalonia.Shortcuts.Managing;
+using PicNetStudio.Interactivity.Contexts;
 
 namespace PicNetStudio.Avalonia.Shortcuts.Avalonia;
 

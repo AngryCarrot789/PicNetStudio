@@ -21,8 +21,9 @@ using System;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using PicNetStudio.Avalonia.CommandSystem;
-using PicNetStudio.Avalonia.Interactivity.Contexts;
+using PicNetStudio.Avalonia.Interactivity;
+using PicNetStudio.CommandSystem;
+using PicNetStudio.Interactivity.Contexts;
 
 namespace PicNetStudio.Avalonia.AdvancedMenuService;
 

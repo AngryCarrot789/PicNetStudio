@@ -20,8 +20,9 @@
 using Avalonia.Controls;
 using Avalonia.Media;
 using PicNetStudio.Avalonia.Bindings;
-using PicNetStudio.Avalonia.Services.Messages;
 using PicNetStudio.Avalonia.Services.Messages.Controls;
+using PicNetStudio.Services.ColourPicking;
+using PicNetStudio.Services.UserInputs;
 using SkiaSharp;
 
 namespace PicNetStudio.Avalonia.Services.Colours;

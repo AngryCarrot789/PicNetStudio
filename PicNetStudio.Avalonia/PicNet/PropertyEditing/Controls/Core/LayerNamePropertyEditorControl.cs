@@ -20,8 +20,8 @@
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using PicNetStudio.Avalonia.Bindings;
-using PicNetStudio.Avalonia.PicNet.PropertyEditing.Core;
 using PicNetStudio.Avalonia.Utils;
+using PicNetStudio.PicNet.PropertyEditing.Core;
 
 namespace PicNetStudio.Avalonia.PicNet.PropertyEditing.Controls.Core;
 

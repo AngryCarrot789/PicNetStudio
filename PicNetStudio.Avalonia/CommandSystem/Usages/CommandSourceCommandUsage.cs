@@ -22,7 +22,8 @@ using System.Windows.Input;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
-using PicNetStudio.Avalonia.Interactivity.Contexts;
+using PicNetStudio.CommandSystem;
+using PicNetStudio.Interactivity.Contexts;
 
 namespace PicNetStudio.Avalonia.CommandSystem.Usages;
 

@@ -21,7 +21,7 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using PicNetStudio.Avalonia.DataTransfer;
+using PicNetStudio.DataTransfer;
 
 namespace PicNetStudio.Avalonia.Bindings.Enums;
 

@@ -22,12 +22,14 @@ using System.Collections.Generic;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
-using PicNetStudio.Avalonia.PicNet.Controls.Dragger;
-using PicNetStudio.Avalonia.PicNet.PropertyEditing.DataTransfer;
-using PicNetStudio.Avalonia.PicNet.Tools.Core;
 using PicNetStudio.Avalonia.PicNet.Tools.Settings.Controls;
-using PicNetStudio.Avalonia.PicNet.Tools.Settings.DataTransfer;
 using PicNetStudio.Avalonia.Utils;
+using PicNetStudio.PicNet.Formatting;
+using PicNetStudio.PicNet.PropertyEditing.DataTransfer;
+using PicNetStudio.PicNet.Tools;
+using PicNetStudio.PicNet.Tools.Core;
+using PicNetStudio.PicNet.Tools.Settings;
+using PicNetStudio.PicNet.Tools.Settings.DataTransfer;
 
 namespace PicNetStudio.Avalonia.PicNet.Tools.Settings;
 

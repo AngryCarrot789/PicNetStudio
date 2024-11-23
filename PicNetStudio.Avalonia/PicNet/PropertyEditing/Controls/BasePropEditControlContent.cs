@@ -21,11 +21,13 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Avalonia.Controls.Primitives;
-using PicNetStudio.Avalonia.PicNet.Layers.CustomParameters.BlendMode;
+using PicNetStudio.Avalonia.PicNet.CustomParameters;
 using PicNetStudio.Avalonia.PicNet.PropertyEditing.Controls.Core;
 using PicNetStudio.Avalonia.PicNet.PropertyEditing.Controls.DataTransfer;
-using PicNetStudio.Avalonia.PicNet.PropertyEditing.Core;
-using PicNetStudio.Avalonia.PicNet.PropertyEditing.DataTransfer;
+using PicNetStudio.PicNet.CustomParameters;
+using PicNetStudio.PicNet.PropertyEditing;
+using PicNetStudio.PicNet.PropertyEditing.Core;
+using PicNetStudio.PicNet.PropertyEditing.DataTransfer;
 
 namespace PicNetStudio.Avalonia.PicNet.PropertyEditing.Controls;
 

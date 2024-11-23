@@ -17,13 +17,10 @@
 // along with PicNetStudio. If not, see <https://www.gnu.org/licenses/>.
 // 
 
-using System.Linq;
 using System.Threading.Tasks;
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.ApplicationLifetimes;
-using PicNetStudio.Avalonia.Services.Messages;
-using PicNetStudio.Avalonia.Utils;
+using PicNetStudio.Services.UserInputs;
+using PicNetStudio.Utils;
 using UserInputDialog = PicNetStudio.Avalonia.Services.Messages.Controls.UserInputDialog;
 
 namespace PicNetStudio.Avalonia.Services;
@@ -40,22 +37,17 @@ public class InputDialogServiceImpl : IUserInputDialogService {
     public static async Task<bool?> ShowDialogAsync(UserInputInfo info) {
         Validate.NotNull(info);
 
-        if (Application.Current!.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop) {
-            Window? parent = desktop.Windows.FirstOrDefault(x => x.IsActive) ?? desktop.MainWindow;
-            if (parent == null) {
-                return null;
-            }
-
+        if (App.RZApplicationImpl.TryGetActiveWindow(out Window? window)) {
             UserInputDialog dialog = new UserInputDialog {
                 UserInputData = info
             };
 
-            bool? result = await dialog.ShowDialog<bool?>(parent);
+            bool? result = await dialog.ShowDialog<bool?>(window);
             if (result == true && dialog.DialogResult == true) {
                 return true;
             }
 
-            return result;
+            return result;   
         }
 
         return null;

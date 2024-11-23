@@ -23,7 +23,7 @@ using System.Globalization;
 using System.Text;
 using Avalonia.Data.Converters;
 using Avalonia.Input;
-using PicNetStudio.Avalonia.Utils;
+using PicNetStudio.Utils;
 
 namespace PicNetStudio.Avalonia.Shortcuts.Converters;
 

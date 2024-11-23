@@ -21,7 +21,8 @@ using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using PicNetStudio.Avalonia.Utils;
-using PicNetStudio.Avalonia.Utils.Collections.Observable;
+using PicNetStudio.PicNet.Toolbars;
+using PicNetStudio.Utils.Collections.Observable;
 
 namespace PicNetStudio.Avalonia.PicNet.Toolbars.Controls;
 

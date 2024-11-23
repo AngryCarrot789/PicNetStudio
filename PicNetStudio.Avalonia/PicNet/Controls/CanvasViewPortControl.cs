@@ -27,11 +27,15 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using PicNetStudio.Avalonia.Interactivity;
-using PicNetStudio.Avalonia.PicNet.Layers;
-using PicNetStudio.Avalonia.PicNet.Layers.Core;
 using PicNetStudio.Avalonia.Utils;
-using PicNetStudio.Avalonia.Utils.RDA;
+using PicNetStudio.Interactivity;
+using PicNetStudio.PicNet;
+using PicNetStudio.PicNet.Layers;
+using PicNetStudio.PicNet.Layers.Core;
+using PicNetStudio.Utils;
+using PicNetStudio.Utils.RDA;
 using SkiaSharp;
+using Canvas = PicNetStudio.PicNet.Canvas;
 using Point = Avalonia.Point;
 using Size = Avalonia.Size;
 
@@ -218,7 +222,7 @@ public class CanvasViewPortControl : TemplatedControl, ICanvasElement {
             control.UpdateCursorForActiveLayer(newDocument.Canvas.ActiveLayerTreeObject);
         }
         else {
-            control.UpdateViewPortSize(new PixelSize(1, 1));
+            control.UpdateViewPortSize(new PixSize(1, 1));
         }
     }
 
@@ -246,11 +250,11 @@ public class CanvasViewPortControl : TemplatedControl, ICanvasElement {
         }
     }
 
-    private void OnResolutionChanged(Canvas canvas, PixelSize oldSize, PixelSize newSize) {
+    private void OnResolutionChanged(Canvas canvas, PixSize oldSize, PixSize newSize) {
         this.UpdateViewPortSize(newSize);
     }
 
-    private void UpdateViewPortSize(PixelSize size) {
+    private void UpdateViewPortSize(PixSize size) {
         if (this.PART_SkiaViewPort == null)
             return;
 

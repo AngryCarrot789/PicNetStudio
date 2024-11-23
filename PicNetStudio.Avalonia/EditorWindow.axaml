@@ -6,14 +6,14 @@
              xmlns:sc="clr-namespace:PicNetStudio.Avalonia.Shortcuts.Avalonia"
              xmlns:c="clr-namespace:PicNetStudio.Avalonia.PicNet.Controls"
              xmlns:tbc="clr-namespace:PicNetStudio.Avalonia.PicNet.Toolbars.Controls"
-             xmlns:lc="clr-namespace:PicNetStudio.Avalonia.PicNet.Layers.Controls"
              xmlns:pec="clr-namespace:PicNetStudio.Avalonia.PicNet.PropertyEditing.Controls"
              xmlns:tc="clr-namespace:PicNetStudio.Avalonia.Themes.Controls"
-             xmlns:drag="clr-namespace:PicNetStudio.Avalonia.PicNet.Controls.Dragger"
              xmlns:cmdu="clr-namespace:PicNetStudio.Avalonia.CommandSystem.Usages"
-             xmlns:cmd="clr-namespace:PicNetStudio.Avalonia.PicNet.Commands"
              xmlns:ams="clr-namespace:PicNetStudio.Avalonia.AdvancedMenuService"
              xmlns:settings="clr-namespace:PicNetStudio.Avalonia.PicNet.Tools.Settings"
+             xmlns:cmd="clr-namespace:PicNetStudio.Avalonia.PicNet"
+             xmlns:commandUsages="clr-namespace:PicNetStudio.Avalonia.PicNet.CommandUsages"
+             xmlns:lc="clr-namespace:PicNetStudio.Avalonia.PicNet.Layers"
              mc:Ignorable="d" Width="1280" Height="720"
              Title="PicNet Studio"
              sc:UIInputManager.FocusPath="Application/EditorWindow"
@@ -115,23 +115,23 @@
                             <StackPanel Orientation="Horizontal">
                                 <Button Content="+" Background="Transparent" BorderThickness="0" Width="24"
                                         ToolTip.Tip="Add a new layer above the selected layer"
-                                        cmdu:CommandUsageManager.UsageClassType="{x:Type cmd:CreateNewRasterLayerCommandUsage}"/>
+                                        cmdu:CommandUsageManager.UsageClassType="{x:Type commandUsages:CreateNewRasterLayerCommandUsage}"/>
                                 <Border Background="{DynamicResource ABrush.Tone3.Border.Static}" Width="1"/>
                                 <Button Content="+T" Background="Transparent" BorderThickness="0" Width="24"
                                         ToolTip.Tip="Add a new text layer above the selected layer"
-                                        cmdu:CommandUsageManager.UsageClassType="{x:Type cmd:CreateNewTextLayerCommandUsage}"/>
+                                        cmdu:CommandUsageManager.UsageClassType="{x:Type commandUsages:CreateNewTextLayerCommandUsage}"/>
                                 <Border Background="{DynamicResource ABrush.Tone3.Border.Static}" Width="1"/>
                                 <Button Content="-" Background="Transparent" BorderThickness="0" Width="24"
                                         ToolTip.Tip="Delete the selected layer(s)"
-                                        cmdu:CommandUsageManager.UsageClassType="{x:Type cmd:DeleteSelectedLayersCommandUsage}"/>
+                                        cmdu:CommandUsageManager.UsageClassType="{x:Type commandUsages:DeleteSelectedLayersCommandUsage}"/>
                                 <Border Background="{DynamicResource ABrush.Tone3.Border.Static}" Width="1"/>
                                 <Button Content="COMP" Background="Transparent" BorderThickness="0" Width="48"
                                         ToolTip.Tip="Places your selection into a composition layer (aka a group/folder)"
-                                        cmdu:CommandUsageManager.UsageClassType="{x:Type cmd:GroupSelectionIntoCompositionCommandUsage}"/>
+                                        cmdu:CommandUsageManager.UsageClassType="{x:Type commandUsages:GroupSelectionIntoCompositionCommandUsage}"/>
                                 <Border Background="{DynamicResource ABrush.Tone3.Border.Static}" Width="1"/>
                                 <Button Content="Merge" Background="Transparent" BorderThickness="0" Width="48"
                                         ToolTip.Tip="Places your selection into a composition layer (aka a group/folder)"
-                                        cmdu:CommandUsageManager.UsageClassType="{x:Type cmd:MergeSelectionIntoRasterCommandUsage}"/>
+                                        cmdu:CommandUsageManager.UsageClassType="{x:Type commandUsages:MergeSelectionIntoRasterCommandUsage}"/>
                                 <Border Background="{DynamicResource ABrush.Tone3.Border.Static}" Width="1"/>
                             </StackPanel>
                         </Border>

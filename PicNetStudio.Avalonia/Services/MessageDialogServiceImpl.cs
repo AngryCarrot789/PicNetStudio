@@ -17,13 +17,10 @@
 // along with PicNetStudio. If not, see <https://www.gnu.org/licenses/>.
 // 
 
-using System.Linq;
 using System.Threading.Tasks;
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.ApplicationLifetimes;
-using PicNetStudio.Avalonia.Services.Messages;
-using PicNetStudio.Avalonia.Utils;
+using PicNetStudio.Services.Messaging;
+using PicNetStudio.Utils;
 using MessageBoxDialog = PicNetStudio.Avalonia.Services.Messages.Controls.MessageBoxDialog;
 
 namespace PicNetStudio.Avalonia.Services;
@@ -44,23 +41,15 @@ public class MessageDialogServiceImpl : IMessageDialogService {
     public async Task<MessageBoxResult> ShowMessage(MessageBoxInfo info) {
         Validate.NotNull(info);
 
-        Window? parent = GetParentWindow();
-        if (parent == null)
-            return MessageBoxResult.None;
+        if (App.RZApplicationImpl.TryGetActiveWindow(out Window? window)) {
+            MessageBoxDialog dialog = new MessageBoxDialog {
+                MessageBoxData = info
+            };
 
-        MessageBoxDialog dialog = new MessageBoxDialog {
-            MessageBoxData = info
-        };
-
-        MessageBoxResult? result = await dialog.ShowDialog<MessageBoxResult?>(parent);
-        return result ?? MessageBoxResult.None;
-    }
-
-    public static Window? GetParentWindow() {
-        if (Application.Current!.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop) {
-            return desktop.Windows.FirstOrDefault(x => x.IsActive) ?? desktop.MainWindow;
+            MessageBoxResult? result = await dialog.ShowDialog<MessageBoxResult?>(window);
+            return result ?? MessageBoxResult.None;
         }
 
-        return null;
+        return MessageBoxResult.None;
     }
 }

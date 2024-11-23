@@ -22,8 +22,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using Avalonia;
 using Avalonia.Data.Converters;
-using PicNetStudio.Avalonia.CommandSystem;
 using PicNetStudio.Avalonia.Shortcuts.Managing;
+using PicNetStudio.CommandSystem;
 
 namespace PicNetStudio.Avalonia.Shortcuts.Converters;
 

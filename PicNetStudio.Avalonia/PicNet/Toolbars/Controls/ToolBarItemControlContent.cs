@@ -22,12 +22,13 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
-using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
-using PicNetStudio.Avalonia.PicNet.Tools;
-using PicNetStudio.Avalonia.PicNet.Tools.Core;
+using PicNetStudio.Avalonia.PicNet.Controls;
 using PicNetStudio.Avalonia.Utils;
+using PicNetStudio.PicNet.Toolbars;
+using PicNetStudio.PicNet.Tools;
+using PicNetStudio.PicNet.Tools.Core;
 
 namespace PicNetStudio.Avalonia.PicNet.Toolbars.Controls;
 
@@ -87,22 +88,6 @@ public class ToolBarItemControlContent : TemplatedControl {
 /// The base class for a toolbar list box item that activates a single tool
 /// </summary>
 public abstract class ToolBarItemControlContentSingleTool : ToolBarItemControlContent;
-
-internal static class PathHelper {
-    public static bool Arrange(TemplatedControl control, Layoutable? thing, Size finalSize, out Size arrange) {
-        if (thing == null) {
-            arrange = default;
-            return false;
-        }
-        
-        Size size = finalSize.Deflate(control.Padding);
-        double sX = size.Width / thing.Width, sY = size.Height / thing.Height;
-        thing.RenderTransform = new ScaleTransform(Math.Min(sX, sY), Math.Min(sX, sY));
-        thing.Arrange(new Rect(0, 0, finalSize.Width, finalSize.Height).CenterRect(new Rect(0, 0, size.Width, size.Height)));
-        arrange = finalSize;
-        return true;
-    }
-}
 
 public class ToolBarItemControlContent_CursorTool : ToolBarItemControlContentSingleTool {
     private Path? PART_Path;

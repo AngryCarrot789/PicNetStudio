@@ -18,17 +18,30 @@
 // 
 
 using System;
+using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
-using PicNetStudio.Avalonia.PicNet;
-using PicNetStudio.Avalonia.PicNet.Layers;
-using PicNetStudio.Avalonia.PicNet.Layers.Core;
-using Canvas = PicNetStudio.Avalonia.PicNet.Canvas;
+using PicNetStudio.Avalonia.Services;
+using PicNetStudio.Avalonia.Services.Colours;
+using PicNetStudio.Avalonia.Services.Files;
+using PicNetStudio.Avalonia.Shortcuts.Avalonia;
+using PicNetStudio.PicNet;
+using PicNetStudio.PicNet.Layers;
+using PicNetStudio.PicNet.Layers.Core;
+using PicNetStudio.Services.ColourPicking;
+using PicNetStudio.Services.FilePicking;
+using PicNetStudio.Services.Messaging;
+using PicNetStudio.Services.UserInputs;
+using PicNetStudio.Utils;
+using Canvas = PicNetStudio.PicNet.Canvas;
 
 namespace PicNetStudio.Avalonia;
 
@@ -36,7 +49,7 @@ public partial class App : Application {
     public static Canvas DummyCanvas { get; } = new Canvas(new Document());
 
     static App() {
-        DummyCanvas.Size = new PixelSize(300, 150);
+        DummyCanvas.Size = new PixSize(300, 150);
         DummyCanvas.RootComposition.AddLayer(new RasterLayer() {Name = "Raster 1"});
         DummyCanvas.RootComposition.AddLayer(new CompositionLayer() {Name = "Composite 1"});
         // (DummyCanvas.Layers[0] as RasterLayer).Bitmap.InitialiseBitmap(DummyCanvas.Size);
@@ -49,11 +62,14 @@ public partial class App : Application {
 
     public override void Initialize() {
         AvaloniaXamlLoader.Load(this);
-        RZApplication.InternalPreInititalise(new RZApplicationImpl(this));
+        RZApplicationImpl.InternalPreInititaliseImpl(this);
+        AvCore.OnApplicationInitialised();
     }
 
     public override void OnFrameworkInitializationCompleted() {
-        RZApplication.InternalInititalise();
+        AvCore.OnFrameworkInitialised();
+        UIInputManager.Init();
+        RZApplicationImpl.InternalInititaliseImpl();
 
         if (this.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop) {
             desktop.MainWindow = new EditorWindow();
@@ -62,11 +78,46 @@ public partial class App : Application {
         base.OnFrameworkInitializationCompleted();
     }
 
-    private class RZApplicationImpl : RZApplication {
+    public class RZApplicationImpl : RZApplication {
         public override IDispatcher Dispatcher { get; }
 
-        public RZApplicationImpl(App app) : base(app) {
+        /// <summary>
+        /// Gets the avalonia application
+        /// </summary>
+        public App App { get; }
+        
+        public RZApplicationImpl(App app) {
+            this.App = app ?? throw new ArgumentNullException(nameof(app));
             this.Dispatcher = new DispatcherImpl(global::Avalonia.Threading.Dispatcher.UIThread);
+        }
+        
+        public static void InternalPreInititaliseImpl(App app) => InternalPreInititalise(new RZApplicationImpl(app));
+        public static void InternalInititaliseImpl() => InternalInititalise();
+
+        protected override void RegisterServices(ServiceManager manager) {
+            base.RegisterServices(manager);
+            manager.Register<IMessageDialogService>(new MessageDialogServiceImpl());
+            manager.Register<IUserInputDialogService>(new InputDialogServiceImpl());
+            manager.Register<IColourPickerService>(new ColourPickerServiceImpl());
+            manager.Register<IFilePickDialogService>(new FilePickDialogServiceImpl());
+        }
+
+        protected override void OnInitialise() {
+            base.OnInitialise();
+            string keymapFilePath = Path.GetFullPath(@"Keymap.xml");
+            if (File.Exists(keymapFilePath)) {
+                try {
+                    using (FileStream stream = File.OpenRead(keymapFilePath)) {
+                        AvaloniaShortcutManager.AvaloniaInstance.DeserialiseRoot(stream);
+                    }
+                }
+                catch (Exception ex) {
+                    IoC.MessageService.ShowMessage("Keymap", "Failed to read keymap file" + keymapFilePath, ex.GetToString());
+                }
+            }
+            else {
+                IoC.MessageService.ShowMessage("Keymap", "Keymap file does not exist at " + keymapFilePath);
+            }
         }
 
         private class DispatcherImpl : IDispatcher {
@@ -123,6 +174,15 @@ public partial class App : Application {
             private static DispatcherPriority ToAvaloniaPriority(DispatchPriority priority) {
                 return Unsafe.As<DispatchPriority, DispatcherPriority>(ref priority);
             }
+        }
+
+        public static bool TryGetActiveWindow([NotNullWhen(true)] out Window? window) {
+            if (Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop) {
+                return (window = desktop.Windows.FirstOrDefault(x => x.IsActive) ?? desktop.MainWindow) != null;
+            }
+
+            window = null;
+            return false;
         }
     }
 }
