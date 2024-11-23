@@ -175,7 +175,7 @@ public abstract class BaseLayerTreeView : TreeView {
 
     private void OnDragOver(DragEventArgs e) {
         if (this.Canvas != null)
-            this.IsDroppableTargetOver = BaseLayerTreeViewItem.ProcessCanDragOver(this.Canvas.RootComposition, e) == true;
+            this.IsDroppableTargetOver = BaseLayerTreeViewItem.ProcessCanDragOver(this, this.Canvas.RootComposition, e) == true;
     }
 
     private void OnDragLeave(DragEventArgs e) {

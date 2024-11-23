@@ -50,6 +50,8 @@ public class ContextData : IContextData {
             this.map = new Dictionary<string, object>(ctx.map);
     }
 
+    public ContextData(IContextData context) => this.Merge(context);
+
     public ContextData Set<T>(DataKey<T> key, T? value) => this.SetRaw(key.Id, value);
 
     public ContextData Set(DataKey<bool> key, bool? value) => this.SetRaw(key.Id, value.BoxNullable());
@@ -112,11 +114,11 @@ public class ContextData : IContextData {
 
     public ContextData? ToNullIfEmpty() => this.Count > 0 ? this : null;
 
-    public void Merge(IContextData ctx) {
+    public ContextData Merge(IContextData ctx) {
         if (ctx is ContextData cd && cd.map != null) {
             using Dictionary<string, object>.Enumerator enumerator = cd.map.GetEnumerator();
             if (!enumerator.MoveNext())
-                return;
+                return this;
 
             Dictionary<string, object> myMap = this.map ??= new Dictionary<string, object>();
             do {
@@ -124,6 +126,8 @@ public class ContextData : IContextData {
                 myMap[entry.Key] = entry.Value;
             } while (enumerator.MoveNext());
         }
+
+        return this;
     }
 
     public override string ToString() {
@@ -144,8 +148,6 @@ public class ContextData : IContextData {
     /// <param name="dataB">Merge</param>
     /// <returns>A new context data containing entries from dataA and dataB</returns>
     public static ContextData Merge(ContextData dataA, ContextData dataB) {
-        ContextData data = new ContextData(dataA);
-        data.Merge(dataB);
-        return data;
+        return new ContextData(dataA).Merge(dataB);
     }
 }

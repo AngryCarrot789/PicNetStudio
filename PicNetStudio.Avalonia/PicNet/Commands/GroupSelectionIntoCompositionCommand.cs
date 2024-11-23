@@ -71,16 +71,18 @@ public class GroupSelectionIntoCompositionCommand : DocumentCommand {
         selectionManager.Clear();
         int minIndex = indices[0];
 
-        int count = 0;
+        List<BaseLayerTreeObject> layers = new List<BaseLayerTreeObject>();
         newCompositionLayer = new CompositionLayer();
-        foreach (int indexOfLayer in indices) {
-            int actualIndex = indexOfLayer - count;
-            BaseLayerTreeObject theLayer = theParent.Layers[actualIndex];
-            theParent.RemoveLayerAt(actualIndex);
-            newCompositionLayer.AddLayer(theLayer);
-            count++;
+        for (int i = indices.Count - 1; i >= 0; i--) {
+            int index = indices[i];
+            BaseLayerTreeObject theLayer = theParent.Layers[index];
+            theParent.RemoveLayerAt(index);
+            layers.Add(theLayer);
         }
 
+        layers.Reverse();
+        newCompositionLayer.AddLayers(layers);
+        
         theParent.InsertLayer(minIndex, newCompositionLayer);
     }
 }

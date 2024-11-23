@@ -7,6 +7,29 @@
                     xmlns:lcc="clr-namespace:PicNetStudio.Avalonia.PicNet.Layers.Controls.Compact"
                     xmlns:lce="clr-namespace:PicNetStudio.Avalonia.PicNet.Layers.Controls.Enlarged"
                     xmlns:controls="clr-namespace:PicNetStudio.Avalonia.PicNet.Controls">
+    
+    <ControlTheme x:Key="FolderSvgIconClosedControl" TargetType="{x:Type lc:PanelSvgIconControl}">
+        <Setter Property="Template">
+            <ControlTemplate TargetType="{x:Type lc:PanelSvgIconControl}">
+                <Panel x:Name="PART_Panel" Width="427" Height="342"> 
+                    <Polygon Fill="Peru" Points="426.666667 341.333333 3.55271368e-14 341.333333 3.55271368e-14 1.42108547e-14 178.083413 1.42108547e-14 232.041813 42.6666667 426.666667 42.6666667"/>
+                    <Path Fill="Gold" Data="M 426.667 341.333 L 3.55271e-14 341.333 L 3.55271e-14 1.42109e-14 L 178.083 1.42109e-14 L 232.042 42.6667 L 426.667 42.6667 L 426.667 341.333 Z M 42.6667 298.667 L 384 298.667 L 384 85.3333 L 217.208 85.3333 L 163.25 42.6667 L 42.6667 42.6667 L 42.6667 298.667 Z"/>
+                </Panel>
+            </ControlTemplate>
+        </Setter>
+    </ControlTheme>
+    
+    <ControlTheme x:Key="FolderSvgIconOpenedControl" TargetType="{x:Type lc:PanelSvgIconControl}">
+        <Setter Property="Template">
+            <ControlTemplate TargetType="{x:Type lc:PanelSvgIconControl}">
+                <Panel x:Name="PART_Panel" Width="420.2" Height="342">
+                    <Polygon Fill="Peru" Points="370 341.333333 3.55271368e-14 341.333333 3.55271368e-14 1.42108547e-14 178.083413 1.42108547e-14 232.041813 42.6666667 383 42.6666667 383 250"/>
+                    <Path Fill="Gold" Data="M 384 128 L 384 42.6667 L 232.042 42.6667 L 178.083 1.42109e-14 L -2.13163e-14 1.42109e-14 L -2.13163e-14 341.333 L 60.9376 341.333 L 363.417 341.333 L 372.583 341.333 L 437.333 128 L 384 128 Z M 42.6667 253.44 L 42.6667 42.6667 L 163.25 42.6667 L 217.208 85.3333 L 341.333 85.3333 L 341.333 128 L 82.0209 128 L 42.6667 253.44 Z M 340.958 298.667 L 73.1874 298.667 L 113.354 170.667 L 379.791 170.667 L 340.958 298.667 Z"/>
+                </Panel>
+            </ControlTemplate>
+        </Setter>
+    </ControlTheme>
+
     <ControlTheme x:Key="{x:Type lc:BaseLayerTreeView}" TargetType="{x:Type lc:BaseLayerTreeView}" BasedOn="{StaticResource {x:Type TreeView}}">
         <Setter Property="SelectionMode" Value="Multiple"/>
         <Setter Property="Background" Value="{DynamicResource AColour.Tone2.Background.Static}"/>
@@ -37,10 +60,32 @@
             <Setter Property="Background" Value="{DynamicResource TreeViewItem.Selected.Inactive.Background}"/>
         </Style>
         <Style Selector="^:empty /template/ ToggleButton#PART_ExpandCollapseChevron">
+            <Setter Property="IsEnabled" Value="False"/>
+        </Style>
+        <Style Selector="^[IsFolderItem=false] /template/ ToggleButton#PART_ExpandCollapseChevron">
             <Setter Property="IsVisible" Value="False"/>
         </Style>
         <Style Selector="^[IsDroppableTargetOver=true] /template/ Border#PART_DropTargetOverBorder">
             <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+        <Style Selector="^[IsFolderItem=true] /template/ ContentPresenter#PART_IconPresenter">
+            <Setter Property="IsVisible" Value="True"/>
+        </Style>
+        <Style Selector="^[IsFolderItem=true]">
+            <Style Selector="^[IsExpanded=false] /template/ ContentPresenter#PART_IconPresenter">
+                <Setter Property="Content">
+                    <Template>
+                        <lc:PanelSvgIconControl Theme="{StaticResource FolderSvgIconClosedControl}" Width="15" Height="15"/>
+                    </Template>
+                </Setter>
+            </Style>
+            <Style Selector="^[IsExpanded=true] /template/ ContentPresenter#PART_IconPresenter">
+                <Setter Property="Content">
+                    <Template>
+                        <lc:PanelSvgIconControl Theme="{StaticResource FolderSvgIconOpenedControl}" Width="15" Height="15"/>
+                    </Template>
+                </Setter>
+            </Style>
         </Style>
     </ControlTheme>
 
@@ -142,9 +187,13 @@
                                            Background="Transparent"
                                            Margin="{TemplateBinding Padding}"
                                            Focusable="False">
-                                        <TextBlock x:Name="PART_HeaderTextBlock" Text="{TemplateBinding Header}" Margin="0,-1,0,0"/>
-                                        <TextBox x:Name="PART_HeaderTextBox" Text="{TemplateBinding Header, Mode=TwoWay}"
-                                                 BorderThickness="0" Padding="0" Margin="0,-1,0,0"/>
+                                        <StackPanel Orientation="Horizontal" Spacing="3">
+                                            <ContentPresenter x:Name="PART_IconPresenter" IsVisible="False"/>
+                                            <Panel VerticalAlignment="Center">
+                                                <TextBlock x:Name="PART_HeaderTextBlock" Text="{TemplateBinding Header}" Margin="0,-1,0,0"/>
+                                                <TextBox x:Name="PART_HeaderTextBox" Text="{TemplateBinding Header, Mode=TwoWay}" BorderThickness="0" Padding="0" Margin="0,-1,0,0"/>
+                                            </Panel>
+                                        </StackPanel>
                                     </Panel>
                                 </Grid>
                                 <c2:LayerStateModifierListBox x:Name="PART_StateModifierListBox"
@@ -181,10 +230,6 @@
 
         <Style Selector="^:selected /template/ Border#SelectionBorder[IsFocused=False]">
             <Setter Property="Background" Value="{DynamicResource TreeViewItem.Selected.Inactive.Background}"/>
-        </Style>
-
-        <Style Selector="^:empty /template/ ToggleButton#PART_ExpandCollapseChevron">
-            <Setter Property="IsVisible" Value="False"/>
         </Style>
 
         <Style Selector="^[IsDroppableTargetOver=true] /template/ Border#PART_DropTargetOverBorder">
@@ -283,8 +328,13 @@
                                         </Border>
                                         <Grid RowDefinitions="16,*,2" Margin="2,2,0,0">
                                             <Panel Grid.Column="0" Grid.Row="0" HorizontalAlignment="Left" ToolTip.Tip="The name of this layer" Background="Transparent">
-                                                <TextBlock x:Name="PART_HeaderTextBlock" Text="{TemplateBinding Header}" Padding="0" TextDecorations="underline"/>
-                                                <TextBox x:Name="PART_HeaderTextBox" Text="{TemplateBinding Header, Mode=TwoWay}" BorderThickness="0" Padding="0"/>
+                                                <StackPanel Orientation="Horizontal" Spacing="3">
+                                                    <ContentPresenter x:Name="PART_IconPresenter" IsVisible="False"/>
+                                                    <Panel VerticalAlignment="Center">
+                                                        <TextBlock x:Name="PART_HeaderTextBlock" Text="{TemplateBinding Header}" Padding="0" TextDecorations="underline"/>
+                                                        <TextBox x:Name="PART_HeaderTextBox" Text="{TemplateBinding Header, Mode=TwoWay}" BorderThickness="0" Padding="0"/>
+                                                    </Panel>
+                                                </StackPanel>
                                             </Panel>
                                             <c2:LayerStateModifierListBox x:Name="PART_StateModifierListBox"
                                                                           Grid.Column="0" Grid.Row="1"
@@ -343,10 +393,6 @@
         </Style>
         -->
 
-        <Style Selector="^:empty /template/ ToggleButton#PART_ExpandCollapseChevron">
-            <Setter Property="IsVisible" Value="False"/>
-        </Style>
-
         <Style Selector="^[IsDroppableTargetOver=true] /template/ Border#PART_DropTargetOverBorder">
             <Setter Property="BorderThickness" Value="1"/>
         </Style>
@@ -400,7 +446,6 @@
     <Design.PreviewWith>
         <!--
         <c:LayerTreeControl Width="300" Height="100" Canvas="{x:Static avalonia:App.DummyCanvas}"/>
-        -->
         <StackPanel Orientation="Horizontal" Spacing="10">
             <lce:EnlargedLayerTreeView>
                 <lce:EnlargedLayerTreeViewItem Header="oks" Width="300" Height="100">
@@ -417,5 +462,10 @@
                 </lcc:CompactLayerTreeViewItem>
             </lcc:CompactLayerTreeView>
         </StackPanel>
+        -->
+        
+        <Panel x:Name="PART_Panel" >
+            <TextBlock Text="{Binding ElementName=PART_Panel, Path=Bounds}"/>
+        </Panel>
     </Design.PreviewWith>
 </ResourceDictionary>

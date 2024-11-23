@@ -127,6 +127,7 @@ public abstract class RZApplication {
         manager.Register("command.layertree.CreateNewTextLayer", new CreateNewTextLayerCommand());
         manager.Register("command.layertree.DeleteSelectedLayers", new DeleteSelectedLayersCommand());
         manager.Register("command.layertree.GroupSelectionIntoComposition", new GroupSelectionIntoCompositionCommand());
+        manager.Register("command.layertree.MergeSelectionIntoRaster", new MergeSelectionIntoRasterCommand());
         manager.Register("command.layertree.item.EditLayerName", new EditLayerNameCommand());
         manager.Register("command.layertree.item.ToggleLayerVisibility", new ToggleLayerVisibilityCommand());
         manager.Register("command.layertree.item.RasteriseLayer", new RasteriseLayerCommand());

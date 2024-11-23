@@ -89,7 +89,7 @@ public class ToolBarItemControlContent : TemplatedControl {
 public abstract class ToolBarItemControlContentSingleTool : ToolBarItemControlContent;
 
 internal static class PathHelper {
-    public static bool Arrange(ToolBarItemControlContentSingleTool control, Layoutable? thing, Size finalSize, out Size arrange) {
+    public static bool Arrange(TemplatedControl control, Layoutable? thing, Size finalSize, out Size arrange) {
         if (thing == null) {
             arrange = default;
             return false;

@@ -129,6 +129,10 @@
                                         ToolTip.Tip="Places your selection into a composition layer (aka a group/folder)"
                                         cmdu:CommandUsageManager.UsageClassType="{x:Type cmd:GroupSelectionIntoCompositionCommandUsage}"/>
                                 <Border Background="{DynamicResource ABrush.Tone3.Border.Static}" Width="1"/>
+                                <Button Content="Merge" Background="Transparent" BorderThickness="0" Width="48"
+                                        ToolTip.Tip="Places your selection into a composition layer (aka a group/folder)"
+                                        cmdu:CommandUsageManager.UsageClassType="{x:Type cmd:MergeSelectionIntoRasterCommandUsage}"/>
+                                <Border Background="{DynamicResource ABrush.Tone3.Border.Static}" Width="1"/>
                             </StackPanel>
                         </Border>
                         <!-- Compact by default -->
