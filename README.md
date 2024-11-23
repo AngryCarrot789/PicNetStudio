@@ -9,7 +9,7 @@ Some ideas I have for the future:
 The canvas can be exported by pressing CTRL+E
 
 ## Preview so far
-![](PicNetStudio.Avalonia_2024-11-22_00.34.22.png)
+![](PicNetStudio.Avalonia_2024-11-23_22.37.06.png)
 
 ## Current features
 Here's a list of features and some info about what they do and how to use them
@@ -29,7 +29,8 @@ This is strip on the top that shows properties about the active tool
 
 ### Layer Tree
 The layer tree on the top right presents all the layers. Layers can be grouped by selecting 
-some and clicking CTRL+G (or by clicking COMP, as in Composition Layer).
+some and clicking CTRL+G (or by clicking COMP, as in Composition Layer). You can also merge your selection
+into a single raster layer by clicking the "Merge" button
 
 Most layers have 3 state adjustment buttons. The 2 green buttons change visibility for view port aka
 preview (top) and export (bottom). The S button toggles Solo mode, which makes a specific layer the only one to be drawn
@@ -42,7 +43,6 @@ properties that are available across your selection (e.g. all visual layers have
 When there's multiple selections which have differing values, the orange "<<Multiple Values>" shows. ATM i'm not sure
 whether to re-implement an addition feature (e.g. add/subtract from the values) or to just set them all to the same value
 when you modify them. A todo thing
-
 
 
 ## Contributing
