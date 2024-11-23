@@ -66,12 +66,13 @@ public sealed class TransferableData {
     }
 
     public bool IsParameterValid(DataParameter parameter) {
+        // parameter.OwnerType.IsAssignableFrom(this.Owner.GetType());
         return parameter.OwnerType.IsInstanceOfType(this.Owner);
     }
 
     public void ValidateParameter(DataParameter parameter) {
         if (!this.IsParameterValid(parameter))
-            throw new ArgumentException("Invalid parameter key for this automation data: " + parameter.GlobalKey + ". The owner types are incompatible");
+            throw new ArgumentException($"Parameter '{parameter.GlobalKey}' is incompatible for our owner. {this.Owner.GetType().Name} is not assignable to {parameter.OwnerType.Name}");
     }
 
     private bool TryGetParameterData(DataParameter parameter, [NotNullWhen(true)] out ParameterData? data) {

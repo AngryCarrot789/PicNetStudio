@@ -51,13 +51,16 @@ public class NumberDragger : RangeBase {
     public static readonly StyledProperty<string?> TextPreviewOverrideProperty = AvaloniaProperty.Register<NumberDragger, string?>("TextPreviewOverride");
     public static readonly StyledProperty<bool?> CompleteEditOnTextBoxLostFocusProperty = AvaloniaProperty.Register<NumberDragger, bool?>("CompleteEditOnTextBoxLostFocus", true);
     public static readonly DirectProperty<NumberDragger, bool> IsEditingProperty = AvaloniaProperty.RegisterDirect<NumberDragger, bool>("IsEditing", o => o.isEditing);
-
+    public static readonly StyledProperty<string?> FinalPreviewStringFormatProperty = AvaloniaProperty.Register<NumberDragger, string?>("FinalPreviewStringFormat");
+    public static readonly StyledProperty<bool> IsIntegerValueProperty = AvaloniaProperty.Register<NumberDragger, bool>("IsIntegerValue");
+    
     private TextBlock? PART_TextBlock;
     private TextBox? PART_TextBox;
     private Point lastClickPos, lastMouseMove;
     private int dragState; // 0 = default, 1 = standby, 2 = active
     private bool isEditing;
     private bool flagHasSpecialPropertyChangedWhileEditing;
+    private double accumulator;
 
     public double NormalChange {
         get => this.GetValue(NormalChangeProperty);
@@ -150,6 +153,26 @@ public class NumberDragger : RangeBase {
         }
     }
     
+    /// <summary>
+    /// A string format that controls the absolute final format of the value preview only (not the is-editing value)
+    /// </summary>
+    public string? FinalPreviewStringFormat {
+        get => this.GetValue(FinalPreviewStringFormatProperty);
+        set => this.SetValue(FinalPreviewStringFormatProperty, value);
+    }
+    
+    /// <summary>
+    /// Gets or sets if this number dragger should treat our value like an integer. This obviously means our value cannot have decimal places
+    /// </summary>
+    public bool IsIntegerValue {
+        get => this.GetValue(IsIntegerValueProperty);
+        set => this.SetValue(IsIntegerValueProperty, value);
+    }
+    
+    /// <summary>
+    /// An event fired when the user inputs text (while <see cref="IsEditing"/> is true) that could not be converted
+    /// back into a double value. This can be used to for example implement commands through the number dragger
+    /// </summary>
     public event EventHandler<InvalidInputEnteredEventArgs>? InvalidInputEntered {
         add => this.AddHandler(InvalidInputEnteredEvent, value);
         remove => this.RemoveHandler(InvalidInputEnteredEvent, value);
@@ -160,7 +183,15 @@ public class NumberDragger : RangeBase {
 
     static NumberDragger() {
         ValueProperty.Changed.AddClassHandler<NumberDragger, double>((o, e) => o.OnValueChanged(e.OldValue.GetValueOrDefault(), e.NewValue.GetValueOrDefault()));
+        ValueProperty.OverrideMetadata<NumberDragger>(new StyledPropertyMetadata<double>(coerce: (o, value) => {
+            double coerced = double.IsInfinity(value) || double.IsNaN(value) ? o.GetValue(ValueProperty) : Maths.Clamp(value, o.GetValue(MinimumProperty), o.GetValue(MaximumProperty));
+            if (o.GetValue(IsIntegerValueProperty))
+                coerced = (long) coerced;
+            return coerced;
+        }));
+        
         TextPreviewOverrideProperty.Changed.AddClassHandler<NumberDragger, string?>((o, e) => o.UpdateTextBlockOnly());
+        IsIntegerValueProperty.Changed.AddClassHandler<NumberDragger, bool>((o, e) => o.CoerceValue(ValueProperty));
         
         PropertyAffectsIgnoreLostFocusValueChange(NonFormattedRoundedPlacesForEditProperty, NonFormattedRoundedPlacesProperty, ValueFormatterProperty, ValueProperty);
     }
@@ -205,8 +236,14 @@ public class NumberDragger : RangeBase {
     }
     
     private void UpdateTextBlockOnly(ref string? textBlock) {
-        if (this.PART_TextBlock != null)
-            this.PART_TextBlock.Text = this.TextPreviewOverride ?? (textBlock = this.GetValueToString(false));
+        if (this.PART_TextBlock != null) {
+            string value = this.TextPreviewOverride ?? (textBlock = this.GetValueToString(false));
+            if (!this.isEditing && this.FinalPreviewStringFormat is string format) {
+                value = string.Format(format, value);
+            }
+            
+            this.PART_TextBlock.Text = value;
+        }
     }
     
     private void UpdateTextBlockAndBox() {
@@ -271,7 +308,9 @@ public class NumberDragger : RangeBase {
         }
 
         using ComplexNumericExpression.ExpressionState state = ComplexNumericExpression.DefaultParser.PushState();
-        state.SetVariable("oldvalue", this.Value);
+        state.SetVariable("value", this.Value);
+        state.SetVariable("pi", Math.PI);
+        state.SetVariable("e", Math.E);
         try {
             parsedValue = state.Expression.Parse(parseText);
         }
@@ -345,7 +384,7 @@ public class NumberDragger : RangeBase {
             this.dragState = 0;
             this.UpdateCursor();
         }
-        else if (this.dragState == 0 && this.IsKeyboardFocusWithin && !IsModifierKey(e.Key)) {
+        else if (this.dragState == 0 && this.IsKeyboardFocusWithin && !this.IsModifierKey(e.Key)) {
             // Begin editing when we have focus, e.g. via tab
             // indexing, and a non-modifier key is pressed
             this.IsEditing = true;
@@ -416,16 +455,22 @@ public class NumberDragger : RangeBase {
             default: throw new ArgumentOutOfRangeException();
         }
 
-        double coercedNewValue = Maths.Clamp(newValue, this.Minimum, this.Maximum);
-        if (!DoubleUtils.AreClose(coercedNewValue, oldValue)) {
-            this.Value = coercedNewValue;
+        newValue = Maths.Clamp(newValue + this.accumulator, this.Minimum, this.Maximum);
+        this.accumulator = 0;
+        if (!DoubleUtils.AreClose(newValue, oldValue)) {
+            this.Value = newValue;
+            oldValue = this.Value;
+        }
+        
+        if (!DoubleUtils.AreClose(newValue, oldValue)) {
+            this.accumulator += (newValue - oldValue);
         }
 
         if (this.LockCursorOnDrag && OperatingSystem.IsWindows()) {
             PixelPoint sp = this.PointToScreen(this.lastClickPos);
             CursorUtils.SetCursorPos(sp.X, sp.Y);
         }
-        else {
+        else if (!DoubleUtils.AreClose(newValue, oldValue)) {
             this.lastMouseMove = point;
         }
     }

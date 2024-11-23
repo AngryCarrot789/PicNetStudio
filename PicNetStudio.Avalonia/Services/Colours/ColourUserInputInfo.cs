@@ -27,7 +27,7 @@ namespace PicNetStudio.Avalonia.Services.Colours;
 public class ColourUserInputInfo : UserInputInfo {
     public static readonly DataParameter<SKColor> ColourParameter = DataParameter.Register(new DataParameter<SKColor>(typeof(ColourUserInputInfo), nameof(Colour), SKColors.Empty, ValueAccessors.Reflective<SKColor>(typeof(ColourUserInputInfo), nameof(colour))));
 
-    private SKColor colour = ColourParameter.DefaultValue;
+    private SKColor colour;
 
     public SKColor Colour {
         get => this.colour;
@@ -35,6 +35,7 @@ public class ColourUserInputInfo : UserInputInfo {
     }
 
     public ColourUserInputInfo() {
+        this.colour = ColourParameter.GetDefaultValue(this);
     }
 
     public override bool CanDialogClose() {

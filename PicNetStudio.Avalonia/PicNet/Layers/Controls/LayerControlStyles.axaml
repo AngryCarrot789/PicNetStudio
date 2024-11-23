@@ -277,11 +277,12 @@
                                                Background="Transparent" Margin="0,0,2,0" Focusable="False">
                                         <Border BorderBrush="{DynamicResource ABrush.Tone6.Border.Static}" 
                                                 BorderThickness="1" Background="Transparent"
-                                                Width="40" x:Name="PART_PreviewContainer" Margin="0,2">
+                                                Width="42" x:Name="PART_PreviewContainer" Margin="0,2"
+                                                ToolTip.Tip="A preview of this layer. To see it in the canvas, click the &quot;S&quot; solo toggle button">
                                             <ContentControl x:Name="PART_PreviewPresenter"/>
                                         </Border>
                                         <Grid RowDefinitions="16,*,2" Margin="2,2,0,0">
-                                            <Panel Grid.Column="0" Grid.Row="0" HorizontalAlignment="Left">
+                                            <Panel Grid.Column="0" Grid.Row="0" HorizontalAlignment="Left" ToolTip.Tip="The name of this layer" Background="Transparent">
                                                 <TextBlock x:Name="PART_HeaderTextBlock" Text="{TemplateBinding Header}" Padding="0" TextDecorations="underline"/>
                                                 <TextBox x:Name="PART_HeaderTextBox" Text="{TemplateBinding Header, Mode=TwoWay}" BorderThickness="0" Padding="0"/>
                                             </Panel>
@@ -375,7 +376,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type lc:LayerTreeControl}">
-                    <Border Background="Black">
+                    <Border Background="Transparent">
                         <controls:SKAsyncViewPort x:Name="PART_ViewPortControl"/>
                     </Border>
                 </ControlTemplate>

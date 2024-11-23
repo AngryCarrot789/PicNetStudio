@@ -22,6 +22,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
+using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using PicNetStudio.Avalonia.PicNet.Tools;
@@ -53,7 +54,7 @@ public class ToolBarItemControlContent : TemplatedControl {
         Registry.RegisterType<SingleToolBarItem>((x) => SingleToolSubRegistry.NewInstance(x.Tool));
 
         // Register single-tool specific tools
-        SingleToolSubRegistry.RegisterType<PointerTool>(() => new ToolBarItemControlContent_PointerTool());
+        SingleToolSubRegistry.RegisterType<CursorTool>(() => new ToolBarItemControlContent_CursorTool());
         SingleToolSubRegistry.RegisterType<BrushTool>(() => new ToolBarItemControlContent_BrushTool());
         SingleToolSubRegistry.RegisterType<PencilTool>(() => new ToolBarItemControlContent_PencilTool());
         SingleToolSubRegistry.RegisterType<FloodFillTool>(() => new ToolBarItemControlContent_FloodFillTool());
@@ -87,7 +88,23 @@ public class ToolBarItemControlContent : TemplatedControl {
 /// </summary>
 public abstract class ToolBarItemControlContentSingleTool : ToolBarItemControlContent;
 
-public class ToolBarItemControlContent_PointerTool : ToolBarItemControlContentSingleTool {
+internal static class PathHelper {
+    public static bool Arrange(ToolBarItemControlContentSingleTool control, Layoutable? thing, Size finalSize, out Size arrange) {
+        if (thing == null) {
+            arrange = default;
+            return false;
+        }
+        
+        Size size = finalSize.Deflate(control.Padding);
+        double sX = size.Width / thing.Width, sY = size.Height / thing.Height;
+        thing.RenderTransform = new ScaleTransform(Math.Min(sX, sY), Math.Min(sX, sY));
+        thing.Arrange(new Rect(0, 0, finalSize.Width, finalSize.Height).CenterRect(new Rect(0, 0, size.Width, size.Height)));
+        arrange = finalSize;
+        return true;
+    }
+}
+
+public class ToolBarItemControlContent_CursorTool : ToolBarItemControlContentSingleTool {
     private Path? PART_Path;
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e) {
@@ -96,14 +113,7 @@ public class ToolBarItemControlContent_PointerTool : ToolBarItemControlContentSi
     }
 
     protected override Size ArrangeOverride(Size finalSize) {
-        if (this.PART_Path == null)
-            return base.ArrangeOverride(finalSize);
-
-        Size size = finalSize.Deflate(this.Padding);
-        double sX = size.Width / this.PART_Path.Width, sY = size.Height / this.PART_Path.Height;
-        this.PART_Path!.RenderTransform = new ScaleTransform(Math.Min(sX, sY), Math.Min(sX, sY));
-        this.PART_Path.Arrange(new Rect(0, 0, finalSize.Width, finalSize.Height).CenterRect(new Rect(0, 0, size.Width, size.Height)));
-        return finalSize;
+        return PathHelper.Arrange(this, this.PART_Path, finalSize, out Size arrange) ? arrange : base.ArrangeOverride(finalSize);
     }
 }
 
@@ -116,13 +126,7 @@ public class ToolBarItemControlContent_BrushTool : ToolBarItemControlContentSing
     }
 
     protected override Size ArrangeOverride(Size finalSize) {
-        if (this.PART_Panel == null)
-            return base.ArrangeOverride(finalSize);
-
-        Size size = finalSize.Deflate(this.Padding);
-        this.PART_Panel!.RenderTransform = new ScaleTransform(size.Width / this.PART_Panel.Width, size.Height / this.PART_Panel.Height);
-        this.PART_Panel.Arrange(new Rect(0, 0, finalSize.Width, finalSize.Height).CenterRect(new Rect(0, 0, size.Width, size.Height)));
-        return finalSize;
+        return PathHelper.Arrange(this, this.PART_Panel, finalSize, out Size arrange) ? arrange : base.ArrangeOverride(finalSize);
     }
 }
 
@@ -135,13 +139,7 @@ public class ToolBarItemControlContent_PencilTool : ToolBarItemControlContentSin
     }
 
     protected override Size ArrangeOverride(Size finalSize) {
-        if (this.PART_Path == null)
-            return base.ArrangeOverride(finalSize);
-
-        Size size = finalSize.Deflate(this.Padding);
-        this.PART_Path!.RenderTransform = new ScaleTransform(size.Width / this.PART_Path.Width, size.Height / this.PART_Path.Height);
-        this.PART_Path.Arrange(new Rect(0, 0, finalSize.Width, finalSize.Height).CenterRect(new Rect(0, 0, size.Width, size.Height)));
-        return finalSize;
+        return PathHelper.Arrange(this, this.PART_Path, finalSize, out Size arrange) ? arrange : base.ArrangeOverride(finalSize);
     }
 }
 
@@ -154,14 +152,7 @@ public class ToolBarItemControlContent_FloodFillTool : ToolBarItemControlContent
     }
 
     protected override Size ArrangeOverride(Size finalSize) {
-        if (this.PART_Panel == null)
-            return base.ArrangeOverride(finalSize);
-
-        Size size = finalSize.Deflate(this.Padding);
-        double sX = size.Width / this.PART_Panel.Width, sY = size.Height / this.PART_Panel.Height;
-        this.PART_Panel!.RenderTransform = new ScaleTransform(Math.Min(sX, sY), Math.Min(sX, sY));
-        this.PART_Panel.Arrange(new Rect(0, 0, finalSize.Width, finalSize.Height).CenterRect(new Rect(0, 0, size.Width, size.Height)));
-        return finalSize;
+        return PathHelper.Arrange(this, this.PART_Panel, finalSize, out Size arrange) ? arrange : base.ArrangeOverride(finalSize);
     }
 }
 

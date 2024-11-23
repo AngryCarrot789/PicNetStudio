@@ -41,6 +41,10 @@ public class ComplexNumericExpression {
         this.states = new Stack<ExpressionState>();
         ExpressionState defState = new ExpressionState(this, -1);
 
+        // standard variables
+        defState.SetVariable("pi", Math.PI);
+        defState.SetVariable("e", Math.E);
+        
         // standard functions
         defState.SetFunction("sin", Math.Sin);
         defState.SetFunction("cos", Math.Cos);
@@ -249,12 +253,12 @@ public class ComplexNumericExpression {
     }
 
     public class ExpressionState : IDisposable {
-        private Dictionary<string, Func<double, double>> spfunctions;
-        private Dictionary<string, Func<IReadOnlyList<double>, double>> mpfunctions;
-        private Dictionary<string, Func<double>> variables;
+        private Dictionary<string, Func<double, double>>? spfunctions;
+        private Dictionary<string, Func<IReadOnlyList<double>, double>>? mpfunctions;
+        private Dictionary<string, Func<double>>? variables;
         private readonly ComplexNumericExpression expression;
         private readonly int index;
-        private readonly ExpressionState parent;
+        private readonly ExpressionState? parent;
 
         public bool IsReadOnly => this.index == -1 && this.expression.isReadOnly;
 
@@ -279,14 +283,14 @@ public class ComplexNumericExpression {
         }
 
         public bool ContainsVariable(string name) {
-            return this.variables != null && this.variables.ContainsKey(name) || this.parent.ContainsVariable(name);
+            return this.variables != null && this.variables.ContainsKey(name) || (this.parent != null && this.parent.ContainsVariable(name));
         }
 
         public double Invoke(string name, double parameter) {
-            if (this.spfunctions != null && this.spfunctions.TryGetValue(name, out Func<double, double> a)) {
+            if (this.spfunctions != null && this.spfunctions.TryGetValue(name, out Func<double, double>? a)) {
                 return a(parameter);
             }
-            else if (this.mpfunctions != null && this.mpfunctions.TryGetValue(name, out Func<IReadOnlyList<double>, double> b)) {
+            else if (this.mpfunctions != null && this.mpfunctions.TryGetValue(name, out Func<IReadOnlyList<double>, double>? b)) {
                 return b(new SingletonReadOnlyList<double>(parameter));
             }
             else if (this.parent != null) {
@@ -298,11 +302,11 @@ public class ComplexNumericExpression {
         }
 
         public double Invoke(string name, IReadOnlyList<double> parameters) {
-            if (this.mpfunctions != null && this.mpfunctions.TryGetValue(name, out Func<IReadOnlyList<double>, double> a)) {
+            if (this.mpfunctions != null && this.mpfunctions.TryGetValue(name, out Func<IReadOnlyList<double>, double>? a)) {
                 return a(parameters);
             }
             else if (parameters.Count == 1) {
-                if (this.spfunctions != null && this.spfunctions.TryGetValue(name, out Func<double, double> b)) {
+                if (this.spfunctions != null && this.spfunctions.TryGetValue(name, out Func<double, double>? b)) {
                     return b(parameters[0]);
                 }
                 else if (this.parent != null) {
@@ -321,7 +325,7 @@ public class ComplexNumericExpression {
         }
 
         public bool TryGetVariable(string name, out double value) {
-            if (this.variables != null && this.variables.TryGetValue(name, out Func<double> provider)) {
+            if (this.variables != null && this.variables.TryGetValue(name, out Func<double>? provider)) {
                 value = provider();
                 return true;
             }
@@ -348,7 +352,7 @@ public class ComplexNumericExpression {
                 throw new ArgumentNullException(nameof(provider));
             if (string.IsNullOrWhiteSpace(name))
                 throw new ArgumentException("Name cannot be null, empty or whitespaces");
-            (this.variables ?? (this.variables = new Dictionary<string, Func<double>>()))[name] = provider;
+            (this.variables ??= new Dictionary<string, Func<double>>())[name] = provider;
         }
 
         /// <summary>
@@ -362,7 +366,7 @@ public class ComplexNumericExpression {
             this.ValidateNotReadOnly();
             if (string.IsNullOrWhiteSpace(name))
                 throw new ArgumentException("Name cannot be null, empty or whitespaces");
-            (this.variables ?? (this.variables = new Dictionary<string, Func<double>>()))[name] = () => value;
+            (this.variables ??= new Dictionary<string, Func<double>>())[name] = () => value;
         }
 
         /// <summary>
@@ -379,7 +383,7 @@ public class ComplexNumericExpression {
                 throw new ArgumentNullException(nameof(provider));
             if (string.IsNullOrWhiteSpace(name))
                 throw new ArgumentException("Name cannot be null, empty or whitespaces");
-            (this.spfunctions ?? (this.spfunctions = new Dictionary<string, Func<double, double>>()))[name] = provider;
+            (this.spfunctions ??= new Dictionary<string, Func<double, double>>())[name] = provider;
         }
 
         /// <summary>
@@ -397,7 +401,7 @@ public class ComplexNumericExpression {
                 throw new ArgumentNullException(nameof(provider));
             if (string.IsNullOrWhiteSpace(name))
                 throw new ArgumentException("Name cannot be null, empty or whitespaces");
-            (this.mpfunctions ?? (this.mpfunctions = new Dictionary<string, Func<IReadOnlyList<double>, double>>()))[name] = provider;
+            (this.mpfunctions ??= new Dictionary<string, Func<IReadOnlyList<double>, double>>())[name] = provider;
         }
 
         private void ValidateNotReadOnly() {

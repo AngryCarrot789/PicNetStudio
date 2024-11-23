@@ -55,8 +55,13 @@ public abstract class BaseSimpleShapeLayer : BaseShapeLayer {
     public static readonly DataParameterFloat WidthParameter = DataParameter.Register(new DataParameterFloat(typeof(BaseSimpleShapeLayer), nameof(Width), 0.0F, ValueAccessors.Reflective<float>(typeof(BaseSimpleShapeLayer), nameof(width))));
     public static readonly DataParameterFloat HeightParameter = DataParameter.Register(new DataParameterFloat(typeof(BaseSimpleShapeLayer), nameof(Height), 0.0F, ValueAccessors.Reflective<float>(typeof(BaseSimpleShapeLayer), nameof(height))));
 
-    private float width = WidthParameter.DefaultValue;
-    private float height = HeightParameter.DefaultValue;
+    private float width;
+    private float height;
+
+    public BaseSimpleShapeLayer() {
+        this.width = WidthParameter.GetDefaultValue(this);
+        this.height = HeightParameter.GetDefaultValue(this);
+    }
 
     public float Width {
         get => this.width;

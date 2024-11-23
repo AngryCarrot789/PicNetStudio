@@ -69,12 +69,13 @@ public class EditorToolBar {
         // TODO: Factories?
         // RZApplication.Instance.Services.GetService<>()
 
-        this.items.Add(new SingleToolBarItem(new PointerTool()));
+        this.items.Add(new SingleToolBarItem(new CursorTool()));
         this.items.Add(new SingleToolBarItem(new BrushTool()));
         this.items.Add(new SingleToolBarItem(new PencilTool()));
         this.items.Add(new SingleToolBarItem(new FloodFillTool()));
         this.items.Add(new SingleToolBarItem(new SelectRegionTool()));
 
-        this.ActiveToolItem = (SingleToolBarItem?) this.items[0];
+        // Select brush by default
+        this.ActiveToolItem = (SingleToolBarItem) this.items[1];
     }
 }

@@ -38,13 +38,13 @@ public class TextLayer : BaseVisualLayer {
     public static readonly DataParameterBool IsAntiAliasedParameter = DataParameter.Register(new DataParameterBool(typeof(TextLayer), nameof(IsAntiAliased), true, ValueAccessors.Reflective<bool>(typeof(TextLayer), nameof(isAntiAliased))));
     public static readonly DataParameterDouble LineHeightMultiplierParameter = DataParameter.Register(new DataParameterDouble(typeof(TextLayer), nameof(LineHeightMultiplier), 1.0, ValueAccessors.Reflective<double>(typeof(TextLayer), nameof(lineHeightMultiplier))));
     
-    private string? text = TextParameter.DefaultValue;
-    private double fontSize = FontSizeParameter.DefaultValue;
-    private string? fontFamily = FontFamilyParameter.DefaultValue;
-    private double borderThickness = BorderThicknessParameter.DefaultValue;
-    private float skewX = SkewXParameter.DefaultValue;
-    private bool isAntiAliased = IsAntiAliasedParameter.DefaultValue;
-    private double lineHeightMultiplier = LineHeightMultiplierParameter.DefaultValue;
+    private string? text;
+    private double fontSize;
+    private string? fontFamily;
+    private double borderThickness;
+    private float skewX;
+    private bool isAntiAliased;
+    private double lineHeightMultiplier;
     private BitVector32 clipProps;
     private SKTextBlob?[]? TextBlobs;
     private Vector2 TextBlobBoundingBox;
@@ -95,6 +95,13 @@ public class TextLayer : BaseVisualLayer {
     public SKFont? GeneratedFont { get; private set; }
 
     public TextLayer() {
+        this.text = TextParameter.DefaultValue;
+        this.fontSize = FontSizeParameter.GetDefaultValue(this);
+        this.fontFamily = FontFamilyParameter.DefaultValue;
+        this.borderThickness = BorderThicknessParameter.GetDefaultValue(this);
+        this.skewX = SkewXParameter.GetDefaultValue(this);
+        this.isAntiAliased = IsAntiAliasedParameter.GetDefaultValue(this);
+        this.lineHeightMultiplier = LineHeightMultiplierParameter.GetDefaultValue(this);
         this.clipProps = new BitVector32();
         this.foreground = SKColors.Black;
         this.border = SKColors.DarkGray;

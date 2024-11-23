@@ -1,5 +1,5 @@
 ﻿// 
-// Copyright (c) 2024-2024 REghZy
+// Copyright (c) 2023-2024 REghZy
 // 
 // This file is part of PicNetStudio.
 // 
@@ -25,8 +25,14 @@ namespace PicNetStudio.Avalonia.PicNet.Toolbars;
 public delegate void BaseActivatableToolBarItemIsActiveChangedEventHandler(SingleToolBarItem sender);
 
 public class SingleToolBarItem : BaseToolBarItem, IToolBarItem {
+    /// <summary>
+    /// Gets whether this toolbar item is currently activated
+    /// </summary>
     public bool IsActive { get; private set; }
 
+    /// <summary>
+    /// Gets our single tool
+    /// </summary>
     public BaseCanvasTool Tool { get; }
 
     public event BaseActivatableToolBarItemIsActiveChangedEventHandler? IsActiveChanged;

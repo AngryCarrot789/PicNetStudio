@@ -33,21 +33,22 @@ public class FloodFillTool : BaseDrawingTool {
     public FloodFillTool() {
     }
     
-    public override bool OnCursorPressed(Document document, SKPointD pos, SKPointD absPos, int count, EnumCursorType cursor, KeyModifiers modifiers) {
-        if (base.OnCursorPressed(document, pos, absPos, count, cursor, modifiers))
+    public override bool OnCursorPressed(Document document, SKPointD relPos, SKPointD absPos, int count, EnumCursorType cursor, KeyModifiers modifiers) {
+        if (base.OnCursorPressed(document, relPos, absPos, count, cursor, modifiers))
             return true;
 
         if ((cursor != EnumCursorType.Primary && cursor != EnumCursorType.Secondary) || modifiers != KeyModifiers.None)
             return false;
 
-        if (document.Canvas.ActiveLayerTreeObject is not RasterLayer bitmapLayer)
-            return false;
+        if (document.Canvas.ActiveLayerTreeObject is RasterLayer bitmapLayer) {
+            SKColor replaceColour = cursor == EnumCursorType.Primary ? document.Editor!.PrimaryColour : document.Editor!.SecondaryColour;
+            DrawPixels(bitmapLayer.Bitmap, (int) Math.Floor(relPos.X), (int) Math.Floor(relPos.Y), (uint) replaceColour, document.Canvas.SelectionRegion);
 
-        SKColor replaceColour = cursor == EnumCursorType.Primary ? document.Editor!.PrimaryColour : document.Editor!.SecondaryColour;
-        DrawPixels(bitmapLayer.Bitmap, (int) Math.Floor(pos.X), (int) Math.Floor(pos.Y), (uint) replaceColour, document.Canvas.SelectionRegion);
-        
-        bitmapLayer.InvalidateVisual();
-        return true;
+            bitmapLayer.InvalidateVisual();
+            return true;
+        }
+
+        return false;
     }
 
     public static unsafe void DrawPixels(PNBitmap bitmap, int fillX, int fillY, uint bgraReplace, BaseSelection? selection) {
@@ -64,6 +65,7 @@ public class FloodFillTool : BaseDrawingTool {
             minY = rectangle.Top;
             maxX = rectangle.Right;
             maxY = rectangle.Bottom;
+            // TODO: need to take into account transformation matrices
         }
         
         if (fillX < minX || fillY < minY || fillX >= maxX || fillY >= maxY)

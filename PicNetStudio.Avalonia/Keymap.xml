@@ -20,6 +20,9 @@
                 <Shortcut Name="DecreaseBrushSize" CommandId="command.tool.BaseDiameterTool.DecreaseBrushSize">
                     <KeyStroke Key="OemOpenBrackets"/>
                 </Shortcut>
+                <Shortcut Name="SelectCursorTool" CommandId="command.toolbar.SelectCursorTool">
+                    <KeyStroke Key="C"/>
+                </Shortcut>
                 <Shortcut Name="SelectBrush" CommandId="command.toolbar.SelectBrushTool">
                     <KeyStroke Key="B"/>
                 </Shortcut>

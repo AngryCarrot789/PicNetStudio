@@ -155,7 +155,6 @@ public abstract class BaseLayerTreeViewItem : TreeViewItem, ILayerNodeItem {
                     this.LayerObject.Name = newName;
             }
 
-
             this.Focus();
             e.Handled = true;
         }
@@ -465,20 +464,27 @@ public abstract class BaseLayerTreeViewItem : TreeViewItem, ILayerNodeItem {
 
         try {
             this.isProcessingAsyncDrop = true;
+            Point point = e.GetPosition(this);
+            double borderTop, borderBottom;
             if (!GetDropResourceListForEvent(e, out List<BaseLayerTreeObject>? itemList, out EnumDropType dropType)) {
-                if (!(layer is CompositionLayer) && !await LayerDropRegistry.DropRegistry.OnDroppedNative(layer, new DataObjectWrapper(e.Data), dropType))
-                    await IoC.MessageService.ShowMessage("Unknown Data", "Unknown dropped item. Drop files here");
+                this.GetDropBorder(true, out borderTop, out borderBottom);
+                bool thing = DoubleUtils.LessThan(point.Y, borderTop);
+                ContextData ctx = new ContextData().Set(LayerDropRegistry.IsAboveTarget, thing);
+                if (await LayerDropRegistry.DropRegistry.OnDroppedNative(layer, new DataObjectWrapper(e.Data), dropType, ctx)) {
+                    return;
+                }
+
+                await IoC.MessageService.ShowMessage("Unknown Data", "Unknown dropped item. Drop files here");
                 return;
             }
 
-            Point point = e.GetPosition(this);
             bool isDropAbove;
             bool? canDragOver = ProcessCanDragOver(this.LayerObject, e);
             if (!canDragOver.HasValue) {
                 return;
             }
             
-            this.GetDropBorder(!(canDragOver ?? false), out double borderTop, out double borderBottom);
+            this.GetDropBorder(!(canDragOver ?? false), out borderTop, out borderBottom);
             if (DoubleUtils.LessThan(point.Y, borderTop)) {
                 isDropAbove = true;
             }

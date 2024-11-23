@@ -20,6 +20,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using PicNetStudio.Avalonia.Utils;
 
 namespace PicNetStudio.Avalonia.Interactivity.Contexts;
 
@@ -86,6 +87,7 @@ public class DataKey<T> : DataKey {
     }
 
     public bool TryGetContext(IContextData context, [MaybeNullWhen(false)] out T value) {
+        Validate.NotNull(context);
         if (context.TryGetContext(this.Id, out object? obj)) {
             value = obj is T t ? t : throw new Exception($"Context contained an invalid value for this key: type mismatch ({typeof(T)} != {obj.GetType()})");
             return true;

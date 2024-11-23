@@ -26,6 +26,7 @@ using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
+using PicNetStudio.Avalonia.Interactivity;
 using PicNetStudio.Avalonia.PicNet.Layers;
 using PicNetStudio.Avalonia.PicNet.Layers.Core;
 using PicNetStudio.Avalonia.Utils;
@@ -49,7 +50,7 @@ public class CanvasViewPortControl : TemplatedControl, ICanvasElement {
         get => this.GetValue(EditorProperty);
         set => this.SetValue(EditorProperty, value);
     }
-    
+
     /// <summary>
     /// Gets or sets the document that this canvas control will draw and watch the states of
     /// </summary>
@@ -74,10 +75,10 @@ public class CanvasViewPortControl : TemplatedControl, ICanvasElement {
     public TransformationContainer PART_CanvasContainer;
 
     // tiled background + selection borders stuff
-    private static DrawingBrush? tiledTransparencyBrush;
     private const double DashStrokeSize = 8;
     private DashStyle? dashStyle1, dashStyle2;
     private Pen? outlinePen1, outlinePen2;
+    private bool isProcessingAsyncDrop;
 
     public BaseSelection SelectionPreview { get; set; }
 
@@ -86,12 +87,18 @@ public class CanvasViewPortControl : TemplatedControl, ICanvasElement {
         AffectsMeasure<Image>(DocumentProperty);
         DocumentProperty.Changed.AddClassHandler<CanvasViewPortControl, Document?>(OnDocumentChanged);
         EditorProperty.Changed.AddClassHandler<CanvasViewPortControl, Editor?>((o, e) => o.OnEditorChanged(e.OldValue.GetValueOrDefault(), e.NewValue.GetValueOrDefault()));
+
+        DragDrop.DragEnterEvent.AddClassHandler<CanvasViewPortControl>((o, e) => o.OnDragEnter(e));
+        DragDrop.DragOverEvent.AddClassHandler<CanvasViewPortControl>((o, e) => o.OnDragOver(e));
+        DragDrop.DragLeaveEvent.AddClassHandler<CanvasViewPortControl>((o, e) => o.OnDragLeave(e));
+        DragDrop.DropEvent.AddClassHandler<CanvasViewPortControl>((o, e) => o.OnDrop(e));
     }
 
     public CanvasViewPortControl() {
         this.Loaded += this.OnLoaded;
         this.inptHandler = new CanvasInputHandler(this);
         this.rdaInvalidateRender = new RapidDispatchAction(this.RenderCanvas, "RDAInvalidateRender");
+        DragDrop.SetAllowDrop(this, true);
 
         this.updateDashStyleOffsetTimer = new DispatcherTimer(TimeSpan.FromSeconds(0.1d), DispatcherPriority.Background, (sender, args) => {
             if (this.dashStyle1 == null || this.dashStyle2 == null) {
@@ -140,36 +147,8 @@ public class CanvasViewPortControl : TemplatedControl, ICanvasElement {
     private void OnEndRenderViewPort(SKAsyncViewPort sender, DrawingContext ctx, Size size, Point minatureOffset) {
         // Not sure how render-intensive DrawingBrush is, especially with GeometryDrawing
         // But since it's not drawing actual Visuals, just geometry, it should be lightning fast.
-        tiledTransparencyBrush ??= new DrawingBrush() {
-            Drawing = new DrawingGroup() {
-                Children = {
-                    new GeometryDrawing() {
-                        Brush = Brushes.White,
-                        Geometry = new GeometryGroup() {
-                            Children = {
-                                new RectangleGeometry(new Rect(0, 0, 8, 8)),
-                                new RectangleGeometry(new Rect(8, 8, 8, 8)),
-                            }
-                        }
-                    },
-                    new GeometryDrawing() {
-                        Brush = Brushes.DarkGray,
-                        Geometry = new GeometryGroup() {
-                            Children = {
-                                new RectangleGeometry(new Rect(8, 0, 8, 8)),
-                                new RectangleGeometry(new Rect(0, 8, 8, 8)),
-                            }
-                        }
-                    }
-                }
-            },
-            TileMode = TileMode.Tile,
-            // This is important in order for repeating tiles to work
-            DestinationRect = new RelativeRect(0, 0, 16, 16, RelativeUnit.Absolute),
-        };
-
         using (this.PushInverseScale(ctx, out double scale)) {
-            ctx.DrawRectangle(tiledTransparencyBrush, null, new Rect(default, size * scale));
+            ctx.DrawRectangle(TiledBrush.TiledTransparencyBrush8, null, new Rect(default, size * scale));
         }
     }
 
@@ -246,7 +225,7 @@ public class CanvasViewPortControl : TemplatedControl, ICanvasElement {
     private void OnActiveLayerChanged(Canvas canvas, BaseLayerTreeObject? oldactivelayertreeobject, BaseLayerTreeObject? newactivelayertreeobject) {
         this.UpdateCursorForActiveLayer(newactivelayertreeobject);
     }
-    
+
     private void OnEditorChanged(Editor? oldEditor, Editor? newEditor) {
     }
 
@@ -278,4 +257,40 @@ public class CanvasViewPortControl : TemplatedControl, ICanvasElement {
         this.PART_SkiaViewPort.Width = size.Width;
         this.PART_SkiaViewPort.Height = size.Height;
     }
+
+    #region Drag drop
+
+    private void OnDragEnter(DragEventArgs e) {
+        this.OnDragOver(e);
+    }
+
+    private void OnDragOver(DragEventArgs e) {
+        if (!(this.Document is Document document))
+            return;
+
+        EnumDropType effects = DropUtils.GetDropAction(e.KeyModifiers, (EnumDropType) e.DragEffects & EnumDropType.Copy);
+        e.DragEffects = (DragDropEffects) CanvasDropRegistry.DropRegistry.CanDropNative(document.Canvas, new DataObjectWrapper(e.Data), effects);
+    }
+
+    private void OnDragLeave(DragEventArgs e) {
+    }
+
+    private async void OnDrop(DragEventArgs e) {
+        e.Handled = true;
+        if (!(this.Document is Document document))
+            return;
+
+        EnumDropType effects = DropUtils.GetDropAction(e.KeyModifiers, (EnumDropType) e.DragEffects & EnumDropType.Copy);
+        try {
+            this.isProcessingAsyncDrop = true;
+            if (!await CanvasDropRegistry.DropRegistry.OnDroppedNative(document.Canvas, new DataObjectWrapper(e.Data), effects)) {
+                await IoC.MessageService.ShowMessage("Unknown Data", "Unknown dropped item. Drop files here");
+            }
+        }
+        finally {
+            this.isProcessingAsyncDrop = false;
+        }
+    }
+
+    #endregion
 }

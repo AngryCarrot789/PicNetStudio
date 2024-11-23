@@ -33,10 +33,10 @@ public class RasterLayer : BaseVisualLayer {
     public static readonly DataParameterFloat ChannelBParameter = DataParameter.Register(new DataParameterFloat(typeof(RasterLayer), nameof(ChannelB), 1.0f, 0.0f, 1.0f, ValueAccessors.Reflective<float>(typeof(RasterLayer), nameof(channelB))));
     public static readonly DataParameterFloat ChannelAParameter = DataParameter.Register(new DataParameterFloat(typeof(RasterLayer), nameof(ChannelA), 1.0f, 0.0f, 1.0f, ValueAccessors.Reflective<float>(typeof(RasterLayer), nameof(channelA))));
 
-    private float channelR = ChannelRParameter.DefaultValue;
-    private float channelG = ChannelGParameter.DefaultValue;
-    private float channelB = ChannelBParameter.DefaultValue;
-    private float channelA = ChannelAParameter.DefaultValue;
+    private float channelR;
+    private float channelG;
+    private float channelB;
+    private float channelA;
 
     // TODO: Make channels an effect
     // and maybe use internal effect detection to improve performance;
@@ -65,6 +65,10 @@ public class RasterLayer : BaseVisualLayer {
     public PNBitmap Bitmap { get; }
 
     public RasterLayer() {
+        this.channelR = ChannelRParameter.GetDefaultValue(this);
+        this.channelG = ChannelGParameter.GetDefaultValue(this);
+        this.channelB = ChannelBParameter.GetDefaultValue(this);
+        this.channelA = ChannelAParameter.GetDefaultValue(this);
         this.Bitmap = new PNBitmap();
         this.UsesCustomOpacityCalculation = true;
     }

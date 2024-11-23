@@ -28,21 +28,21 @@ namespace PicNetStudio.Avalonia.PicNet.Tools.Core;
 /// Base class for a <see cref="BaseRasterisedDrawingTool"/> that uses a diameter based tool size
 /// </summary>
 public abstract class BaseDiameterTool : BaseRasterisedDrawingTool {
-    public static readonly DataParameterFloat DiameterDataParameter = DataParameter.Register(new DataParameterFloat(typeof(BaseDiameterTool), nameof(Diameter), 10.0f, 0.5f, 1000f, ValueAccessors.Reflective<float>(typeof(BaseDiameterTool), nameof(diameter))));
+    public static readonly DataParameterFloat DiameterParameter = DataParameter.Register(new DataParameterFloat(typeof(BaseDiameterTool), nameof(Diameter), 10.0f, 0.5f, 1000f, ValueAccessors.Reflective<float>(typeof(BaseDiameterTool), nameof(diameter))));
 
-    private float diameter = DiameterDataParameter.DefaultValue;
-
+    private float diameter;
     public float Diameter {
         get => this.diameter;
-        set => DataParameter.SetValueHelper(this, DiameterDataParameter, ref this.diameter, value);
+        set => DataParameter.SetValueHelper(this, DiameterParameter, ref this.diameter, value);
     }
 
     protected BaseDiameterTool() {
+        this.diameter = DiameterParameter.GetDefaultValue(this);
         UpdateGap(this);
     }
 
     static BaseDiameterTool() {
-        DiameterDataParameter.ValueChanged += OnDiameterDataParameterOnValueChanged;
+        DiameterParameter.ValueChanged += OnDiameterParameterOnValueChanged;
         IsGapAutomaticParameter.ValueChanged += OnIsGapAutomaticParameterOnValueChanged;
     }
     
@@ -59,7 +59,7 @@ public abstract class BaseDiameterTool : BaseRasterisedDrawingTool {
         }
     }
 
-    private static void OnDiameterDataParameterOnValueChanged(DataParameter parameter, ITransferableData owner) {
+    private static void OnDiameterParameterOnValueChanged(DataParameter parameter, ITransferableData owner) {
         UpdateGap((BaseDiameterTool) owner);
         ((BaseDiameterTool) owner).OnDiameterChanged();
     }

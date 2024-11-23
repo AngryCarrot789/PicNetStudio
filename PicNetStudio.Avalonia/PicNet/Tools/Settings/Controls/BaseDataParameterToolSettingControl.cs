@@ -91,7 +91,7 @@ public abstract class BaseDataParameterToolSettingControl : BaseToolSettingContr
     
     private void OnSettingValueChanged(BaseDataParameterToolSetting sender) => this.OnModelValueChanged();
     
-    private void OnSettingDisplayNameChanged(BaseDataParameterToolSetting sender) => this.UpdateDisplayName();
+    private void OnSettingDisplayNameChanged(BaseToolSetting tool) => this.UpdateDisplayName();
 
     private void UpdateDisplayName() {
         if (!this.IsConnected || this.displayNameTextBlock == null)
@@ -198,7 +198,7 @@ public class AutomaticDataParameterFloatToolSettingControl : DataParameterNumber
 
     private void PartDraggerOnInvalidInputEntered(object? sender, InvalidInputEnteredEventArgs e) {
         BaseCanvasTool? tool = this.ToolSetting!.Tool;
-        if (tool != null && ("auto".EqualsIgnoreCase(e.Input) || "automatic".EqualsIgnoreCase(e.Input))) {
+        if (tool != null && ("auto".EqualsIgnoreCase(e.Input) || "automatic".EqualsIgnoreCase(e.Input) || "\"auto\"".EqualsIgnoreCase(e.Input))) {
             this.ToolSetting!.IsAutomaticParameter.SetValue(tool, true);
         }
     }
@@ -224,10 +224,10 @@ public class AutomaticDataParameterFloatToolSettingControl : DataParameterNumber
 
     private void UpdateTextPreview() {
         if (this.ToolSetting!.IsAutomaticParameter.GetValue(this.ToolSetting!.Tool!)) {
-            this.PART_Dragger.TextPreviewOverride = $"Auto ({this.SettingValue:F2})";
+            this.PART_Dragger.FinalPreviewStringFormat = "Auto ({0})";
         }
         else {
-            this.PART_Dragger.TextPreviewOverride = null;
+            this.PART_Dragger.FinalPreviewStringFormat = null;
         }
     }
 
@@ -256,6 +256,28 @@ public class DataParameterDoubleToolSettingControl : DataParameterNumberDraggerT
         DataParameterDouble param = setting.Parameter;
         this.PART_Dragger.Minimum = param.Minimum;
         this.PART_Dragger.Maximum = param.Maximum;
+    }
+
+    protected override void ResetValue() {
+        this.ToolSetting!.Value = this.ToolSetting.Parameter.DefaultValue;
+    }
+}
+
+public class DataParameterLongToolSettingControl : DataParameterNumberDraggerToolSettingControl {
+    public new DataParameterLongToolSetting? ToolSetting => (DataParameterLongToolSetting?) base.ToolSetting;
+
+    protected override double SettingValue {
+        get => this.ToolSetting!.Value;
+        set => this.ToolSetting!.Value = (long) value;
+    }
+
+    protected override void OnConnect() {
+        base.OnConnect();
+        DataParameterLongToolSetting setting = this.ToolSetting!;
+        DataParameterLong param = setting.Parameter;
+        this.PART_Dragger.Minimum = param.Minimum;
+        this.PART_Dragger.Maximum = param.Maximum;
+        this.PART_Dragger.IsIntegerValue = true;
     }
 
     protected override void ResetValue() {

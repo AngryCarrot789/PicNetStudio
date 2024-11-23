@@ -28,32 +28,35 @@ namespace PicNetStudio.Avalonia.PicNet.Tools.Core;
 /// A tool which crates a selection region in the canvas
 /// </summary>
 public class SelectRegionTool : BaseCanvasTool {
-    private Point clickPos;
+    private Point? clickPos;
 
     public SelectRegionTool() {
     }
 
-    public override bool OnCursorPressed(Document document, SKPointD pos, SKPointD absPos, int count, EnumCursorType cursor, KeyModifiers modifiers) {
-        if (cursor != EnumCursorType.Primary || modifiers != KeyModifiers.None) {
-            return false;
+    public override bool OnCursorPressed(Document document, SKPointD relPos, SKPointD absPos, int count, EnumCursorType cursor, KeyModifiers modifiers) {
+        if (cursor == EnumCursorType.Primary && modifiers == KeyModifiers.None) {
+            document.Canvas.SelectionRegion = CreateSelection((this.clickPos = new Point(absPos.X, absPos.Y)).Value, new Point(absPos.X, absPos.Y));
+            return true;
         }
 
-        this.clickPos = new Point(pos.X, pos.Y);
-        document.Canvas.SelectionRegion = CreateSelection(this.clickPos, new Point(pos.X, pos.Y));
+        return false;
+    }
+
+    public override bool OnCursorReleased(Document document, SKPointD relPos, SKPointD absPos, EnumCursorType cursor, KeyModifiers modifiers) {
+        switch (cursor) {
+            case EnumCursorType.Primary: this.clickPos = null;
+                break;
+            case EnumCursorType.Secondary: document.Canvas.SelectionRegion = null;
+                break;
+            default: return false;
+        }
+
         return true;
     }
 
-    public override bool OnCursorReleased(Document document, SKPointD pos, SKPointD absPos, EnumCursorType cursor, KeyModifiers modifiers) {
-        if (cursor == EnumCursorType.Secondary) {
-            document.Canvas.SelectionRegion = null;
-        }
-        
-        return true;
-    }
-
-    public override bool OnCursorMoved(Document document, SKPointD pos, SKPointD absPos, EnumCursorType cursorMask) {
-        if ((cursorMask & EnumCursorType.Primary) != 0) {
-            document.Canvas.SelectionRegion = CreateSelection(this.clickPos, new Point(pos.X, pos.Y));
+    public override bool OnCursorMoved(Document document, SKPointD relPos, SKPointD absPos, EnumCursorType cursorMask) {
+        if ((cursorMask & EnumCursorType.Primary) != 0 && this.clickPos.HasValue) {
+            document.Canvas.SelectionRegion = CreateSelection(this.clickPos.Value, new Point(absPos.X, absPos.Y));
         }
         
         return true;

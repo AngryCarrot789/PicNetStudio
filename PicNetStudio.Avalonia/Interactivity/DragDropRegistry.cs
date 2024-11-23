@@ -91,7 +91,8 @@ public class DragDropRegistry<THandler> where THandler : class {
     /// <param name="value">The value being dragged</param>
     /// <param name="dropType">The drag drop type</param>
     /// <returns>True if the drag can occur (and show the appropriate icon based on the dropType), otherwise false</returns>
-    public EnumDropType CanDrop(THandler target, object value, EnumDropType dropType, IContextData context = null) {
+    public EnumDropType CanDrop(THandler target, object value, EnumDropType dropType, IContextData? context = null) {
+        context ??= EmptyContext.Instance;
         Type targetType = target.GetType();
         foreach (ITypeEntry<InheritanceDictionary<CustomHandlerPair>> handlerEntry in this.registryCustom.GetLocalValueEnumerable(value.GetType())) {
             foreach (ITypeEntry<CustomHandlerPair> entry in handlerEntry.LocalValue.GetLocalValueEnumerable(targetType)) {
@@ -112,7 +113,8 @@ public class DragDropRegistry<THandler> where THandler : class {
     /// <param name="value">The data object that is being dragged</param>
     /// <param name="dropType">The drag drop type</param>
     /// <returns>True if the drag can occur (and show the appropriate icon based on the dropType), otherwise false</returns>
-    public EnumDropType CanDropNative(THandler target, IDataObjekt value, EnumDropType dropType, IContextData context = null) {
+    public EnumDropType CanDropNative(THandler target, IDataObjekt value, EnumDropType dropType, IContextData? context = null) {
+        context ??= EmptyContext.Instance;
         Type targetType = target.GetType();
         foreach (KeyValuePair<string, InheritanceDictionary<NativeHandlerPair>> pair in this.registryNative) {
             if (!value.GetDataPresent(pair.Key)) {
@@ -143,10 +145,7 @@ public class DragDropRegistry<THandler> where THandler : class {
     /// </param>
     /// <returns>True if a drop handler was called, otherwise false</returns>
     public async Task<bool> OnDropped(THandler target, object value, EnumDropType dropType, IContextData? context = null) {
-        if (context == null) {
-            context = EmptyContext.Instance;
-        }
-
+        context ??= EmptyContext.Instance;
         Type targetType = target.GetType();
         foreach (ITypeEntry<InheritanceDictionary<CustomHandlerPair>> handlerEntry in this.registryCustom.GetLocalValueEnumerable(value.GetType())) {
             foreach (ITypeEntry<CustomHandlerPair> entry in handlerEntry.LocalValue.GetLocalValueEnumerable(targetType)) {
@@ -170,7 +169,8 @@ public class DragDropRegistry<THandler> where THandler : class {
     /// <param name="value">The dropped data object containing operating system data (or a CLR object(s))</param>
     /// <param name="dropType">The type of drop</param>
     /// <returns>True if a drop handler was called, otherwise false</returns>
-    public async Task<bool> OnDroppedNative(THandler target, IDataObjekt value, EnumDropType dropType, IContextData context = null) {
+    public async Task<bool> OnDroppedNative(THandler target, IDataObjekt value, EnumDropType dropType, IContextData? context = null) {
+        context ??= EmptyContext.Instance;
         Type targetType = target.GetType();
         foreach (KeyValuePair<string, InheritanceDictionary<NativeHandlerPair>> registryPair in this.registryNative) {
             if (!value.GetDataPresent(registryPair.Key)) {

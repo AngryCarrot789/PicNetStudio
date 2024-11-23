@@ -24,31 +24,31 @@ namespace PicNetStudio.Avalonia.PicNet.Controls.Dragger;
 /// <summary>
 /// A value formatter that converts a unit value (0.0 to 1.0) into a percentage (0 to 100%) with an optional decimal precision
 /// </summary>
-public class SuffixValueFormatter : BaseSimpleValueFormatter {
-    private string? suffix;
+public class PrefixValueFormatter : BaseSimpleValueFormatter {
+    private string? prefix;
 
-    public string? Suffix {
-        get => this.suffix;
+    public string? Prefix {
+        get => this.prefix;
         set {
-            if (this.suffix == value)
+            if (this.prefix == value)
                 return;
-            this.suffix = value;
+            this.prefix = value;
             this.OnInvalidateFormat();
         }
     }
 
-    public SuffixValueFormatter(string? suffix = null, int nonEditingRoundedPlaces = 2, int editingRoundedPlaces = 6) {
-        this.suffix = suffix;
+    public PrefixValueFormatter(string? prefix = null, int nonEditingRoundedPlaces = 2, int editingRoundedPlaces = 6) {
+        this.prefix = prefix;
         this.NonEditingRoundedPlaces = nonEditingRoundedPlaces;
         this.EditingRoundedPlaces = editingRoundedPlaces;
     }
 
     public override string ToString(double value, bool isEditing) {
-        return value.ToString("F" + (isEditing ? this.EditingRoundedPlaces : this.NonEditingRoundedPlaces)) + (this.suffix ?? "");
+        return value.ToString("F" + (isEditing ? this.EditingRoundedPlaces : this.NonEditingRoundedPlaces)) + (this.prefix ?? "");
     }
 
     public override bool TryConvertToDouble(string format, out double value) {
-        int parseLength = string.IsNullOrEmpty(this.suffix) ? format.Length : (format.Length - this.suffix.Length);
+        int parseLength = string.IsNullOrEmpty(this.prefix) ? format.Length : (format.Length - this.prefix.Length);
         if (parseLength < 1) {
             value = default;
             return false;
@@ -57,7 +57,7 @@ public class SuffixValueFormatter : BaseSimpleValueFormatter {
         return double.TryParse(format.AsSpan(0, parseLength), out value);
     }
 
-    public static SuffixValueFormatter Parse(string input) {
+    public static PrefixValueFormatter Parse(string input) {
         if (string.IsNullOrWhiteSpace(input))
             throw new ArgumentException("Input is null, empty or whitespaces only", nameof(input));
 
@@ -71,6 +71,6 @@ public class SuffixValueFormatter : BaseSimpleValueFormatter {
         if (!int.TryParse(parts[1], out int editingPlaces))
             throw new ArgumentException($"Invalid integer for non-editing part '{parts[1]}'", nameof(input));
 
-        return new SuffixValueFormatter(parts[2], nonEditingPlaces, editingPlaces);
+        return new PrefixValueFormatter(parts[2], nonEditingPlaces, editingPlaces);
     }
 }

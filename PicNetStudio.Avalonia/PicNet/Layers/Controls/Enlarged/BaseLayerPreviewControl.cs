@@ -21,6 +21,7 @@ using System;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls.Primitives;
+using Avalonia.Media;
 using Avalonia.Threading;
 using PicNetStudio.Avalonia.PicNet.Controls;
 using PicNetStudio.Avalonia.PicNet.Layers.Core;
@@ -129,6 +130,11 @@ public class RasterLayerPreviewControl : BaseLayerPreviewControl {
         if (this.LayerNode != null && this.LayerNode.IsInitialized && this.LayerNode.IsEffectivelyVisible) {
             this.rda?.InvokeAsync();
         }
+    }
+
+    public override void Render(DrawingContext context) {
+        base.Render(context);
+        context.DrawRectangle(TiledBrush.TiledTransparencyBrush4, null, new Rect(default, this.Bounds.Size));
     }
 }
 

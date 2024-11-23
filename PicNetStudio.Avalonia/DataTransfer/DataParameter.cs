@@ -266,6 +266,23 @@ public abstract class DataParameter : IEquatable<DataParameter>, IComparable<Dat
     public override string ToString() {
         return $"{this.GetType().Name}({this.GlobalKey})";
     }
+    
+    public bool IsOwnerValid(ITransferableData owner) => this.OwnerType.IsInstanceOfType(owner);
+    public bool IsOwnerValid(Type ownerType) => this.OwnerType.IsAssignableFrom(ownerType);
+
+    public void ValidateOwner(ITransferableData owner) {
+        if (!this.IsOwnerValid(owner))
+            throw this.ExceptionForInvalidOwner(owner.GetType());
+    }
+    
+    public void ValidateOwner(Type ownerType) {
+        if (!this.IsOwnerValid(ownerType))
+            throw this.ExceptionForInvalidOwner(ownerType);
+    }
+
+    private Exception ExceptionForInvalidOwner(Type ownerType) {
+        throw new ArgumentException($"Parameter '{this.GlobalKey}' is incompatible for our owner. '{ownerType.Name}' is not assignable to '{this.OwnerType.Name}'");
+    }
 
     /// <summary>
     /// Returns an enumerable of all parameters that are applicable to the given type.
@@ -329,7 +346,12 @@ public abstract class DataParameter : IEquatable<DataParameter>, IComparable<Dat
 public class DataParameter<T> : DataParameter {
     private readonly ValueAccessor<T> accessor;
     protected readonly bool isObjectAccessPreferred;
+    private Dictionary<Type, T>? overrideDefaultValue;
+    private (Type src, T val)? lastResult;
 
+    /// <summary>
+    /// Gets the default value for this data parameter. For type-specific default values, see <see cref="GetDefaultValue"/>
+    /// </summary>
     public T DefaultValue { get; }
 
     public DataParameter(Type ownerType, string name, ValueAccessor<T> accessor, DataParameterFlags flags = DataParameterFlags.None) : base(ownerType, name, flags) {
@@ -341,6 +363,34 @@ public class DataParameter<T> : DataParameter {
 
     public DataParameter(Type ownerType, string name, T defaultValue, ValueAccessor<T> accessor, DataParameterFlags flags = DataParameterFlags.None) : this(ownerType, name, accessor, flags) {
         this.DefaultValue = defaultValue;
+    }
+
+    public void OverrideDefaultValue(Type ownerType, T newDefaultValue) {
+        this.ValidateOwner(ownerType);
+        (this.overrideDefaultValue ??= new Dictionary<Type, T>())[ownerType] = newDefaultValue;
+        // this.lastResult = default;
+    }
+
+    public T GetDefaultValue(ITransferableData instance) {
+        return this.overrideDefaultValue == null ? this.DefaultValue : this.GetDefaultValue(instance.GetType());
+    }
+
+    public T GetDefaultValue(Type type) {
+        if (this.overrideDefaultValue != null) {
+            // (Type src, T val)? lastPath = this.lastDef;
+            // if (lastPath != null && lastPath.Value.src == type) {
+            //     return lastPath.Value.val;
+            // }
+            
+            for (Type? subType = type; subType != null; subType = subType.BaseType) {
+                if (this.overrideDefaultValue.TryGetValue(subType, out T? value)) {
+                    // this.lastDef = (type, value);
+                    return value;
+                }
+            }
+        }
+
+        return this.DefaultValue;
     }
 
     /// <summary>

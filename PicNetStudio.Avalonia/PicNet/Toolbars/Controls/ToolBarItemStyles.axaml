@@ -90,8 +90,8 @@
                   BasedOn="{StaticResource {x:Type tb:ToolBarItemControlContent}}">
     </ControlTheme>
 
-    <ControlTheme x:Key="{x:Type tb:ToolBarItemControlContent_PointerTool}"
-                  TargetType="{x:Type tb:ToolBarItemControlContent_PointerTool}"
+    <ControlTheme x:Key="{x:Type tb:ToolBarItemControlContent_CursorTool}"
+                  TargetType="{x:Type tb:ToolBarItemControlContent_CursorTool}"
                   BasedOn="{StaticResource {x:Type tb:ToolBarItemControlContentSingleTool}}">
         <Setter Property="Padding" Value="4"/>
         <Setter Property="Template">

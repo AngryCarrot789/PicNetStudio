@@ -19,45 +19,38 @@
 
 using System;
 using PicNetStudio.Avalonia.DataTransfer;
-using PicNetStudio.Avalonia.PicNet.Controls.Dragger;
-using PicNetStudio.Avalonia.PicNet.PropertyEditing.DataTransfer;
 
 namespace PicNetStudio.Avalonia.PicNet.Tools.Settings.DataTransfer;
 
-public delegate void DataParameterToolSettingEventHandler(BaseDataParameterToolSetting sender);
+public delegate void BaseDataParameterToolSettingEventHandler(BaseDataParameterToolSetting sender);
 
+/// <summary>
+/// The base class for a tool setting that uses a single <see cref="DataParameter"/> to get/set the underlying tool value
+/// </summary>
 public abstract class BaseDataParameterToolSetting : BaseToolSetting {
-    private string displayName;
-
     /// <summary>
-    /// Gets the parameter
+    /// The parameter used to communicate a tool's value
     /// </summary>
     public DataParameter Parameter { get; }
 
-    public string DisplayName {
-        get => this.displayName;
-        set {
-            if (this.displayName == value)
-                return;
+    /// <summary>
+    /// An event fired when the value of this tool setting has changed or should be re-queried (as it may be different from an initial state)
+    /// </summary>
+    public event BaseDataParameterToolSettingEventHandler? ValueChanged;
 
-            this.displayName = value;
-            this.DisplayNameChanged?.Invoke(this);
-        }
+    protected BaseDataParameterToolSetting(DataParameter parameter, string? displayName = null) : base(displayName) {
+        this.Parameter = parameter ?? throw new ArgumentNullException(nameof(parameter));
     }
 
-    public event DataParameterToolSettingEventHandler? DisplayNameChanged;
-    public event DataParameterToolSettingEventHandler? ValueChanged;
-
-    protected BaseDataParameterToolSetting(DataParameter parameter, string? displayName = null) {
-        this.Parameter = parameter ?? throw new ArgumentNullException(nameof(parameter));
-        this.displayName = displayName ?? parameter.Name;
+    protected override void ValidatePreConnection(BaseCanvasTool tool) {
+        base.ValidatePreConnection(tool);
+        this.Parameter.ValidateOwner(tool);
     }
 
     protected override void OnConnected() {
         base.OnConnected();
         this.Parameter.AddValueChangedHandler(this.Tool!, this.OnValueChangedForTool);
-        this.QueryValueFromHandlers();
-        this.OnValueChanged();
+        this.QueryValueAndRaiseValueChanged();
     }
 
     protected override void OnDisconnected() {
@@ -66,118 +59,30 @@ public abstract class BaseDataParameterToolSetting : BaseToolSetting {
     }
 
     private void OnValueChangedForTool(DataParameter parameter, ITransferableData owner) {
+        this.QueryValueAndRaiseValueChanged();
+    }
+
+    private void QueryValueAndRaiseValueChanged() {
+        // QueryValue updates the local field value, so we need to raise ValueChanged
+        // afterwards or listening UI controls won't notice the value changing.
+        // This is required since the standard Value properties derived classes might use
+        // are typically set from the UI controls and are treated as a user changing it,
+        // which means it updates the underlying parameter value and issues could occur
         this.QueryValueFromHandlers();
         this.OnValueChanged();
     }
 
-    public abstract void QueryValueFromHandlers();
+    /// <summary>
+    /// Queries the effective value of the parameter from our tool and sets it as
+    /// the local value (so that it does not update our <see cref="Parameter"/>'s value)
+    /// </summary>
+    protected abstract void QueryValueFromHandlers();
 
     /// <summary>
-    /// Raises the value changed event, and optionally updates the <see cref="HasMultipleValues"/> (e.g. for
-    /// if the value of each handler was set to a new value, it can be set to false now)
+    /// Raises the value changed event, which allows the tool setting UI controls to re-query
+    /// the effective value of the parameter and present them in the UI elements' value(s)
     /// </summary>
-    /// <param name="hasMultipleValues">The optional new value of <see cref="HasMultipleValues"/></param>
     protected void OnValueChanged() {
         this.ValueChanged?.Invoke(this);
-    }
-}
-
-public delegate void BaseDataParameterNumberDraggerToolSettingValueFormatterChangedEventHandler(BaseDataParameterNumberDraggerToolSetting sender);
-
-public abstract class BaseDataParameterNumberDraggerToolSetting : BaseDataParameterToolSetting {
-    private IValueFormatter valueFormatter;
-
-    public IValueFormatter ValueFormatter {
-        get => this.valueFormatter;
-        set {
-            if (this.valueFormatter == value)
-                return;
-
-            this.valueFormatter = value;
-            this.ValueFormatterChanged?.Invoke(this);
-        }
-    }
-
-    public DragStepProfile StepProfile { get; }
-    
-    public event BaseDataParameterNumberDraggerToolSettingValueFormatterChangedEventHandler? ValueFormatterChanged;
-
-    protected BaseDataParameterNumberDraggerToolSetting(DataParameter parameter, string? displayName, DragStepProfile stepProfile) : base(parameter, displayName) {
-        this.StepProfile = stepProfile;
-    }
-}
-
-public abstract class BaseDataParameterNumericToolSetting<T> : BaseDataParameterNumberDraggerToolSetting {
-    private T value;
-
-    public T Value {
-        get => this.value;
-        set {
-            value = base.Parameter is IRangedParameter<T> ranged ? ranged.Clamp(value) : value;
-            this.value = value;
-            this.Parameter.SetValue(this.Tool!, value);
-            this.OnValueChanged();
-        }
-    }
-
-    public new DataParameter<T> Parameter => (DataParameter<T>) base.Parameter;
-    
-    public BaseDataParameterNumericToolSetting(DataParameter<T> parameter, string displayName, DragStepProfile stepProfile) : base(parameter, displayName, stepProfile) {
-    }
-
-    public override void QueryValueFromHandlers() {
-        this.value = this.Parameter.GetValue(this.Tool!)!;
-    }
-}
-
-public class DataParameterFloatToolSetting : BaseDataParameterNumericToolSetting<float> {
-    public new DataParameterFloat Parameter => (DataParameterFloat) ((BaseDataParameterToolSetting) this).Parameter;
-
-    public DataParameterFloatToolSetting(DataParameterFloat parameter, string displayName, DragStepProfile stepProfile) : base(parameter, displayName, stepProfile) {
-    }
-}
-
-public class AutomaticDataParameterFloatToolSetting : BaseDataParameterNumberDraggerToolSetting {
-    public new DataParameterFloat Parameter => (DataParameterFloat) ((BaseDataParameterToolSetting) this).Parameter;
-
-    private float value;
-
-    public float Value => this.value;
-
-    public DataParameterBool IsAutomaticParameter { get; }
-    
-    public AutomaticDataParameterFloatToolSetting(DataParameterFloat parameter, DataParameterBool isAutomaticParameter, string displayName, DragStepProfile stepProfile) : base(parameter, displayName, stepProfile) {
-        this.IsAutomaticParameter = isAutomaticParameter;
-    }
-
-    public void SetValue(float newValue, bool? isAutomaticMode) {
-        if (this.Tool == null) {
-            return;
-        }
-        
-        if (isAutomaticMode.HasValue) {
-            this.IsAutomaticParameter.SetValue(this.Tool, isAutomaticMode.Value);
-            
-            // we assume when the automatic state parameter changes, the value parameter is changed immediately
-            if (isAutomaticMode.Value) {
-                return;
-            }
-        }
-        
-        newValue = this.Parameter.Clamp(newValue);
-        this.value = newValue;
-        this.Parameter.SetValue(this.Tool!, newValue);
-        this.OnValueChanged();
-    }
-    
-    public override void QueryValueFromHandlers() {
-        this.value = this.Parameter.GetValue(this.Tool!);
-    }
-}
-
-public class DataParameterDoubleToolSetting : BaseDataParameterNumericToolSetting<double> {
-    public new DataParameterDouble Parameter => (DataParameterDouble) ((BaseDataParameterToolSetting) this).Parameter;
-
-    public DataParameterDoubleToolSetting(DataParameterDouble parameter, string displayName, DragStepProfile stepProfile) : base(parameter, displayName, stepProfile) {
     }
 }

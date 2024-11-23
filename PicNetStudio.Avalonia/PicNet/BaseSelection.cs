@@ -22,12 +22,17 @@ using SkiaSharp;
 namespace PicNetStudio.Avalonia.PicNet;
 
 public abstract class BaseSelection {
+    // TODO: BeginUnsafeClip, EndUnsafeClip
+    // using offscreen buffers, EndUnsafeClip draws it into the PNBitmap in the clipping region
+    
     public abstract void ApplyClip(PNBitmap bitmap);
 
     public abstract void FinishClip(PNBitmap bitmap);
 }
 
 public class RectangleSelection : BaseSelection {
+    private int counter;
+    
     public int Left { get; }
     public int Top { get; }
     public int Right { get; }
@@ -47,11 +52,11 @@ public class RectangleSelection : BaseSelection {
     }
 
     public override void ApplyClip(PNBitmap bitmap) {
-        bitmap.Canvas!.Save();
+        this.counter = bitmap.Canvas!.Save();
         bitmap.Canvas!.ClipRect(new SKRect(this.Left, this.Top, this.Right, this.Bottom));
     }
 
     public override void FinishClip(PNBitmap bitmap) {
-        bitmap.Canvas!.Restore();
+        bitmap.Canvas!.RestoreToCount(this.counter);
     }
 }

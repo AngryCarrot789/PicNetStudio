@@ -112,6 +112,7 @@ public abstract class BaseToolSettingControl : TemplatedControl {
         Registry = new ModelControlRegistry<BaseToolSetting, BaseToolSettingControl>();
         Registry.RegisterType<DataParameterFloatToolSetting>(() => new DataParameterFloatToolSettingControl());
         Registry.RegisterType<DataParameterDoubleToolSetting>(() => new DataParameterDoubleToolSettingControl());
+        Registry.RegisterType<DataParameterLongToolSetting>(() => new DataParameterLongToolSettingControl());
         Registry.RegisterType<AutomaticDataParameterFloatToolSetting>(() => new AutomaticDataParameterFloatToolSettingControl());
     }
 }

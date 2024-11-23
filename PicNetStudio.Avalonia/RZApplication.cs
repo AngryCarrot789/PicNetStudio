@@ -110,7 +110,7 @@ public abstract class RZApplication {
         manager.Register("command.tool.BaseDiameterTool.DecreaseBrushSize", new DecreaseBaseDiameterToolSizeCommand());
         manager.Register("command.generic.ExportImage", new ExportImageCommand());
         manager.Register("command.generic.ExportCanvasToClipboard", new ExportCanvasToClipboardCommand());
-        manager.Register("command.toolbar.SelectPointerTool", new SelectPointerToolCommand());
+        manager.Register("command.toolbar.SelectCursorTool", new SelectCursorToolCommand());
         manager.Register("command.toolbar.SelectBrushTool", new SelectBrushToolCommand());
         manager.Register("command.toolbar.SelectPencilTool", new SelectPencilToolCommand());
         manager.Register("command.toolbar.SelectFillTool", new SelectFillToolCommand());

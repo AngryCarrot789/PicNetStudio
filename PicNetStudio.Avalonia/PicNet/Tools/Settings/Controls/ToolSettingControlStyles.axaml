@@ -52,4 +52,6 @@
     </ControlTheme>
     <ControlTheme x:Key="{x:Type c:DataParameterDoubleToolSettingControl}" TargetType="{x:Type c:DataParameterDoubleToolSettingControl}" BasedOn="{StaticResource {x:Type c:DataParameterNumberDraggerToolSettingControl}}">
     </ControlTheme>
+    <ControlTheme x:Key="{x:Type c:DataParameterLongToolSettingControl}" TargetType="{x:Type c:DataParameterLongToolSettingControl}" BasedOn="{StaticResource {x:Type c:DataParameterNumberDraggerToolSettingControl}}">
+    </ControlTheme>
 </ResourceDictionary>

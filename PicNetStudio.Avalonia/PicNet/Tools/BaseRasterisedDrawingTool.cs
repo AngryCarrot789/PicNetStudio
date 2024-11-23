@@ -37,8 +37,8 @@ public abstract class BaseRasterisedDrawingTool : BaseDrawingTool {
 
     private bool keepDrawing;
     private Point lastDragPos;
-    private float gap = GapParameter.DefaultValue;
-    private bool isGapAutomatic = IsGapAutomaticParameter.DefaultValue;
+    private float gap;
+    private bool isGapAutomatic;
 
     /// <summary>
     /// Gets or sets a property indicating this drawing tool allows drawing with both primary and secondary cursor inputs (left and right mouse)
@@ -62,6 +62,8 @@ public abstract class BaseRasterisedDrawingTool : BaseDrawingTool {
     }
     
     protected BaseRasterisedDrawingTool() {
+        this.gap = GapParameter.GetDefaultValue(this);
+        this.isGapAutomatic = IsGapAutomaticParameter.GetDefaultValue(this);
     }
 
     /// <summary>
@@ -76,8 +78,8 @@ public abstract class BaseRasterisedDrawingTool : BaseDrawingTool {
     /// </param>
     public abstract void DrawPixels(PNBitmap bitmap, Document document, double x, double y, bool isPrimaryColour);
 
-    public override bool OnCursorPressed(Document document, SKPointD pos, SKPointD absPos, int count, EnumCursorType cursor, KeyModifiers modifiers) {
-        if (base.OnCursorPressed(document, pos, absPos, count, cursor, modifiers))
+    public override bool OnCursorPressed(Document document, SKPointD relPos, SKPointD absPos, int count, EnumCursorType cursor, KeyModifiers modifiers) {
+        if (base.OnCursorPressed(document, relPos, absPos, count, cursor, modifiers))
             return true;
 
         // Only allow without modifiers pressed to allow the canvas to be moved around with ALT+LMB
@@ -88,25 +90,24 @@ public abstract class BaseRasterisedDrawingTool : BaseDrawingTool {
             return false;
 
         this.keepDrawing = false;
-        bool ret = DrawEventV2(this, document, pos.X, pos.Y, cursor == EnumCursorType.Primary);
-        return ret;
+        return DrawEventV2(this, document, relPos.X, relPos.Y, cursor == EnumCursorType.Primary);
     }
 
-    public override bool OnCursorReleased(Document document, SKPointD pos, SKPointD absPos, EnumCursorType cursor, KeyModifiers modifiers) {
+    public override bool OnCursorReleased(Document document, SKPointD relPos, SKPointD absPos, EnumCursorType cursor, KeyModifiers modifiers) {
         if (cursor == EnumCursorType.Primary)
             this.keepDrawing = false;
-        return base.OnCursorReleased(document, pos, absPos, cursor, modifiers);
+        return base.OnCursorReleased(document, relPos, absPos, cursor, modifiers);
     }
 
-    public override bool OnCursorMoved(Document document, SKPointD pos, SKPointD absPos, EnumCursorType cursorMask) {
-        if (base.OnCursorMoved(document, pos, absPos, cursorMask))
+    public override bool OnCursorMoved(Document document, SKPointD relPos, SKPointD absPos, EnumCursorType cursorMask) {
+        if (base.OnCursorMoved(document, relPos, absPos, cursorMask))
             return true;
 
         // return if not primary cursor and this brush cannot use secondary, or, it can draw secondary but it wasn't pressed
         if ((cursorMask & EnumCursorType.Primary) == 0 && (!this.CanDrawSecondaryColour || (cursorMask & EnumCursorType.Secondary) == 0))
             return false;
 
-        return DrawEventV2(this, document, pos.X, pos.Y, (cursorMask & EnumCursorType.Primary) != 0);
+        return DrawEventV2(this, document, relPos.X, relPos.Y, (cursorMask & EnumCursorType.Primary) != 0);
     }
 
     public static bool DrawEventV2(BaseRasterisedDrawingTool tool, Document document, double x, double y, bool isPrimaryCursor) {
@@ -118,48 +119,66 @@ public abstract class BaseRasterisedDrawingTool : BaseDrawingTool {
         if (!bitmap.IsInitialised) {
             return false;
         }
-        
+
+        int saveCount = bitmap.Canvas.Save();
         BaseSelection? selection = document.Canvas.SelectionRegion;
         bool useClip = selection != null && !tool.BypassClipping;
         if (useClip) {
+            bitmap.Canvas.SetMatrix(bitmap.Canvas.TotalMatrix.PostConcat(bitmapLayer.AbsoluteInverseTransformationMatrix));
             selection!.ApplyClip(bitmap);
+            bitmap.Canvas.SetMatrix(bitmap.Canvas.TotalMatrix.PreConcat(bitmapLayer.AbsoluteTransformationMatrix));
         }
 
-        if (tool.keepDrawing) {
-            Point lastPos = tool.lastDragPos;
-            double dx = x - lastPos.X;
-            double dy = y - lastPos.Y;
-            double distance = Math.Sqrt(dx * dx + dy * dy);
-            double gap = tool.Gap;
-            if (distance < gap) {
-                return true;
+        Exception? error = null;
+        try {
+            if (tool.keepDrawing) {
+                Point lastPos = tool.lastDragPos;
+                double dx = x - lastPos.X;
+                double dy = y - lastPos.Y;
+                double distance = Math.Sqrt(dx * dx + dy * dy);
+                double gap = tool.Gap;
+                if (distance < gap) {
+                    return true;
+                }
+                
+                double remainingDistance = distance;
+                double curX = lastPos.X;
+                double curY = lastPos.Y;
+                double dirX = dx / distance;
+                double dirY = dy / distance;
+                while (DoubleUtils.GreaterThanOrClose(remainingDistance, gap)) {
+                    curX += dirX * gap;
+                    curY += dirY * gap;
+                    tool.DrawPixels(bitmap, document, curX, curY, isPrimaryCursor);
+                    remainingDistance -= gap;
+                }
             }
-
-            double remainingDistance = distance;
-            double curX = lastPos.X;
-            double curY = lastPos.Y;
-            double dirX = dx / distance;
-            double dirY = dy / distance;
-            while (DoubleUtils.GreaterThanOrClose(remainingDistance, gap)) {
-                curX += dirX * gap;
-                curY += dirY * gap;
-                tool.DrawPixels(bitmap, document, curX, curY, isPrimaryCursor);
-                remainingDistance -= gap;
+            else {
+                tool.keepDrawing = true;
+                tool.DrawPixels(bitmap, document, x, y, isPrimaryCursor);
             }
-
-            goto EndFirstDraw;
+        }
+        catch (Exception e) {
+            error = e;
+        }
+        finally {
+            if (useClip) {
+                try {
+                    selection!.FinishClip(bitmap);
+                }
+                catch (Exception e) {
+                    error = error == null ? e : new AggregateException("Errors occurred while drawing tool", error, new Exception("Exception while finishing selection clip"));
+                }
+            }   
+            
+            bitmap.Canvas.RestoreToCount(saveCount);
         }
 
-        tool.keepDrawing = true;
-        tool.DrawPixels(bitmap, document, x, y, isPrimaryCursor);
-        EndFirstDraw:
-        
-        if (useClip) {
-            selection!.FinishClip(bitmap);
-        }
+        tool.lastDragPos = new Point(x, y);
+        if (error != null)
+            throw error; // dunno why i'm throwing this after setting lastDragPos, not like it matters since it will crash the app...
 
         bitmapLayer.InvalidateVisual();
-        tool.lastDragPos = new Point(x, y);
         return true;
     }
 }

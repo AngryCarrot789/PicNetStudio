@@ -127,7 +127,7 @@ public class CanvasInputHandler {
         if (this.control.Document is Document document && document.Editor?.ToolBar.ActiveTool is BaseCanvasTool activeTool) {
             Point absPos = pointer.Position;
             Point relPos = this.TranslatePoint(absPos, document);
-            this.ProcessChangedButtons(absPos, relPos, document, activeTool, 1, oldButtons, newButtons, e.KeyModifiers);
+            this.ProcessChangedButtons(relPos, absPos, document, activeTool, 1, oldButtons, newButtons, e.KeyModifiers);
         }
     }
 
@@ -172,8 +172,6 @@ public class CanvasInputHandler {
     }
 
     private bool ProcessChangedButtons(Point relPos, Point absPos, Document document, BaseCanvasTool activeTool, int clickCount, EnumCursorType oldButtons, EnumCursorType newButtons, KeyModifiers modifiers) {
-        relPos = this.TranslatePoint(relPos, document);
-        
         bool handled = false;
         EnumCursorType addedFlags = (oldButtons ^ newButtons) & newButtons;
         foreach (EnumCursorType type in GetEnumerableFlagSet(addedFlags)) {

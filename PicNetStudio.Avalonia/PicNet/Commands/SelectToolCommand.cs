@@ -35,7 +35,7 @@ public abstract class SelectToolCommand<TTool> : DocumentCommand where TTool : B
     }
 }
 
-public class SelectPointerToolCommand : SelectToolCommand<PointerTool>;
+public class SelectCursorToolCommand : SelectToolCommand<CursorTool>;
 public class SelectBrushToolCommand : SelectToolCommand<BrushTool>;
 public class SelectPencilToolCommand : SelectToolCommand<PencilTool>;
 public class SelectFillToolCommand : SelectToolCommand<FloodFillTool>;

@@ -26,6 +26,10 @@ public class PencilTool : BaseDiameterTool {
         this.CanDrawSecondaryColour = true;
     }
 
+    static PencilTool() {
+        DiameterParameter.OverrideDefaultValue(typeof(PencilTool), 2.0F);
+    }
+
     public override void DrawPixels(PNBitmap bitmap, Document document, double x, double y, bool isPrimaryColour) {
         if (bitmap.Canvas == null)
             return;

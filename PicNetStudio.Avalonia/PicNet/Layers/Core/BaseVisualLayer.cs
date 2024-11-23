@@ -43,17 +43,16 @@ public abstract class BaseVisualLayer : BaseLayerTreeObject {
     public static readonly DataParameterFloat RotationParameter = DataParameter.Register(new DataParameterFloat(typeof(BaseVisualLayer), nameof(Rotation), default, ValueAccessors.Reflective<float>(typeof(BaseVisualLayer), nameof(rotation))));
     public static readonly DataParameterPoint RotationOriginParameter = DataParameter.Register(new DataParameterPoint(typeof(BaseVisualLayer), nameof(RotationOrigin), default, ValueAccessors.Reflective<SKPoint>(typeof(BaseVisualLayer), nameof(rotationOrigin))));
 
-    private float opacity = OpacityParameter.DefaultValue;
-    private bool isVisible = IsRenderVisibleParameter.DefaultValue;
-    private bool isExportVisible = IsExportVisibleParameter.DefaultValue;
-    private bool isSolo = IsSoloParameter.DefaultValue;
-    private SKBlendMode blendMode = BlendModeParameter.DefaultValue;
-
-    private SKPoint position = PositionParameter.DefaultValue;
-    private SKPoint scale = ScaleParameter.DefaultValue;
-    private SKPoint scaleOrigin = ScaleOriginParameter.DefaultValue;
-    private float rotation = RotationParameter.DefaultValue;
-    private SKPoint rotationOrigin = RotationOriginParameter.DefaultValue;
+    private float opacity;
+    private bool isVisible;
+    private bool isExportVisible;
+    private bool isSolo;
+    private SKBlendMode blendMode;
+    private SKPoint position;
+    private SKPoint scale;
+    private SKPoint scaleOrigin;
+    private float rotation;
+    private SKPoint rotationOrigin;
     private SKMatrix myTransformationMatrix, myInverseTransformationMatrix;
     private SKMatrix myAbsoluteTransformationMatrix, myAbsoluteInverseTransformationMatrix;
     protected bool isMatrixDirty = true;
@@ -180,6 +179,16 @@ public abstract class BaseVisualLayer : BaseLayerTreeObject {
     public event BaseVisualLayerRenderInvalidatedEventHandler? RenderInvalidated;
 
     protected BaseVisualLayer() {
+        this.opacity = OpacityParameter.GetDefaultValue(this);
+        this.isVisible = IsRenderVisibleParameter.GetDefaultValue(this);
+        this.isExportVisible = IsExportVisibleParameter.GetDefaultValue(this);
+        this.isSolo = IsSoloParameter.GetDefaultValue(this);
+        this.blendMode = BlendModeParameter.GetDefaultValue(this);
+        this.position = PositionParameter.GetDefaultValue(this);
+        this.scale = ScaleParameter.GetDefaultValue(this);
+        this.scaleOrigin = ScaleOriginParameter.GetDefaultValue(this);
+        this.rotation = RotationParameter.GetDefaultValue(this);
+        this.rotationOrigin = RotationOriginParameter.GetDefaultValue(this);
     }
 
     static BaseVisualLayer() {

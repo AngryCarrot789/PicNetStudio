@@ -34,7 +34,7 @@ public static class NativeDropTypes {
     public static readonly string PenData = nameof(PenData);
     public static readonly string Riff = "RiffAudio";
     public static readonly string WaveAudio = nameof(WaveAudio);
-    public static readonly string FileDrop = nameof(FileDrop);
+    public static readonly string Files = nameof(Files);
     public static readonly string Locale = nameof(Locale);
     public static readonly string Html = "HTML Format";
     public static readonly string Rtf = "Rich Text Format";

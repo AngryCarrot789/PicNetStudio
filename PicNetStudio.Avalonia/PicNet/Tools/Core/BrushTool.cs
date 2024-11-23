@@ -30,14 +30,14 @@ namespace PicNetStudio.Avalonia.PicNet.Tools.Core;
 public class BrushTool : BaseDiameterTool {
     public static readonly DataParameterFloat HardnessParameter = DataParameter.Register(new DataParameterFloat(typeof(BrushTool), nameof(Hardness), 0.5F, 0.0F, 1.0F, ValueAccessors.Reflective<float>(typeof(BrushTool), nameof(hardness))));
 
-    private float hardness = HardnessParameter.DefaultValue;
-
+    private float hardness;
     public float Hardness {
         get => this.hardness;
         set => DataParameter.SetValueHelper(this, HardnessParameter, ref this.hardness, value);
     }
 
     public BrushTool() {
+        this.hardness = HardnessParameter.GetDefaultValue(this);
         this.CanDrawSecondaryColour = true;
     }
 

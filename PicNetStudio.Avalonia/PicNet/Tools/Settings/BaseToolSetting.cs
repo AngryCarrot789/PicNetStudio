@@ -29,10 +29,28 @@ public delegate void BaseToolSettingEventHandler(BaseToolSetting sender);
 /// classes, except they only accept a single handler being the <see cref="Tool"/>
 /// </summary>
 public class BaseToolSetting {
+    private string displayName;
     private string? description;
     
+    /// <summary>
+    /// Gets the tool that is currently connected to this setting
+    /// </summary>
     public BaseCanvasTool? Tool { get; private set; }
 
+    public string DisplayName {
+        get => this.displayName;
+        set {
+            if (this.displayName == value)
+                return;
+
+            this.displayName = value;
+            this.DisplayNameChanged?.Invoke(this);
+        }
+    }
+    
+    /// <summary>
+    /// Gets or sets a simple text description of what this tool does and what it can be used for 
+    /// </summary>
     public string? Description {
         get => this.description;
         set {
@@ -54,9 +72,14 @@ public class BaseToolSetting {
     /// </summary>
     public event BaseToolSettingEventHandler? Disconnected;
 
+    public event BaseToolSettingEventHandler? DisplayNameChanged;
     public event BaseToolSettingEventHandler? DescriptionChanged;
 
     public BaseToolSetting() {
+    }
+    
+    public BaseToolSetting(string? displayName) {
+        this.displayName = displayName;
     }
 
     /// <summary>
@@ -67,6 +90,7 @@ public class BaseToolSetting {
         if (this.Tool != null)
             throw new InvalidOperationException("Already connected to a tool");
         
+        this.ValidatePreConnection(tool);
         this.Tool = tool;
         this.OnConnected();
         this.Connected?.Invoke(this);
@@ -79,6 +103,10 @@ public class BaseToolSetting {
         this.OnDisconnected();
         this.Disconnected?.Invoke(this);
         this.Tool = null;
+    }
+
+    protected virtual void ValidatePreConnection(BaseCanvasTool tool) {
+        
     }
 
     protected virtual void OnConnected() {

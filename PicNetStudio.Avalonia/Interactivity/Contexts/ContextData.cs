@@ -113,18 +113,17 @@ public class ContextData : IContextData {
     public ContextData? ToNullIfEmpty() => this.Count > 0 ? this : null;
 
     public void Merge(IContextData ctx) {
-        if (ctx is not ContextData cd || cd.map == null)
-            return;
+        if (ctx is ContextData cd && cd.map != null) {
+            using Dictionary<string, object>.Enumerator enumerator = cd.map.GetEnumerator();
+            if (!enumerator.MoveNext())
+                return;
 
-        using Dictionary<string, object>.Enumerator enumerator = cd.map.GetEnumerator();
-        if (!enumerator.MoveNext())
-            return;
-
-        Dictionary<string, object> myMap = this.map ??= new Dictionary<string, object>();
-        do {
-            KeyValuePair<string, object> entry = enumerator.Current;
-            myMap[entry.Key] = entry.Value;
-        } while (enumerator.MoveNext());
+            Dictionary<string, object> myMap = this.map ??= new Dictionary<string, object>();
+            do {
+                KeyValuePair<string, object> entry = enumerator.Current;
+                myMap[entry.Key] = entry.Value;
+            } while (enumerator.MoveNext());
+        }
     }
 
     public override string ToString() {
