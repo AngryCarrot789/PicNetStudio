@@ -34,6 +34,10 @@ public abstract class PropertyEditorSlot : BasePropertyEditorItem {
 
     public abstract bool IsSelectable { get; }
 
+    /// <summary>
+    /// Gets whether this slot is selectable in the UI. While not used yet, it was used in FramePFX to signal
+    /// to the automation controls to set the active automation sequence to the one this slot is related to
+    /// </summary>
     public bool IsSelected {
         get => this.isSelected && this.IsSelectable;
         set {

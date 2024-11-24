@@ -41,6 +41,8 @@ public abstract class BaseVisualLayer : BaseLayerTreeObject {
     public static readonly DataParameterPoint ScaleOriginParameter = DataParameter.Register(new DataParameterPoint(typeof(BaseVisualLayer), nameof(ScaleOrigin), default, ValueAccessors.Reflective<SKPoint>(typeof(BaseVisualLayer), nameof(scaleOrigin))));
     public static readonly DataParameterFloat RotationParameter = DataParameter.Register(new DataParameterFloat(typeof(BaseVisualLayer), nameof(Rotation), default, ValueAccessors.Reflective<float>(typeof(BaseVisualLayer), nameof(rotation))));
     public static readonly DataParameterPoint RotationOriginParameter = DataParameter.Register(new DataParameterPoint(typeof(BaseVisualLayer), nameof(RotationOrigin), default, ValueAccessors.Reflective<SKPoint>(typeof(BaseVisualLayer), nameof(rotationOrigin))));
+    public static readonly DataParameterBool IsScaleOriginAutomaticParameter = DataParameter.Register(new DataParameterBool(typeof(BaseVisualLayer), nameof(IsScaleOriginAutomatic), true, ValueAccessors.Reflective<bool>(typeof(BaseVisualLayer), nameof(isScaleOriginAutomatic))));
+    public static readonly DataParameterBool IsRotationOriginAutomaticParameter = DataParameter.Register(new DataParameterBool(typeof(BaseVisualLayer), nameof(IsRotationOriginAutomatic), true, ValueAccessors.Reflective<bool>(typeof(BaseVisualLayer), nameof(isRotationOriginAutomatic))));
 
     private float opacity;
     private bool isVisible;
@@ -52,9 +54,12 @@ public abstract class BaseVisualLayer : BaseLayerTreeObject {
     private SKPoint scaleOrigin;
     private float rotation;
     private SKPoint rotationOrigin;
+    private bool isScaleOriginAutomatic;
+    private bool isRotationOriginAutomatic;
     private SKMatrix myTransformationMatrix, myInverseTransformationMatrix;
     private SKMatrix myAbsoluteTransformationMatrix, myAbsoluteInverseTransformationMatrix;
-    protected bool isMatrixDirty = true;
+    protected bool isMatrixDirty = true; 
+    internal bool isRendering = false;
 
     /// <summary>
     /// Gets or sets the opacity of this layer
@@ -120,9 +125,20 @@ public abstract class BaseVisualLayer : BaseLayerTreeObject {
         get => this.rotationOrigin;
         set => DataParameter.SetValueHelper(this, RotationOriginParameter, ref this.rotationOrigin, value);
     }
+    
+    public bool IsScaleOriginAutomatic {
+        get => this.isScaleOriginAutomatic;
+        set => DataParameter.SetValueHelper(this, IsScaleOriginAutomaticParameter, ref this.isScaleOriginAutomatic, value);
+    }
+
+    public bool IsRotationOriginAutomatic {
+        get => this.isRotationOriginAutomatic;
+        set => DataParameter.SetValueHelper(this, IsRotationOriginAutomaticParameter, ref this.isRotationOriginAutomatic, value);
+    }
 
     /// <summary>
-    /// Gets the transformation matrix for the transformation properties in this layer only, not including parent transformations
+    /// Gets the transformation matrix for the transformation properties in this layer
+    /// only, not including parent transformations. This is our local-to-world matrix
     /// </summary>
     public SKMatrix TransformationMatrix {
         get {
@@ -133,7 +149,8 @@ public abstract class BaseVisualLayer : BaseLayerTreeObject {
     }
 
     /// <summary>
-    /// Gets the absolute transformation matrix, which is a concatenation of all of our parents' matrices and our own
+    /// Gets the absolute transformation matrix, which is a concatenation of all of our
+    /// parents' matrices and our own. This is our local-to-world matrix
     /// </summary>
     public SKMatrix AbsoluteTransformationMatrix {
         get {
@@ -144,7 +161,7 @@ public abstract class BaseVisualLayer : BaseLayerTreeObject {
     }
 
     /// <summary>
-    /// Gets the inverse of our transformation matrix
+    /// Gets the inverse of our transformation matrix. This is our world-to-local matrix
     /// </summary>
     public SKMatrix InverseTransformationMatrix {
         get {
@@ -155,8 +172,8 @@ public abstract class BaseVisualLayer : BaseLayerTreeObject {
     }
 
     /// <summary>
-    /// Gets the inverse of our absolute transformation matrix. This can be used to,
-    /// for example, map a location on the entire canvas to this layer
+    /// Gets the inverse of our absolute transformation matrix. This can be used to, for example,
+    /// map a location on the entire canvas to this layer. This is our world-to-local matrix
     /// </summary>
     public SKMatrix AbsoluteInverseTransformationMatrix {
         get {
@@ -188,6 +205,11 @@ public abstract class BaseVisualLayer : BaseLayerTreeObject {
         this.scaleOrigin = ScaleOriginParameter.GetDefaultValue(this);
         this.rotation = RotationParameter.GetDefaultValue(this);
         this.rotationOrigin = RotationOriginParameter.GetDefaultValue(this);
+        this.isScaleOriginAutomatic = IsScaleOriginAutomaticParameter.GetDefaultValue(this);
+        this.isRotationOriginAutomatic = IsRotationOriginAutomaticParameter.GetDefaultValue(this);
+        PositionParameter.AddValueChangedHandler(this, (parameter, owner) => {
+            ((BaseVisualLayer) owner).UpdateAutomaticRotationOrigin();
+        });
     }
 
     static BaseVisualLayer() {
@@ -202,6 +224,8 @@ public abstract class BaseVisualLayer : BaseLayerTreeObject {
             layer.scaleOrigin = data.GetStruct<SKPoint>("ScaleOrigin");
             layer.rotation = data.GetFloat("Rotation");
             layer.rotationOrigin = data.GetStruct<SKPoint>("RotationOrigin");
+            layer.isScaleOriginAutomatic = data.GetBool("IsScaleOriginAutomatic");
+            layer.isRotationOriginAutomatic = data.GetBool("IsRotationOriginAutomatic");
             layer.isMatrixDirty = true;
         }, (layer, data, ctx) => {
             ctx.SerialiseBaseType(data);
@@ -214,6 +238,8 @@ public abstract class BaseVisualLayer : BaseLayerTreeObject {
             data.SetStruct("ScaleOrigin", layer.scaleOrigin);
             data.SetFloat("Rotation", layer.rotation);
             data.SetStruct("RotationOrigin", layer.rotationOrigin);
+            data.SetBool("IsScaleOriginAutomatic", layer.isScaleOriginAutomatic);
+            data.SetBool("IsRotationOriginAutomatic", layer.isRotationOriginAutomatic);
         });
 
         // TODO: Maybe we can optimise with invalidation and re-paint events?
@@ -229,6 +255,44 @@ public abstract class BaseVisualLayer : BaseLayerTreeObject {
 
         // Add handlers to properties that affect the transformation matrix
         DataParameter.AddMultipleHandlers(OnMatrixInvalidatingPropertyChanged, PositionParameter, ScaleParameter, ScaleOriginParameter, RotationParameter, RotationOriginParameter);
+        
+        IsScaleOriginAutomaticParameter.ValueChanged += OnIsScaleOriginAutomaticParameterValueChanged;
+        IsRotationOriginAutomaticParameter.ValueChanged += OnIsRotationOriginAutomaticParameterValueChanged;
+    }
+
+    private static void OnIsScaleOriginAutomaticParameterValueChanged(DataParameter parameter, ITransferableData owner) {
+        ((BaseVisualLayer) owner).UpdateAutomaticScaleOrigin();
+    }
+    
+    private static void OnIsRotationOriginAutomaticParameterValueChanged(DataParameter parameter, ITransferableData owner) {
+        ((BaseVisualLayer) owner).UpdateAutomaticRotationOrigin();
+    }
+
+    protected override void OnAttachedToCanvas(BaseLayerTreeObject origin) {
+        base.OnAttachedToCanvas(origin);
+        this.UpdateAutomaticRotationOrigin();
+        this.UpdateAutomaticScaleOrigin();
+    }
+
+    protected void UpdateAutomaticScaleOrigin() {
+        if (this.IsScaleOriginAutomatic) {
+            SKSize size = this.GetSizeForAutomaticOrigins();
+            this.ScaleOrigin = new SKPoint(size.Width / 2, size.Height / 2);
+        }
+    }
+    
+    protected void UpdateAutomaticRotationOrigin() {
+        if (this.IsRotationOriginAutomatic) {
+            SKSize size = this.GetSizeForAutomaticOrigins();
+            this.RotationOrigin = new SKPoint(size.Width / 2, size.Height / 2);
+        }
+    }
+
+    public abstract SKSize GetSizeForAutomaticOrigins();
+
+    protected virtual void OnSizeForAutomaticOriginsChanged() {
+        this.UpdateAutomaticScaleOrigin();
+        this.UpdateAutomaticRotationOrigin();
     }
 
     private static void OnMatrixInvalidatingPropertyChanged(DataParameter parameter, ITransferableData owner) {
@@ -304,18 +368,33 @@ public abstract class BaseVisualLayer : BaseLayerTreeObject {
     }
 
     /// <summary>
-    /// Draws this layer
+    /// Prepare this layer for rendering. This should do things like generate caches that may affect the transformation matrix
+    /// </summary>
+    /// <param name="ctx">The rendering context</param>
+    /// <returns>True when this layer can be rendered. False to stop it from rendering, e.g. objects missing or invalid</returns>
+    public virtual bool OnPrepareRenderLayer(ref RenderContext ctx) {
+        return true;
+    }
+    
+    /// <summary>
+    /// Draws this layer. This should not be called directly, but instead, use <see cref="LayerRenderer"/> since the
+    /// layer may not be in a valid state to be drawn unless <see cref="OnPrepareRenderLayer"/> is called, and this
+    /// method also may not take into account opacity
     /// </summary>
     /// <param name="ctx">Render context</param>
     public abstract void RenderLayer(ref RenderContext ctx);
 
     protected virtual void InvalidateTransformationMatrix() {
+        if (this.isRendering)
+            throw new InvalidOperationException("Attempt to invalidate transformation matrix during render. This is not allowed");
         this.isMatrixDirty = true;
         this.InvalidateVisual();
     }
 
     internal static void InternalInvalidateTransformationMatrixFromParent(BaseVisualLayer? layer) {
         if (layer != null) {
+            if (layer.isRendering)
+                throw new InvalidOperationException("Attempt to invalidate transformation matrix during render. This is not allowed");
             layer.isMatrixDirty = true;
         }
     }

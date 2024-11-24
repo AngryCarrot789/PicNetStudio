@@ -41,7 +41,7 @@ public abstract class BaseDataParameterToolSettingControl : BaseToolSettingContr
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e) {
         base.OnApplyTemplate(e);
-        this.displayNameTextBlock = e.NameScope.GetTemplateChild<TextBlock>("PART_Label");
+        this.displayNameTextBlock = e.NameScope.Find("PART_Label") as TextBlock;
     }
 
     protected override void OnConnect() {
@@ -97,15 +97,20 @@ public abstract class BaseDataParameterToolSettingControl : BaseToolSettingContr
     private void OnSettingDisplayNameChanged(BaseToolSetting tool) => this.UpdateDisplayName();
 
     private void UpdateDisplayName() {
-        if (!this.IsConnected || this.displayNameTextBlock == null)
+        if (!this.IsConnected) {
+            this.UpdateDisplayNameControl(null, false);
             return;
+        }
 
         string text = this.ToolSetting!.DisplayName;
-        if (string.IsNullOrWhiteSpace(text)) {
-            this.displayNameTextBlock.IsVisible = false;
+        this.UpdateDisplayNameControl(string.IsNullOrWhiteSpace(text) ? null : text, true);
+    }
+
+    protected virtual void UpdateDisplayNameControl(string? text, bool isVisible) {
+        if (this.displayNameTextBlock != null) {
+            this.displayNameTextBlock.IsVisible = isVisible;
+            this.displayNameTextBlock.Text = text;
         }
-        
-        this.displayNameTextBlock.Text = text;
     }
 }
 
@@ -227,7 +232,7 @@ public class AutomaticDataParameterFloatToolSettingControl : DataParameterNumber
 
     private void UpdateTextPreview() {
         if (this.ToolSetting!.IsAutomaticParameter.GetValue(this.ToolSetting!.Tool!)) {
-            this.PART_Dragger.FinalPreviewStringFormat = "Auto ({0})";
+            this.PART_Dragger.FinalPreviewStringFormat = "{0} (Auto)";
         }
         else {
             this.PART_Dragger.FinalPreviewStringFormat = null;
@@ -285,5 +290,32 @@ public class DataParameterLongToolSettingControl : DataParameterNumberDraggerToo
 
     protected override void ResetValue() {
         this.ToolSetting!.Value = this.ToolSetting.Parameter.DefaultValue;
+    }
+}
+
+public class DataParameterBoolToolSettingControl : BaseDataParameterToolSettingControl {
+    private ToggleButton? PART_CheckBox;
+    
+    public new DataParameterBoolToolSetting? ToolSetting => (DataParameterBoolToolSetting?) base.ToolSetting;
+
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e) {
+        base.OnApplyTemplate(e);
+        this.PART_CheckBox = e.NameScope.GetTemplateChild<ToggleButton>(nameof(this.PART_CheckBox));
+        this.PART_CheckBox.IsCheckedChanged += (sender, args) => this.OnControlValueChanged();
+    }
+
+    protected override void UpdateControlValue() {
+        this.PART_CheckBox!.IsChecked = this.ToolSetting!.Value;
+    }
+
+    protected override void UpdateModelValue() {
+        this.ToolSetting!.Value = this.PART_CheckBox!.IsChecked == true;
+    }
+
+    protected override void UpdateDisplayNameControl(string? text, bool isVisible) {
+        if (this.PART_CheckBox != null) {
+            this.PART_CheckBox.IsVisible = isVisible;
+            this.PART_CheckBox.Content = text;
+        }
     }
 }

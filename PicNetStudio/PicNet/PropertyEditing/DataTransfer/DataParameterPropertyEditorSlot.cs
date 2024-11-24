@@ -35,6 +35,9 @@ public abstract class DataParameterPropertyEditorSlot : PropertyEditorSlot {
 
     protected ITransferableData SingleHandler => (ITransferableData) this.Handlers[0];
 
+    /// <summary>
+    /// Gets the value parameter used to communicate the value to/from our handlers
+    /// </summary>
     public DataParameter Parameter { get; }
 
     public string DisplayName {
@@ -68,7 +71,7 @@ public abstract class DataParameterPropertyEditorSlot : PropertyEditorSlot {
     /// <summary>
     /// Gets whether the slot has multiple handlers and they all have different underlying values.
     /// This is used to present some sort of signal in the UI warning the user before they try to modify it.
-    /// This state must be updated manually by derived classes
+    /// This state must be updated manually by derived classes when the values are no longer different
     /// </summary>
     public bool HasMultipleValues {
         get => this.hasMultipleValues;
@@ -83,6 +86,10 @@ public abstract class DataParameterPropertyEditorSlot : PropertyEditorSlot {
         }
     }
 
+    /// <summary>
+    /// Gets or sets whether the <see cref="HasMultipleValues"/> has been
+    /// updated since <see cref="BasePropertyEditorItem.IsCurrentlyApplicable"/> became true
+    /// </summary>
     public bool HasProcessedMultipleValuesSinceSetup {
         get => this.hasProcessedMultipleValuesSinceSetup;
         set {
@@ -93,7 +100,7 @@ public abstract class DataParameterPropertyEditorSlot : PropertyEditorSlot {
             this.HasProcessedMultipleValuesChanged?.Invoke(this);
         }
     }
-
+    
     public override bool IsSelectable => true;
 
     /// <summary>

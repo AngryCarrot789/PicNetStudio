@@ -24,10 +24,12 @@ using Avalonia.Controls.Primitives;
 using PicNetStudio.Avalonia.PicNet.CustomParameters;
 using PicNetStudio.Avalonia.PicNet.PropertyEditing.Controls.Core;
 using PicNetStudio.Avalonia.PicNet.PropertyEditing.Controls.DataTransfer;
+using PicNetStudio.Avalonia.PicNet.PropertyEditing.Controls.DataTransfer.Automatic;
 using PicNetStudio.PicNet.CustomParameters;
 using PicNetStudio.PicNet.PropertyEditing;
 using PicNetStudio.PicNet.PropertyEditing.Core;
 using PicNetStudio.PicNet.PropertyEditing.DataTransfer;
+using PicNetStudio.PicNet.PropertyEditing.DataTransfer.Automatic;
 
 namespace PicNetStudio.Avalonia.PicNet.PropertyEditing.Controls;
 
@@ -57,6 +59,12 @@ public abstract class BasePropEditControlContent : TemplatedControl {
         RegisterType(typeof(DataParameterStringPropertyEditorSlot), () => new DataParameterStringPropertyEditorControl());
         RegisterType(typeof(DataParameterPointPropertyEditorSlot), () => new DataParameterPointPropertyEditorControl());
         RegisterType(typeof(DataParameterBlendModePropertyEditorSlot), () => new DataParameterBlendModePropertyEditorControl());
+        
+        // automatic editors
+        RegisterType(typeof(AutomaticDataParameterFloatPropertyEditorSlot), () => new AutomaticDataParameterFloatPropertyEditorControl());
+        RegisterType(typeof(AutomaticDataParameterDoublePropertyEditorSlot), () => new AutomaticDataParameterDoublePropertyEditorControl());
+        RegisterType(typeof(AutomaticDataParameterLongPropertyEditorSlot), () => new AutomaticDataParameterLongPropertyEditorControl());
+        RegisterType(typeof(AutomaticDataParameterPointPropertyEditorSlot), () => new AutomaticDataParameterPointPropertyEditorControl());
     }
 
     public static void RegisterType<T>(Type slotType, Func<T> func) where T : BasePropEditControlContent {

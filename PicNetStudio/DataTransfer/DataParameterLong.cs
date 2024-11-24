@@ -25,7 +25,7 @@ namespace PicNetStudio.DataTransfer;
 public sealed class DataParameterLong : DataParameter<long>, IRangedParameter<long> {
     public long Minimum { get; }
     public long Maximum { get; }
-    public bool HasRangeLimit { get; }
+    public bool HasExplicitRangeLimit { get; }
 
     public DataParameterLong(Type ownerType, string name, ValueAccessor<long> accessor, DataParameterFlags flags = DataParameterFlags.None) : this(ownerType, name, 0L, accessor, flags) {
     }
@@ -40,15 +40,15 @@ public sealed class DataParameterLong : DataParameter<long>, IRangedParameter<lo
             throw new ArgumentOutOfRangeException(nameof(defValue), $"Default value ({defValue}) falls out of range of the min/max values ({minValue}/{maxValue})");
         this.Minimum = minValue;
         this.Maximum = maxValue;
-        this.HasRangeLimit = minValue != long.MinValue || maxValue != long.MaxValue;
+        this.HasExplicitRangeLimit = minValue != long.MinValue || maxValue != long.MaxValue;
     }
 
-    public long Clamp(long value) => this.HasRangeLimit ? Maths.Clamp(value, this.Minimum, this.Maximum) : value;
+    public long Clamp(long value) => this.HasExplicitRangeLimit ? Maths.Clamp(value, this.Minimum, this.Maximum) : value;
 
-    public bool IsValueOutOfRange(long value) => this.HasRangeLimit && (value < this.Minimum || value > this.Maximum);
+    public bool IsValueOutOfRange(long value) => this.HasExplicitRangeLimit && (value < this.Minimum || value > this.Maximum);
 
     public override void SetValue(ITransferableData owner, long value) {
-        if (this.HasRangeLimit) {
+        if (this.HasExplicitRangeLimit) {
             value = Maths.Clamp(value, this.Minimum, this.Maximum);
         }
 
@@ -56,7 +56,7 @@ public sealed class DataParameterLong : DataParameter<long>, IRangedParameter<lo
     }
 
     public override void SetObjectValue(ITransferableData owner, object? value) {
-        if (this.HasRangeLimit) {
+        if (this.HasExplicitRangeLimit) {
             long unboxed = (long) value;
             long clamped = Maths.Clamp(unboxed, this.Minimum, this.Maximum);
             if (unboxed != clamped) {

@@ -24,17 +24,14 @@ using PicNetStudio.PicNet.PropertyEditing.DataTransfer;
 namespace PicNetStudio.Avalonia.PicNet.PropertyEditing.Controls.DataTransfer;
 
 public class DataParameterLongPropertyEditorControl : BaseNumberDraggerDataParamPropEditorControl {
-    public new DataParameterLongPropertyEditorSlot SlotModel => (DataParameterLongPropertyEditorSlot) base.SlotControl.Model;
+    public new DataParameterLongPropertyEditorSlot? SlotModel => (DataParameterLongPropertyEditorSlot?) base.SlotControl?.Model;
 
+    public override double SlotValue {
+        get => this.SlotModel!.Value;
+        set => this.SlotModel!.Value = (long) Math.Round(this.dragger.Value);
+    }
+    
     public DataParameterLongPropertyEditorControl() {
-    }
-
-    protected override void UpdateControlValue() {
-        this.dragger.Value = this.SlotModel.Value;
-    }
-
-    protected override void UpdateModelValue() {
-        this.SlotModel.Value = (long) Math.Round(this.dragger.Value);
     }
 
     protected override void OnConnected() {

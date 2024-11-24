@@ -109,7 +109,7 @@ public class RasterLayerPreviewControl : BaseLayerPreviewControl {
         }
         
         if (layer.Canvas != null && layer.Bitmap.IsInitialised && this.PART_ViewPortControl != null && this.PART_ViewPortControl!.BeginRender(out SKSurface surface)) {
-            surface.Canvas.Clear(SKColor.Empty);
+            surface.Canvas.Clear(SKColors.Transparent);
             Size sizeP = this.PART_ViewPortControl.Bounds.Size;
             PixSize sizeD = layer.Canvas.Size;
             surface.Canvas.Scale((float) (sizeP.Width / sizeD.Width), (float) (sizeP.Height / sizeD.Height));

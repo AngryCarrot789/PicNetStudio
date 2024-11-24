@@ -19,8 +19,10 @@
 
 using System.Diagnostics;
 using PicNetStudio.PicNet.Layers.Core;
+using PicNetStudio.Utils;
 using PicNetStudio.Utils.Collections.Observable;
 using PicNetStudio.Utils.RBC;
+using SkiaSharp;
 
 namespace PicNetStudio.PicNet.Layers;
 
@@ -123,6 +125,7 @@ public class CompositionLayer : BaseVisualLayer {
             InternalOnAddedToLayer(index, layer, this);
         }
 
+        this.OnSizeForAutomaticOriginsChanged();
         this.InvalidateVisual();
     }
     
@@ -176,6 +179,7 @@ public class CompositionLayer : BaseVisualLayer {
             }
         }
 
+        this.OnSizeForAutomaticOriginsChanged();
         this.InvalidateVisual();
     }
 
@@ -201,7 +205,12 @@ public class CompositionLayer : BaseVisualLayer {
             InternalOnRemovedFromLayer(layer, this);
         }
 
+        this.OnSizeForAutomaticOriginsChanged();
         this.InvalidateVisual();
+    }
+    
+    public override SKSize GetSizeForAutomaticOrigins() {
+        return Maths.Max2F(this.layers, (x) => (x as BaseVisualLayer)?.GetSizeForAutomaticOrigins() ?? SKSize.Empty) ?? default;
     }
 
     public override void InvalidateVisual() {

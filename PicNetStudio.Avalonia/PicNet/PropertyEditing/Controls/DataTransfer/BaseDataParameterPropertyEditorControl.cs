@@ -31,7 +31,7 @@ namespace PicNetStudio.Avalonia.PicNet.PropertyEditing.Controls.DataTransfer;
 public abstract class BaseDataParameterPropertyEditorControl : BasePropEditControlContent {
     public static readonly StyledProperty<bool> IsCheckBoxToggleableProperty = AvaloniaProperty.Register<BaseDataParameterPropertyEditorControl, bool>("IsCheckBoxToggleable");
 
-    protected ITransferableData singleHandler;
+    protected ITransferableData? singleHandler;
     protected CheckBox? displayNameCheckBox;
     protected bool IsUpdatingPrimaryControl;
     protected bool isUpdatingCheckBoxControl;
@@ -145,7 +145,8 @@ public abstract class BaseDataParameterPropertyEditorControl : BasePropEditContr
 
     protected virtual void OnHandlersLoadedOverride(bool isLoaded) {
         this.UpdateCanEdit();
-        this.OnModelValueChanged();
+        if (isLoaded)
+            this.OnModelValueChanged();
     }
 
     private void OnHandlersChanged(PropertyEditorSlot sender) {

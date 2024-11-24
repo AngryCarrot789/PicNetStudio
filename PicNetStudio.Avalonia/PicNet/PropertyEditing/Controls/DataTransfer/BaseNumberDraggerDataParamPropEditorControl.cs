@@ -34,10 +34,15 @@ public abstract class BaseNumberDraggerDataParamPropEditorControl : BaseDataPara
     
     public new DataParameterFormattableNumberPropertyEditorSlot? SlotModel => (DataParameterFormattableNumberPropertyEditorSlot?) base.SlotControl?.Model;
     
+    /// <summary>
+    /// Gets or sets the slot value as a double suitable for the number dragger
+    /// </summary>
+    public abstract double SlotValue { get; set; }
+    
     protected NumberDragger dragger;
     protected Button resetButton;
     private readonly AutoUpdateAndEventPropertyBinder<DataParameterFormattableNumberPropertyEditorSlot> valueFormatterBinder;
-
+    
     protected BaseNumberDraggerDataParamPropEditorControl() {
         this.valueFormatterBinder = new AutoUpdateAndEventPropertyBinder<DataParameterFormattableNumberPropertyEditorSlot>(NumberDragger.ValueFormatterProperty, nameof(DataParameterFormattableNumberPropertyEditorSlot.ValueFormatterChanged), (x) => ((NumberDragger) x.Control).ValueFormatter = x.Model.ValueFormatter, null);
     }
@@ -45,13 +50,21 @@ public abstract class BaseNumberDraggerDataParamPropEditorControl : BaseDataPara
     static BaseNumberDraggerDataParamPropEditorControl() {
         MultipleValuesBrush = new ImmutableSolidColorBrush(Brushes.OrangeRed.Color, 0.7);
     }
+    
+    protected override void UpdateControlValue() {
+        this.dragger.Value = this.SlotValue;
+    }
+
+    protected override void UpdateModelValue() {
+        this.SlotValue = this.dragger.Value;
+    }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e) {
         base.OnApplyTemplate(e);
         this.dragger = e.NameScope.GetTemplateChild<NumberDragger>("PART_Dragger");
         this.dragger.ValueChanged += (sender, args) => this.OnControlValueChanged();
-        this.resetButton = e.NameScope.GetTemplateChild<Button>("PART_ResetValue");
-        this.resetButton.Click += OnResetClick;
+        this.resetButton = e.NameScope.GetTemplateChild<Button>("PART_ResetButton");
+        this.resetButton.Click += this.OnResetClick;
         this.valueFormatterBinder.AttachControl(this.dragger);
         this.UpdateDraggerMultiValueState();
     }
@@ -124,11 +137,11 @@ public abstract class BaseNumberDraggerDataParamPropEditorControl : BaseDataPara
         this.SlotModel!.HasProcessedMultipleValuesChanged -= this.OnHasProcessedMultipleValuesChanged;
     }
     
-    private void OnHasMultipleValuesChanged(DataParameterPropertyEditorSlot sender) {
+    protected virtual void OnHasMultipleValuesChanged(DataParameterPropertyEditorSlot sender) {
         this.UpdateDraggerMultiValueState();
     }
     
-    private void OnHasProcessedMultipleValuesChanged(DataParameterPropertyEditorSlot sender) {
+    protected virtual void OnHasProcessedMultipleValuesChanged(DataParameterPropertyEditorSlot sender) {
         this.UpdateDraggerMultiValueState();
     }
 }

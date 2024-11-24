@@ -54,6 +54,11 @@ public static class LayerRenderer {
             return;
         }
 
+        // Layer does not want to be rendered so we won't
+        if (!layer.OnPrepareRenderLayer(ref ctx)) {
+            return;
+        }
+
         int topLevelMatrixRestore = ctx.Canvas.Save();
         ctx.Canvas.SetMatrix(ctx.Canvas.TotalMatrix.PreConcat(layer.TransformationMatrix));
         
@@ -101,14 +106,14 @@ public static class LayerRenderer {
                     SKImageInfo frameInfo = new SKImageInfo(size.Width, size.Height, SKImageInfo.PlatformColorType, SKAlphaType.Premul);
                     
                     using SKSurface subSurface = SKSurface.Create(frameInfo);
-                    subSurface.Canvas.Clear(SKColor.Empty);
+                    subSurface.Canvas.Clear(SKColors.Transparent);
                     RenderContext subCtx = new RenderContext(ctx.MyCanvas, subSurface, ctx.VisibilityFlag, ctx.FullInvalidateHint);
                     for (int i = layers.Count - 1; i >= 0; i--) {
                         if (layers[i] is BaseVisualLayer visualLayer)
                             RenderLayer(ref subCtx, visualLayer);
                     }
 
-                    compCache.Canvas!.Clear(SKColor.Empty);
+                    compCache.Canvas!.Clear(SKColors.Transparent);
                     subSurface.Draw(compCache.Canvas, 0, 0, null);   // Draw temp surface into cache
                     ctx.Canvas.DrawBitmap(compCache.Bitmap, 0, 0, null); // Draw cache into ctx rendering surface
                 }
@@ -126,7 +131,9 @@ public static class LayerRenderer {
         }
         else {
             restoreIndex = BeginOpacitySection(ctx.Canvas, layer, out layerPaint);
+            layer.isRendering = true;
             layer.RenderLayer(ref ctx);
+            layer.isRendering = false;
             EndOpacitySection(ctx.Canvas, restoreIndex, layerPaint);
         }
         

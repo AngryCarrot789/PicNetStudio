@@ -18,6 +18,7 @@
 // 
 
 using System;
+using System.Collections.Generic;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -25,6 +26,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using Avalonia.Media.Immutable;
 using Avalonia.Threading;
 using PicNetStudio.Avalonia.Interactivity;
 using PicNetStudio.Avalonia.Utils;
@@ -32,6 +34,7 @@ using PicNetStudio.Interactivity;
 using PicNetStudio.PicNet;
 using PicNetStudio.PicNet.Layers;
 using PicNetStudio.PicNet.Layers.Core;
+using PicNetStudio.PicNet.Tools.Core;
 using PicNetStudio.Utils;
 using PicNetStudio.Utils.RDA;
 using SkiaSharp;
@@ -82,7 +85,9 @@ public class CanvasViewPortControl : TemplatedControl, ICanvasElement {
     private const double DashStrokeSize = 8;
     private DashStyle? dashStyle1, dashStyle2;
     private Pen? outlinePen1, outlinePen2;
+    private Pen? selPen1, selPen2;
     private bool isProcessingAsyncDrop;
+    private Pen? selectionPen;
 
     public BaseSelection SelectionPreview { get; set; }
 
@@ -157,9 +162,70 @@ public class CanvasViewPortControl : TemplatedControl, ICanvasElement {
     }
 
     private void OnPostRenderViewPort(SKAsyncViewPort sender, DrawingContext ctx, Size size, Point minatureOffset) {
-        if (this.Document is Document document && document.Canvas.SelectionRegion is RectangleSelection selection) {
-            SKRectI r = selection.Rect;
-            using (this.PushInverseScale(ctx, out double scale)) {
+        DrawingContext.PushedState? state = null;
+        double scale = 1.0;
+
+        if (this.Document is Document document) {
+            if (document.Canvas.ActiveLayerTreeObject is BaseVisualLayer layer && (!(this.Editor?.ToolBar?.ActiveToolItem?.Tool is CursorTool tool) || tool.IsOutlineVisible)) {
+                state ??= this.PushInverseScale(ctx, out scale);
+
+                // Cache pen for performance
+
+                SKSize sz = layer.GetSizeForAutomaticOrigins();
+                if (DoubleUtils.GreaterThan(sz.Width, 0.0) && DoubleUtils.GreaterThan(sz.Height, 0.0)) {
+                    // Map points from 'local' layer space to 'world' canvas space 
+                    SKPoint[]? pts = layer.AbsoluteTransformationMatrix.MapPoints(new SKPoint[] {
+                        default,
+                        new SKPoint(sz.Width, 0),
+                        new SKPoint(sz.Width, sz.Height),
+                        new SKPoint(0, sz.Height),
+                        layer.RotationOrigin,
+                        layer.ScaleOrigin,
+                        new SKPoint(sz.Width / 2.0F, sz.Height / 2.0F)
+                    });
+
+                    // When anti-aliased, floor to lowest pixel. If not, round, since skia rounds by default
+                    Func<double, double> func = layer is RasterLayer && RasterLayer.IsAntiAliasedParameter.GetValue(layer) ? Math.Floor : Math.Round;
+
+                    Geometry selRectGeometry = new PolylineGeometry(new List<Point>() {
+                        new Point(func(pts[0].X) * scale, func(pts[0].Y) * scale),
+                        new Point(func(pts[1].X) * scale, func(pts[1].Y) * scale),
+                        new Point(func(pts[2].X) * scale, func(pts[2].Y) * scale),
+                        new Point(func(pts[3].X) * scale, func(pts[3].Y) * scale),
+                        new Point(func(pts[0].X) * scale, func(pts[0].Y) * scale)
+                    }, false);
+                    
+                    SKMatrix newMat = MatrixUtils.CreateTransformationMatrix(layer.Position, new SKPoint(1, 1), layer.Rotation, default, layer.RotationOrigin);
+                    SKPoint rOrg = newMat.MapPoint(layer.RotationOrigin);
+                    Point cC = new Point(func(pts[6].X) * scale, func(pts[6].Y) * scale);
+                    Point cR = new Point(func(rOrg.X) * scale, func(rOrg.Y) * scale);
+                    Point cS = new Point(func(pts[5].X) * scale, func(pts[5].Y) * scale);
+                    
+                    this.selPen1 ??= new Pen(Brushes.Black, 2.0, new ImmutableDashStyle(new double[] { 4, 4 }, 0));
+                    this.selPen2 ??= new Pen(Brushes.White, 2.0, new ImmutableDashStyle(new double[] { 4, 4 }, 4 /* start half way */));
+                    
+                    ctx.DrawGeometry(null, this.selPen1, selRectGeometry);
+                    ctx.DrawGeometry(null, this.selPen2, selRectGeometry);
+
+                    Pen pen1 = new Pen(Brushes.Red, 2.0D);
+                    Pen pen2 = new Pen(Brushes.DeepSkyBlue, 2.0D);
+
+                    const double crosshairLen = 12.0;
+                    ctx.DrawLine(pen1, new Point(cR.X - crosshairLen, cR.Y), new Point(cR.X + crosshairLen, cR.Y));
+                    ctx.DrawLine(pen1, new Point(cR.X, cR.Y - crosshairLen), new Point(cR.X, cR.Y + crosshairLen));
+
+                    const double dist = crosshairLen * 0.70710678118; // Math.Sin(Math.PI / 4) * crosshairLen
+                    ctx.DrawLine(pen2, new Point(cS.X - dist, cS.Y - dist), new Point(cS.X + dist, cS.Y + dist));
+                    ctx.DrawLine(pen2, new Point(cS.X - dist, cS.Y + dist), new Point(cS.X + dist, cS.Y - dist));
+                    
+                    const double diaInn = 3.0;
+                    ctx.DrawEllipse(Brushes.SlateBlue, this.selectionPen ??= new Pen(Brushes.BlueViolet, 2.0), cC, diaInn, diaInn);
+                }
+            }
+
+            if (document.Canvas.SelectionRegion is RectangleSelection selection) {
+                SKRectI r = selection.Rect;
+                state ??= this.PushInverseScale(ctx, out scale);
                 // Cache pens for performance
                 const double thickness = 1.0;
                 this.outlinePen1 ??= new Pen(Brushes.Black, thickness, this.dashStyle1 ??= new DashStyle(new double[] { 4, 4 }, 0));
@@ -173,6 +239,8 @@ public class CanvasViewPortControl : TemplatedControl, ICanvasElement {
                 ctx.DrawRectangle(null, this.outlinePen1, finalRect);
             }
         }
+
+        state?.Dispose();
     }
 
     private DrawingContext.PushedState PushInverseScale(DrawingContext ctx, out double realScale) {
@@ -189,7 +257,7 @@ public class CanvasViewPortControl : TemplatedControl, ICanvasElement {
     public void RenderCanvas() {
         if (this.PART_SkiaViewPort != null && this.Document is Document document) {
             if (this.PART_SkiaViewPort.BeginRender(out SKSurface surface)) {
-                surface.Canvas.Clear(SKColor.Empty);
+                surface.Canvas.Clear(SKColors.Transparent);
                 document.Canvas.Render(surface);
                 this.PART_SkiaViewPort.EndRender();
             }
@@ -228,6 +296,7 @@ public class CanvasViewPortControl : TemplatedControl, ICanvasElement {
 
     private void OnActiveLayerChanged(Canvas canvas, BaseLayerTreeObject? oldactivelayertreeobject, BaseLayerTreeObject? newactivelayertreeobject) {
         this.UpdateCursorForActiveLayer(newactivelayertreeobject);
+        this.rdaInvalidateRender.InvokeAsync();
     }
 
     private void OnEditorChanged(Editor? oldEditor, Editor? newEditor) {

@@ -28,17 +28,26 @@ namespace PicNetStudio.PicNet.Tools.Core;
 
 public class CursorTool : BaseCanvasTool {
     public static readonly DataParameterBool AutoSelectLayerParameter = DataParameter.Register(new DataParameterBool(typeof(CursorTool), nameof(AutoSelectLayer), false, ValueAccessors.Reflective<bool>(typeof(CursorTool), nameof(autoSelectLayer))));
-
+    public static readonly DataParameterBool IsOutlineVisibleParameter = DataParameter.Register(new DataParameterBool(typeof(CursorTool), nameof(IsOutlineVisible), true, ValueAccessors.Reflective<bool>(typeof(CursorTool), nameof(isOutlineVisible))));
+    
     private bool autoSelectLayer;
+    private bool isOutlineVisible;
     private BaseVisualLayer? targetLayer;
     private SKPoint originalPos;
+    
     public bool AutoSelectLayer {
         get => this.autoSelectLayer;
         set => DataParameter.SetValueHelper(this, AutoSelectLayerParameter, ref this.autoSelectLayer, value);
     }
+    
+    public bool IsOutlineVisible {
+        get => this.isOutlineVisible;
+        set => DataParameter.SetValueHelper(this, IsOutlineVisibleParameter, ref this.isOutlineVisible, value);
+    }
 
     public CursorTool() {
         this.autoSelectLayer = AutoSelectLayerParameter.GetDefaultValue(this);
+        this.isOutlineVisible = IsOutlineVisibleParameter.GetDefaultValue(this);
     }
 
     public override bool OnCursorPressed(Document document, SKPointD relPos, SKPointD absPos, int count, EnumCursorType cursor, ModifierKeys modifiers) {

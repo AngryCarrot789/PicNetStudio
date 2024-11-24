@@ -33,7 +33,7 @@ public sealed class DataParameterPoint : DataParameter<SKPoint>, IRangedParamete
     
     public SKPoint Minimum { get; }
     public SKPoint Maximum { get; }
-    public bool HasRangeLimit { get; }
+    public bool HasExplicitRangeLimit { get; }
 
     public DataParameterPoint(Type ownerType, string name, ValueAccessor<SKPoint> accessor, DataParameterFlags flags = DataParameterFlags.None) : this(ownerType, name, default, accessor, flags) {
     }
@@ -48,7 +48,7 @@ public sealed class DataParameterPoint : DataParameter<SKPoint>, IRangedParamete
             throw new ArgumentOutOfRangeException(nameof(defValue), $"Default value ({defValue}) falls out of range of the min/max values ({minValue}/{maxValue})");
         this.Minimum = minValue;
         this.Maximum = maxValue;
-        this.HasRangeLimit = minValue.X > float.MinValue || minValue.Y > float.MinValue || maxValue.X < float.MaxValue || maxValue.Y < float.MaxValue;
+        this.HasExplicitRangeLimit = minValue.X > float.MinValue || minValue.Y > float.MinValue || maxValue.X < float.MaxValue || maxValue.Y < float.MaxValue;
     }
 
     public SKPoint Clamp(SKPoint value) => new SKPoint(Maths.Clamp(value.X, this.Minimum.X, this.Maximum.X), Maths.Clamp(value.Y, this.Minimum.Y, this.Maximum.Y));
@@ -56,7 +56,7 @@ public sealed class DataParameterPoint : DataParameter<SKPoint>, IRangedParamete
     public bool IsValueOutOfRange(SKPoint value) => value.X < this.Minimum.X || value.Y < this.Minimum.Y || value.X > this.Maximum.X || value.Y > this.Maximum.Y;
 
     public override void SetValue(ITransferableData owner, SKPoint value) {
-        if (this.HasRangeLimit) {
+        if (this.HasExplicitRangeLimit) {
             value = this.Clamp(value);
         }
 
@@ -64,7 +64,7 @@ public sealed class DataParameterPoint : DataParameter<SKPoint>, IRangedParamete
     }
 
     public override void SetObjectValue(ITransferableData owner, object? value) {
-        if (this.HasRangeLimit) {
+        if (this.HasExplicitRangeLimit) {
             SKPoint unboxed = (SKPoint) value!;
             SKPoint clamped = this.Clamp(unboxed);
             if (!Maths.Equals(unboxed, clamped))

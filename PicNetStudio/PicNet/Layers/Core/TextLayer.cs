@@ -18,7 +18,6 @@
 // 
 
 using System.Collections.Specialized;
-using System.Numerics;
 using PicNetStudio.DataTransfer;
 using PicNetStudio.Utils.Accessing;
 using SkiaSharp;
@@ -30,23 +29,23 @@ namespace PicNetStudio.PicNet.Layers.Core;
 /// </summary>
 public class TextLayer : BaseVisualLayer {
     public static readonly DataParameterString TextParameter = DataParameter.Register(new DataParameterString(typeof(TextLayer), nameof(Text), null, ValueAccessors.Reflective<string?>(typeof(TextLayer), nameof(text))));
-    public static readonly DataParameterDouble FontSizeParameter = DataParameter.Register(new DataParameterDouble(typeof(TextLayer), nameof(FontSize), 40.0, ValueAccessors.Reflective<double>(typeof(TextLayer), nameof(fontSize))));
+    public static readonly DataParameterFloat FontSizeParameter = DataParameter.Register(new DataParameterFloat(typeof(TextLayer), nameof(FontSize), 40.0F, ValueAccessors.Reflective<float>(typeof(TextLayer), nameof(fontSize))));
     public static readonly DataParameterString FontFamilyParameter = DataParameter.Register(new DataParameterString(typeof(TextLayer), nameof(FontFamily), "Consolas", ValueAccessors.Reflective<string?>(typeof(TextLayer), nameof(fontFamily))));
     public static readonly DataParameterDouble BorderThicknessParameter = DataParameter.Register(new DataParameterDouble(typeof(TextLayer), nameof(BorderThickness), 1.0D, ValueAccessors.Reflective<double>(typeof(TextLayer), nameof(borderThickness))));
     public static readonly DataParameterFloat SkewXParameter = DataParameter.Register(new DataParameterFloat(typeof(TextLayer), nameof(SkewX), 0.0F, ValueAccessors.Reflective<float>(typeof(TextLayer), nameof(skewX))));
     public static readonly DataParameterBool IsAntiAliasedParameter = DataParameter.Register(new DataParameterBool(typeof(TextLayer), nameof(IsAntiAliased), true, ValueAccessors.Reflective<bool>(typeof(TextLayer), nameof(isAntiAliased))));
-    public static readonly DataParameterDouble LineHeightMultiplierParameter = DataParameter.Register(new DataParameterDouble(typeof(TextLayer), nameof(LineHeightMultiplier), 1.0, ValueAccessors.Reflective<double>(typeof(TextLayer), nameof(lineHeightMultiplier))));
+    public static readonly DataParameterFloat LineSpacingParameter = DataParameter.Register(new DataParameterFloat(typeof(TextLayer), nameof(LineSpacing), 0.0F, ValueAccessors.Reflective<float>(typeof(TextLayer), nameof(lineSpacing))));
     
     private string? text;
-    private double fontSize;
+    private float fontSize;
     private string? fontFamily;
     private double borderThickness;
     private float skewX;
     private bool isAntiAliased;
-    private double lineHeightMultiplier;
+    private float lineSpacing;
     private BitVector32 clipProps;
     private SKTextBlob?[]? TextBlobs;
-    private Vector2 TextBlobBoundingBox;
+    private SKSize TextBlobBoundingBox;
     // TODO: colours for automation and implement UI for colour data params
     private SKColor foreground;
     private SKColor border;
@@ -59,7 +58,7 @@ public class TextLayer : BaseVisualLayer {
         set => DataParameter.SetValueHelper(this, TextParameter, ref this.text, value);
     }
     
-    public double FontSize {
+    public float FontSize {
         get => this.fontSize;
         set => DataParameter.SetValueHelper(this, FontSizeParameter, ref this.fontSize, value);
     }
@@ -84,11 +83,11 @@ public class TextLayer : BaseVisualLayer {
         set => DataParameter.SetValueHelper(this, IsAntiAliasedParameter, ref this.isAntiAliased, value);
     }
     
-    public double LineHeightMultiplier {
-        get => this.lineHeightMultiplier;
-        set => DataParameter.SetValueHelper(this, LineHeightMultiplierParameter, ref this.lineHeightMultiplier, value);
+    public float LineSpacing {
+        get => this.lineSpacing;
+        set => DataParameter.SetValueHelper(this, LineSpacingParameter, ref this.lineSpacing, value);
     }
-
+    
     public SKPaint? GeneratedPaint { get; private set; }
 
     public SKFont? GeneratedFont { get; private set; }
@@ -100,7 +99,7 @@ public class TextLayer : BaseVisualLayer {
         this.borderThickness = BorderThicknessParameter.GetDefaultValue(this);
         this.skewX = SkewXParameter.GetDefaultValue(this);
         this.isAntiAliased = IsAntiAliasedParameter.GetDefaultValue(this);
-        this.lineHeightMultiplier = LineHeightMultiplierParameter.GetDefaultValue(this);
+        this.lineSpacing = LineSpacingParameter.GetDefaultValue(this);
         this.clipProps = new BitVector32();
         this.foreground = SKColors.Black;
         this.border = SKColors.DarkGray;
@@ -108,18 +107,18 @@ public class TextLayer : BaseVisualLayer {
 
     static TextLayer() {
         SetParameterAffectsRender(TextParameter);
-        DataParameter.AddMultipleHandlers((_, owner) => ((TextLayer) owner).InvalidateFontData(), FontSizeParameter, FontFamilyParameter, BorderThicknessParameter, SkewXParameter, IsAntiAliasedParameter, LineHeightMultiplierParameter);
+        DataParameter.AddMultipleHandlers((_, owner) => ((TextLayer) owner).InvalidateFontData(), FontSizeParameter, FontFamilyParameter, BorderThicknessParameter, SkewXParameter, IsAntiAliasedParameter, LineSpacingParameter);
         DataParameter.AddMultipleHandlers((_, owner) => ((TextLayer) owner).DisposeText(), TextParameter);
         
         SerialisationRegistry.Register<TextLayer>(0, (layer, data, ctx) => {
             ctx.DeserialiseBaseType(data);
             layer.text = data.GetString("Text", null);
-            layer.fontSize = data.GetDouble("FontSize");
+            layer.fontSize = data.GetFloat("FontSize");
             layer.fontFamily = data.GetString("FontFamily", FontFamilyParameter.GetDefaultValue(layer)!);
             layer.borderThickness = data.GetDouble("BorderThickness");
             layer.skewX = data.GetFloat("SkewX");
             layer.isAntiAliased = data.GetBool("IsAntiAliased");
-            layer.lineHeightMultiplier = data.GetDouble("LineHeightMultiplier");
+            layer.lineSpacing = data.GetFloat("LineHeightMultiplier");
             layer.clipProps = data.GetStruct<BitVector32>("ClipProps");
             layer.foreground = data.GetStruct<SKColor>("Foreground");
             layer.border = data.GetStruct<SKColor>("Border");
@@ -131,7 +130,7 @@ public class TextLayer : BaseVisualLayer {
             data.SetDouble("BorderThickness", layer.borderThickness);
             data.SetFloat("SkewX", layer.skewX);
             data.SetBool("IsAntiAliased", layer.isAntiAliased);
-            data.SetDouble("LineHeightMultiplier", layer.lineHeightMultiplier);
+            data.SetDouble("LineHeightMultiplier", layer.lineSpacing);
             data.SetStruct("ClipProps", layer.clipProps);
             data.SetStruct("Foreground", layer.foreground);
             data.SetStruct("Border", layer.border);
@@ -148,51 +147,53 @@ public class TextLayer : BaseVisualLayer {
         layer.borderThickness = this.borderThickness;
         layer.skewX = this.skewX;
         layer.isAntiAliased = this.isAntiAliased;
-        layer.lineHeightMultiplier = this.lineHeightMultiplier;
+        layer.lineSpacing = this.lineSpacing;
         layer.foreground = this.foreground;
         layer.border = this.border;
     }
 
     public void DisposeText() {
-        this.TextBlobBoundingBox = new Vector2();
+        this.TextBlobBoundingBox = new SKSize();
         DisposeTextBlobs(ref this.TextBlobs);
+        this.OnSizeForAutomaticOriginsChanged();
     }
 
-    public override void RenderLayer(ref RenderContext ctx) {
+    public override SKSize GetSizeForAutomaticOrigins() {
+        return this.TextBlobBoundingBox;
+    }
+
+    protected override void OnSizeForAutomaticOriginsChanged() {
+        base.OnSizeForAutomaticOriginsChanged();
+        this.InvalidateTransformationMatrix();
+    }
+
+    public override bool OnPrepareRenderLayer(ref RenderContext ctx) {
+        base.OnPrepareRenderLayer(ref ctx);
         if (this.GeneratedPaint == null || this.GeneratedFont == null) {
             this.GenerateCachedData();
         }
         
         if (this.TextBlobs == null && !string.IsNullOrEmpty(this.text)) {
-            this.TextBlobBoundingBox = new Vector2();
+            this.TextBlobBoundingBox = new SKSize();
             this.GenerateTextCache();
         }
 
+        return this.TextBlobs != null && this.GeneratedPaint != null;
+    }
+
+    public override void RenderLayer(ref RenderContext ctx) {
         SKPaint? paint = this.GeneratedPaint;
-        if (this.TextBlobs == null || paint == null) {
-            return;
-        }
-
         this.GeneratedFont!.GetFontMetrics(out SKFontMetrics metrics);
-        // we can get away with this since we just use numbers and not any 'special'
-        // characters with bits below the baseline and whatnot
-
-        double lineHeightAdd = 0.0;
-        foreach (SKTextBlob? blob in this.TextBlobs) {
+        SKTextBlob?[] blobs = this.TextBlobs!;
+        float offset = 0.0F;
+        for (int i = 0, endIndex = blobs.Length - 1; i <= endIndex; i++) {
+            SKTextBlob? blob = blobs[i];
             if (blob != null) {
-                // fd.cachedFont.GetFontMetrics(out SKFontMetrics metrics);
-                // // we can get away with this since we just use numbers and not any 'special'
-                // // characters with bits below the baseline and whatnot
-                // SKRect realFinalRenderArea = new SKRect(0, 0, blob.Bounds.Right, blob.Bounds.Bottom - metrics.Ascent - metrics.Descent);
-                // rc.Canvas.DrawText(blob, 0, -blob.Bounds.Top - metrics.Descent, paint);
-                //
-                // // we still need to tell the track the rendering area, otherwise we're copying the entire frame which is
-                // // unacceptable. Even though there will most likely be a bunch of transparent padding pixels, it's still better
-                // renderArea = rc.TranslateRect(realFinalRenderArea);
-
-                ctx.Canvas.DrawText(blob, 0, (float) (blob.Bounds.Height / 2d + lineHeightAdd), paint);
-                lineHeightAdd += this.LineHeightMultiplier;
-                // ctx.Canvas.DrawText(blob, 0, -blob.Bounds.Top - metrics.Descent, paint);
+                float y = -blob.Bounds.Top - metrics.Descent + offset;
+                ctx.Canvas.DrawText(blob, 0, y, paint);
+                offset += this.FontSize;
+                if (i != endIndex)
+                    offset += this.lineSpacing;
             }
         }
     }
@@ -204,18 +205,24 @@ public class TextLayer : BaseVisualLayer {
 
         this.GenerateCachedData();
         if (this.GeneratedFont != null && this.GeneratedPaint != null) {
-            this.TextBlobs = CreateTextBlobs(this.text, this.GeneratedPaint, this.GeneratedFont);
-            if (this.TextBlobs != null) {
-                float w = 0, h = 0;
-                foreach (SKTextBlob? blob in this.TextBlobs) {
+            SKTextBlob?[]? blobs = this.TextBlobs = this.CreateTextBlobs(this.text, this.GeneratedPaint, this.GeneratedFont);
+            if (blobs != null) {
+                this.GeneratedFont!.GetFontMetrics(out SKFontMetrics metrics);
+                float w = 0, h = 0, myLineHeight = 0.0F;
+                for (int i = 0, endIndex = blobs.Length - 1; i <= endIndex; i++) {
+                    SKTextBlob? blob = blobs[i];
                     if (blob != null) {
                         SKRect bound = blob.Bounds;
                         w = Math.Max(w, bound.Width);
-                        h = Math.Max(h, bound.Height);
+                        
+                        float height = Math.Abs(blob.Bounds.Bottom - blob.Bounds.Top) - metrics.Bottom;
+                        h += height + myLineHeight;
+                        myLineHeight = this.lineSpacing;
                     }
                 }
-                
-                this.TextBlobBoundingBox = new Vector2(w, h);
+
+                this.TextBlobBoundingBox = new SKSize(w, h);
+                this.OnSizeForAutomaticOriginsChanged();
             }
         }
     }
@@ -251,8 +258,8 @@ public class TextLayer : BaseVisualLayer {
         };
     }
 
-    public static SKTextBlob[]? CreateTextBlobs(string input, SKPaint paint, SKFont font) {
-        return CreateTextBlobs(input, font, paint.TextSize); // * 1.2f
+    public SKTextBlob[]? CreateTextBlobs(string input, SKPaint paint, SKFont font) {
+        return CreateTextBlobs(input, font, (float) this.LineSpacing); // * 1.2f
     }
 
     public static SKTextBlob[]? CreateTextBlobs(string input, SKFont font, float lineHeight) {

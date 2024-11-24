@@ -55,6 +55,32 @@ public abstract class BaseDataParameterNumericToolSetting<T> : BaseDataParameter
     }
 }
 
+public class DataParameterBoolToolSetting : BaseDataParameterToolSetting {
+    private bool value;
+    
+    public new DataParameterBool Parameter => (DataParameterBool) ((BaseDataParameterToolSetting) this).Parameter;
+
+    /// <summary>
+    /// Gets or sets the value of this tool setting. Setting this property will set the value of our
+    /// <see cref="Parameter"/> for our <see cref="BaseToolSetting.Tool"/> (if there is one connected)
+    /// </summary>
+    public bool Value {
+        get => this.value;
+        set {
+            this.value = value;
+            this.Parameter.SetValue(this.Tool!, value);
+            this.OnValueChanged();
+        }
+    }
+    
+    public DataParameterBoolToolSetting(DataParameterBool parameter, string displayName) : base(parameter, displayName) {
+    }
+    
+    protected override void QueryValueFromHandlers() {
+        this.value = this.Parameter.GetValue(this.Tool!)!;
+    }
+}
+
 public class DataParameterFloatToolSetting : BaseDataParameterNumericToolSetting<float> {
     public new DataParameterFloat Parameter => (DataParameterFloat) ((BaseDataParameterToolSetting) this).Parameter;
 

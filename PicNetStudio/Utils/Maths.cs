@@ -17,6 +17,8 @@
 // along with PicNetStudio. If not, see <https://www.gnu.org/licenses/>.
 // 
 
+using SkiaSharp;
+
 namespace PicNetStudio.Utils;
 
 public static class Maths {
@@ -296,4 +298,21 @@ public static class Maths {
 
     public static int Floor(double d) => (int) Math.Floor(d);
     public static int Ceil(double d) => (int) Math.Ceiling(d);
+    
+    public static SKSize? Max2F<T>(IEnumerable<T> sources, Func<T, SKSize> func) {
+        using IEnumerator<T> enumerator = sources.GetEnumerator();
+        if (!enumerator.MoveNext())
+            return null;
+
+        SKSize first = func(enumerator.Current);
+        while (enumerator.MoveNext()) {
+            SKSize next = func(enumerator.Current);
+            if (next.Width > first.Width)
+                first.Width = next.Width;
+            if (next.Height > first.Height)
+                first.Height = next.Height;
+        }
+
+        return first;
+    }
 }

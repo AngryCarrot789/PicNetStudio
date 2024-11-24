@@ -29,7 +29,7 @@ namespace PicNetStudio.DataTransfer;
 public sealed class DataParameterDouble : DataParameter<double>, IRangedParameter<double> {
     public double Minimum { get; }
     public double Maximum { get; }
-    public bool HasRangeLimit { get; }
+    public bool HasExplicitRangeLimit { get; }
 
     public DataParameterDouble(Type ownerType, string name, ValueAccessor<double> accessor, DataParameterFlags flags = DataParameterFlags.None) : this(ownerType, name, 0.0, accessor, flags) {
     }
@@ -44,7 +44,7 @@ public sealed class DataParameterDouble : DataParameter<double>, IRangedParamete
             throw new ArgumentOutOfRangeException(nameof(defValue), $"Default value ({defValue}) falls out of range of the min/max values ({minValue}/{maxValue})");
         this.Minimum = minValue;
         this.Maximum = maxValue;
-        this.HasRangeLimit = minValue > double.MinValue || maxValue < double.MaxValue;
+        this.HasExplicitRangeLimit = minValue > double.MinValue || maxValue < double.MaxValue;
     }
 
     public double Clamp(double value) => Maths.Clamp(value, this.Minimum, this.Maximum);
@@ -52,7 +52,7 @@ public sealed class DataParameterDouble : DataParameter<double>, IRangedParamete
     public bool IsValueOutOfRange(double value) => value < this.Minimum || value > this.Maximum;
 
     public override void SetValue(ITransferableData owner, double value) {
-        if (this.HasRangeLimit) {
+        if (this.HasExplicitRangeLimit) {
             value = Maths.Clamp(value, this.Minimum, this.Maximum);
         }
 
@@ -60,7 +60,7 @@ public sealed class DataParameterDouble : DataParameter<double>, IRangedParamete
     }
 
     public override void SetObjectValue(ITransferableData owner, object? value) {
-        if (this.HasRangeLimit) {
+        if (this.HasExplicitRangeLimit) {
             double unboxed = (double) value;
             double clamped = Maths.Clamp(unboxed, this.Minimum, this.Maximum);
             if (!DoubleUtils.AreClose(unboxed, clamped))

@@ -32,11 +32,13 @@ public class RasterLayer : BaseVisualLayer {
     public static readonly DataParameterFloat ChannelGParameter = DataParameter.Register(new DataParameterFloat(typeof(RasterLayer), nameof(ChannelG), 1.0f, 0.0f, 1.0f, ValueAccessors.Reflective<float>(typeof(RasterLayer), nameof(channelG))));
     public static readonly DataParameterFloat ChannelBParameter = DataParameter.Register(new DataParameterFloat(typeof(RasterLayer), nameof(ChannelB), 1.0f, 0.0f, 1.0f, ValueAccessors.Reflective<float>(typeof(RasterLayer), nameof(channelB))));
     public static readonly DataParameterFloat ChannelAParameter = DataParameter.Register(new DataParameterFloat(typeof(RasterLayer), nameof(ChannelA), 1.0f, 0.0f, 1.0f, ValueAccessors.Reflective<float>(typeof(RasterLayer), nameof(channelA))));
+    public static readonly DataParameterBool IsAntiAliasedParameter = DataParameter.Register(new DataParameterBool(typeof(RasterLayer), nameof(IsAntiAliased), false, ValueAccessors.Reflective<bool>(typeof(RasterLayer), nameof(isAntiAliased))));
 
     private float channelR;
     private float channelG;
     private float channelB;
     private float channelA;
+    private bool isAntiAliased;
 
     // TODO: Make channels an effect
     // and maybe use internal effect detection to improve performance;
@@ -61,6 +63,11 @@ public class RasterLayer : BaseVisualLayer {
         get => this.channelA;
         set => DataParameter.SetValueHelper(this, ChannelAParameter, ref this.channelA, value);
     }
+    
+    public bool IsAntiAliased {
+        get => this.isAntiAliased;
+        set => DataParameter.SetValueHelper(this, IsAntiAliasedParameter, ref this.isAntiAliased, value);
+    }
 
     public PNBitmap Bitmap { get; }
 
@@ -69,8 +76,14 @@ public class RasterLayer : BaseVisualLayer {
         this.channelG = ChannelGParameter.GetDefaultValue(this);
         this.channelB = ChannelBParameter.GetDefaultValue(this);
         this.channelA = ChannelAParameter.GetDefaultValue(this);
+        this.isAntiAliased = IsAntiAliasedParameter.GetDefaultValue(this);
         this.Bitmap = new PNBitmap();
+        this.Bitmap.BitmapHandleChanged += this.OnBitmapHandleChanged;
         this.UsesCustomOpacityCalculation = true;
+    }
+
+    private void OnBitmapHandleChanged(PNBitmap bitmap) {
+        this.OnSizeForAutomaticOriginsChanged();
     }
 
     private readonly struct UnmanagedBmpInfo {
@@ -89,7 +102,7 @@ public class RasterLayer : BaseVisualLayer {
     }
 
     static RasterLayer() {
-        SetParameterAffectsRender(ChannelRParameter, ChannelGParameter, ChannelBParameter, ChannelAParameter);
+        SetParameterAffectsRender(ChannelRParameter, ChannelGParameter, ChannelBParameter, ChannelAParameter, IsAntiAliasedParameter);
         SerialisationRegistry.Register<RasterLayer>(0, (layer, data, ctx) => {
             ctx.DeserialiseBaseType(data);
             layer.channelR = data.GetFloat("ChannelR");
@@ -144,11 +157,17 @@ public class RasterLayer : BaseVisualLayer {
         raster.channelA = this.channelA;
     }
 
+    public override SKSize GetSizeForAutomaticOrigins() {
+        PixSize size = this.Bitmap.Size;
+        return new SKSize(size.Width, size.Height);
+    }
+
     public override void RenderLayer(ref RenderContext ctx) {
         if (this.Bitmap.IsInitialised) {
             using SKPaint paint = new SKPaint();
             paint.Color = RenderUtils.BlendAlpha(SKColors.White, this.Opacity);
             paint.BlendMode = this.BlendMode;
+            paint.IsAntialias = this.isAntiAliased;
             float r = this.channelR, g = this.channelG, b = this.channelB, a = this.channelA;
             if (!DoubleUtils.AreClose(r, 1.0) || !DoubleUtils.AreClose(g, 1.0) || !DoubleUtils.AreClose(b, 1.0) || !DoubleUtils.AreClose(a, 1.0)) {
                 float[] matrix = new float[] {

@@ -46,6 +46,17 @@
             </Setter.Value>
         </Setter>
     </ControlTheme>
+    <ControlTheme x:Key="{x:Type c:DataParameterBoolToolSettingControl}" TargetType="{x:Type c:DataParameterBoolToolSettingControl}" BasedOn="{StaticResource {x:Type c:BaseDataParameterToolSettingControl}}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type c:DataParameterBoolToolSettingControl}">
+                    <StackPanel Orientation="Horizontal">
+                        <CheckBox x:Name="PART_CheckBox" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                    </StackPanel>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </ControlTheme>
     <ControlTheme x:Key="{x:Type c:DataParameterFloatToolSettingControl}" TargetType="{x:Type c:DataParameterFloatToolSettingControl}" BasedOn="{StaticResource {x:Type c:DataParameterNumberDraggerToolSettingControl}}">
     </ControlTheme>
     <ControlTheme x:Key="{x:Type c:AutomaticDataParameterFloatToolSettingControl}" TargetType="{x:Type c:DataParameterFloatToolSettingControl}" BasedOn="{StaticResource {x:Type c:DataParameterNumberDraggerToolSettingControl}}">

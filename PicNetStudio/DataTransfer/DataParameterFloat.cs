@@ -29,7 +29,7 @@ namespace PicNetStudio.DataTransfer;
 public sealed class DataParameterFloat : DataParameter<float>, IRangedParameter<float> {
     public float Minimum { get; }
     public float Maximum { get; }
-    public bool HasRangeLimit { get; }
+    public bool HasExplicitRangeLimit { get; }
 
     public DataParameterFloat(Type ownerType, string name, ValueAccessor<float> accessor, DataParameterFlags flags = DataParameterFlags.None) : this(ownerType, name, 0.0F, accessor, flags) {
     }
@@ -44,7 +44,7 @@ public sealed class DataParameterFloat : DataParameter<float>, IRangedParameter<
             throw new ArgumentOutOfRangeException(nameof(defValue), $"Default value ({defValue}) falls out of range of the min/max values ({minValue}/{maxValue})");
         this.Minimum = minValue;
         this.Maximum = maxValue;
-        this.HasRangeLimit = minValue > float.MinValue || maxValue < float.MaxValue;
+        this.HasExplicitRangeLimit = minValue > float.MinValue || maxValue < float.MaxValue;
     }
 
     public float Clamp(float value) => Maths.Clamp(value, this.Minimum, this.Maximum);
@@ -52,7 +52,7 @@ public sealed class DataParameterFloat : DataParameter<float>, IRangedParameter<
     public bool IsValueOutOfRange(float value) => value < this.Minimum || value > this.Maximum;
 
     public override void SetValue(ITransferableData owner, float value) {
-        if (this.HasRangeLimit) {
+        if (this.HasExplicitRangeLimit) {
             value = Maths.Clamp(value, this.Minimum, this.Maximum);
         }
 
@@ -60,8 +60,8 @@ public sealed class DataParameterFloat : DataParameter<float>, IRangedParameter<
     }
 
     public override void SetObjectValue(ITransferableData owner, object? value) {
-        if (this.HasRangeLimit) {
-            float unboxed = (float) value;
+        if (this.HasExplicitRangeLimit) {
+            float unboxed = (float) value!;
             float clamped = Maths.Clamp(unboxed, this.Minimum, this.Maximum);
             if (!Maths.Equals(unboxed, clamped))
                 value = clamped;

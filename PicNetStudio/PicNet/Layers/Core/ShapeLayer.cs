@@ -83,6 +83,13 @@ public abstract class BaseSimpleShapeLayer : BaseShapeLayer {
             data.SetFloat("Width", layer.width);
             data.SetFloat("Height", layer.height);
         });
+        
+        WidthParameter.ValueChanged += OnAnySizeParameterChanged;
+        HeightParameter.ValueChanged += OnAnySizeParameterChanged;
+    }
+
+    private static void OnAnySizeParameterChanged(DataParameter parameter, ITransferableData owner) {
+        ((BaseSimpleShapeLayer) owner).OnSizeForAutomaticOriginsChanged();
     }
 
     protected override void LoadDataIntoClone(BaseLayerTreeObject clone) {
@@ -94,11 +101,18 @@ public abstract class BaseSimpleShapeLayer : BaseShapeLayer {
 }
 
 public class RectangleShapeLayer : BaseSimpleShapeLayer {
+    public RectangleShapeLayer() {
+    }
+
     protected override void Render(ref RenderContext ctx, SKPaint paint) {
         float w = this.Width, h = this.Height;
         if (DoubleUtils.AreClose(w, 0.0) || DoubleUtils.AreClose(h, 0.0))
             return;
         
         ctx.Canvas.DrawRect(0, 0, w, h, paint);
+    }
+
+    public override SKSize GetSizeForAutomaticOrigins() {
+        return new SKSize(this.Width, this.Height);
     }
 }

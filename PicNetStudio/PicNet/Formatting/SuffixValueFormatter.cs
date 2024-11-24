@@ -23,6 +23,9 @@ namespace PicNetStudio.PicNet.Formatting;
 /// A value formatter that converts a unit value (0.0 to 1.0) into a percentage (0 to 100%) with an optional decimal precision
 /// </summary>
 public class SuffixValueFormatter : BaseSimpleValueFormatter {
+    public static SuffixValueFormatter StandardPixels { get; } = new SuffixValueFormatter("px");
+    public static SuffixValueFormatter StandardDegrees { get; } = new SuffixValueFormatter("\u00b0");
+
     private string? suffix;
 
     public string? Suffix {
