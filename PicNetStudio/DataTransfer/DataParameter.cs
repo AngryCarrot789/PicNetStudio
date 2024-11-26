@@ -18,6 +18,7 @@
 // 
 
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using PicNetStudio.Utils;
 using PicNetStudio.Utils.Accessing;
 
@@ -75,6 +76,12 @@ public abstract class DataParameter : IEquatable<DataParameter>, IComparable<Dat
     /// </summary>
     public string GlobalKey => this.OwnerType.Name + "::" + this.Name;
 
+    /// <summary>
+    /// Fired when the value of this parameter changes for any <see cref="ITransferableData"/> instance.
+    /// This is fired before instance value change handlers are called
+    /// </summary>
+    public event DataParameterValueChangedEventHandler? PriorityValueChanged;
+    
     /// <summary>
     /// Fired when the value of this parameter changes for any <see cref="ITransferableData"/> instance
     /// </summary>
@@ -306,8 +313,8 @@ public abstract class DataParameter : IEquatable<DataParameter>, IComparable<Dat
         return parameters;
     }
 
-    internal static void InternalOnParameterValueChanged(DataParameter parameter, ITransferableData owner) {
-        parameter.ValueChanged?.Invoke(parameter, owner);
+    internal static void InternalOnParameterValueChanged(DataParameter parameter, ITransferableData owner, bool priority) {
+        (priority ? parameter.PriorityValueChanged : parameter.ValueChanged)?.Invoke(parameter, owner);
     }
 
     /// <summary>

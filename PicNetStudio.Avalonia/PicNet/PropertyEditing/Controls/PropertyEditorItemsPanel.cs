@@ -82,13 +82,9 @@ public class PropertyEditorItemsPanel : StackPanel {
             control = new PropertyEditorSlotControl();
             ((PropertyEditorSlotControl) control).OnAdding(this.OwnerGroup!, (PropertyEditorSlot) item);
             this.Children.Insert(index, control);
-            ((PropertyEditorSlotControl) control).UpdateLayout();
-            control.ApplyTemplate();
-            ((PropertyEditorSlotControl) control).ConnectModel();
-
             control.ApplyStyling();
             control.ApplyTemplate();
-            control.InvalidateMeasure();
+            ((PropertyEditorSlotControl) control).ConnectModel();
         }
         else {
             throw new InvalidOperationException("Invalid model: " + item);

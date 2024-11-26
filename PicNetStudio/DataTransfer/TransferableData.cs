@@ -110,9 +110,10 @@ public sealed class TransferableData {
         TransferableData data = owner.TransferableData;
         ParameterData internalData = data.GetOrCreateParamData(parameter);
         try {
+            DataParameter.InternalOnParameterValueChanged(parameter, owner, true);
             internalData.RaiseValueChanged(parameter, owner);
             data.ValueChanged?.Invoke(parameter, owner);
-            DataParameter.InternalOnParameterValueChanged(parameter, owner);
+            DataParameter.InternalOnParameterValueChanged(parameter, owner, false);
         }
         finally {
             internalData.isValueChanging = false;

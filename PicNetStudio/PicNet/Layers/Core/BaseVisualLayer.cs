@@ -207,9 +207,6 @@ public abstract class BaseVisualLayer : BaseLayerTreeObject {
         this.rotationOrigin = RotationOriginParameter.GetDefaultValue(this);
         this.isScaleOriginAutomatic = IsScaleOriginAutomaticParameter.GetDefaultValue(this);
         this.isRotationOriginAutomatic = IsRotationOriginAutomaticParameter.GetDefaultValue(this);
-        PositionParameter.AddValueChangedHandler(this, (parameter, owner) => {
-            ((BaseVisualLayer) owner).UpdateAutomaticRotationOrigin();
-        });
     }
 
     static BaseVisualLayer() {
@@ -249,15 +246,14 @@ public abstract class BaseVisualLayer : BaseLayerTreeObject {
         // than re-drawing the composition layer when its opacity changes?
         // Not sure...
         SetParameterAffectsRender(OpacityParameter, IsRenderVisibleParameter, BlendModeParameter);
-
-        // Add internal handler for solo system
-        IsSoloParameter.ValueChanged += OnIsSoloValueChanged;
-
+        
         // Add handlers to properties that affect the transformation matrix
         DataParameter.AddMultipleHandlers(OnMatrixInvalidatingPropertyChanged, PositionParameter, ScaleParameter, ScaleOriginParameter, RotationParameter, RotationOriginParameter);
         
-        IsScaleOriginAutomaticParameter.ValueChanged += OnIsScaleOriginAutomaticParameterValueChanged;
-        IsRotationOriginAutomaticParameter.ValueChanged += OnIsRotationOriginAutomaticParameterValueChanged;
+        // Add internal handler for solo system
+        IsSoloParameter.PriorityValueChanged += OnIsSoloValueChanged;
+        IsScaleOriginAutomaticParameter.PriorityValueChanged += OnIsScaleOriginAutomaticParameterValueChanged;
+        IsRotationOriginAutomaticParameter.PriorityValueChanged += OnIsRotationOriginAutomaticParameterValueChanged;
     }
 
     private static void OnIsScaleOriginAutomaticParameterValueChanged(DataParameter parameter, ITransferableData owner) {

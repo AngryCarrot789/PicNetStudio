@@ -62,8 +62,9 @@ public class EffectListBox : ItemsControl {
                 int index = i++;
                 control.OnAddingToList(this, newLayer);
                 this.Items.Insert(index, control);
+                control.ApplyStyling();
+                control.ApplyTemplate();
                 control.OnAddedToList();
-                control.InvalidateMeasure();
                 this.InvalidateMeasure();
             }
         }

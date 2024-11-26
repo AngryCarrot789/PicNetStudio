@@ -69,7 +69,6 @@ public abstract class BaseEffectListBoxItem : TemplatedControl {
     public void OnAddingToList(EffectListBox listBox, BaseLayerTreeObject layer) {
         this.ListBox = listBox;
         this.Layer = layer;
-        this.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
     }
 
     public void OnAddedToList() {

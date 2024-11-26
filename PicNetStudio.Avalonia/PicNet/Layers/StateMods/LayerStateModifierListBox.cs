@@ -50,7 +50,6 @@ public class LayerStateModifierListBox : ItemsControl {
                 control.OnRemovingFromList();
                 this.Items.RemoveAt(i);
                 control.OnRemovedFromList();
-                this.InvalidateMeasure();
             }
         }
 
@@ -62,9 +61,9 @@ public class LayerStateModifierListBox : ItemsControl {
                 int index = i++;
                 control.OnAddingToList(this, newLayer);
                 this.Items.Insert(index, control);
+                control.ApplyStyling();
+                control.ApplyTemplate();
                 control.OnAddedToList();
-                control.InvalidateMeasure();
-                this.InvalidateMeasure();
             }
         }
     }

@@ -195,7 +195,7 @@ public class CanvasViewPortControl : TemplatedControl, ICanvasElement {
                         new Point(func(pts[0].X) * scale, func(pts[0].Y) * scale)
                     }, false);
                     
-                    SKMatrix newMat = MatrixUtils.CreateTransformationMatrix(layer.Position, new SKPoint(1, 1), layer.Rotation, default, layer.RotationOrigin);
+                    SKMatrix newMat = layer.ParentLayer!.AbsoluteTransformationMatrix.PreConcat(MatrixUtils.CreateTransformationMatrix(layer.Position, new SKPoint(1, 1), layer.Rotation, default, layer.RotationOrigin));
                     SKPoint rOrg = newMat.MapPoint(layer.RotationOrigin);
                     Point cC = new Point(func(pts[6].X) * scale, func(pts[6].Y) * scale);
                     Point cR = new Point(func(rOrg.X) * scale, func(rOrg.Y) * scale);

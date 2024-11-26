@@ -84,8 +84,8 @@ public abstract class BaseSimpleShapeLayer : BaseShapeLayer {
             data.SetFloat("Height", layer.height);
         });
         
-        WidthParameter.ValueChanged += OnAnySizeParameterChanged;
-        HeightParameter.ValueChanged += OnAnySizeParameterChanged;
+        WidthParameter.PriorityValueChanged += OnAnySizeParameterChanged;
+        HeightParameter.PriorityValueChanged += OnAnySizeParameterChanged;
     }
 
     private static void OnAnySizeParameterChanged(DataParameter parameter, ITransferableData owner) {

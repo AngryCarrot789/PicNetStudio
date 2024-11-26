@@ -66,15 +66,13 @@ public class ToolBarItemControl : ContentControl {
     public void OnAddingToList(ToolBarItemListBox toolBar, BaseToolBarItem item) {
         this.ListBox = toolBar;
         this.ToolBarItem = item;
-        ToolBarItemControlContent content = ToolBarItemControlContent.Registry.NewInstance(item);
-        this.Content = content;
-        content.ApplyStyling();
     }
 
     public void OnAddedToList() {
-        ToolBarItemControlContent content = (ToolBarItemControlContent) this.Content!;
-        // content.ApplyTemplate();
-        content.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+        ToolBarItemControlContent content = ToolBarItemControlContent.Registry.NewInstance(this.ToolBarItem!);
+        this.Content = content;
+        content.ApplyStyling();
+        content.ApplyTemplate();
         content.Connect(this);
         DataManager.SetContextData(this, new ContextData().Set(DataKeys.ToolBarItemKey, this.ToolBarItem));
 

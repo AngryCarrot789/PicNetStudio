@@ -192,12 +192,11 @@ public abstract class BaseLayerTreeViewItem : TreeViewItem, ILayerNodeItem {
         }
     }
 
-    public virtual void OnAdding(BaseLayerTreeView tree, BaseLayerTreeViewItem parentNode, BaseLayerTreeObject layer) {
+    public virtual void OnAdding(BaseLayerTreeView tree, BaseLayerTreeViewItem? parentNode, BaseLayerTreeObject layer) {
         this.LayerTree = tree;
         this.ParentNode = parentNode;
         this.LayerObject = layer;
         this.IsFolderItem = layer is CompositionLayer;
-        // DragDrop.SetAllowDrop(this, layer is CompositionLayer);
     }
 
     public virtual void OnAdded() {
@@ -247,22 +246,23 @@ public abstract class BaseLayerTreeViewItem : TreeViewItem, ILayerNodeItem {
         this.MoveNode(oldindex, newindex);
     }
 
-    public BaseLayerTreeViewItem GetNodeAt(int index) => (BaseLayerTreeViewItem) this.Items[index];
+    public BaseLayerTreeViewItem GetNodeAt(int index) => (BaseLayerTreeViewItem) this.Items[index]!;
 
     public void InsertNode(BaseLayerTreeObject item, int index) {
         this.InsertNode(null, item, index);
     }
 
-    public void InsertNode(BaseLayerTreeViewItem control, BaseLayerTreeObject resource, int index) {
+    public void InsertNode(BaseLayerTreeViewItem? control, BaseLayerTreeObject layer, int index) {
         BaseLayerTreeView? tree = this.LayerTree;
         if (tree == null)
             throw new InvalidOperationException("Cannot add children when we have no resource tree associated");
         if (control == null)
             control = tree.GetCachedItemOrNew();
 
-        control.OnAdding(tree, this, resource);
+        control.OnAdding(tree, this, layer);
         this.Items.Insert(index, control);
-        tree.AddResourceMapping(control, resource);
+        tree.AddResourceMapping(control, layer);
+        control.ApplyStyling();
         control.ApplyTemplate();
         control.OnAdded();
     }

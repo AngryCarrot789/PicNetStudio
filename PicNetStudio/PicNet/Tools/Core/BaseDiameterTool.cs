@@ -43,7 +43,7 @@ public abstract class BaseDiameterTool : BaseRasterisedDrawingTool {
 
     static BaseDiameterTool() {
         DiameterParameter.ValueChanged += OnDiameterParameterOnValueChanged;
-        IsGapAutomaticParameter.ValueChanged += OnIsGapAutomaticParameterOnValueChanged;
+        IsGapAutomaticParameter.PriorityValueChanged += OnIsGapAutomaticParameterOnValueChanged;
     }
     
     /// <summary>

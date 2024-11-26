@@ -90,16 +90,16 @@ public class ToolSettingContainerControl : TemplatedControl {
                 foreach (BaseToolSetting setting in list) {
                     BaseToolSettingControl control = BaseToolSettingControl.Registry.NewInstance(setting);
                     controls.Add((control, setting));
-                }   
+                } 
             }   
         }
         
         foreach ((BaseToolSettingControl control, BaseToolSetting setting) tuple in controls) {
             tuple.setting.Connect(tool);
             this.PART_Panel.Children.Add(tuple.control);
-            tuple.control.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            tuple.control.ApplyStyling();
+            tuple.control.ApplyTemplate();
             tuple.control.Connect(this, tuple.setting);
-            tuple.control.InvalidateMeasure();
         }
     }
     

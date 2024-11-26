@@ -118,12 +118,8 @@ public class PropertyEditorSlotControl : ContentControl {
         BasePropEditControlContent content = (BasePropEditControlContent) this.Content!;
         content.ApplyStyling();
         content.ApplyTemplate();
-        content.InvalidateMeasure();
-        content.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
         content.Connect(this);
-        content.InvalidateMeasure();
         this.UpdateVisibility();
-        // content.UpdateLayout();
     }
 
     public void DisconnectModel() {

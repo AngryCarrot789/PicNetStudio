@@ -119,7 +119,6 @@ public abstract class LayerStateModifierControl : TemplatedControl {
     public void OnAddingToList(LayerStateModifierListBox listBox, BaseLayerTreeObject layer) {
         this.ListBox = listBox;
         this.Layer = layer;
-        this.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
     }
 
     public void OnAddedToList() {
